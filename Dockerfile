@@ -1,23 +1,8 @@
-# Build stage
-FROM maven:3.9-eclipse-temurin-25 AS build
-WORKDIR /app
+FROM maven:3.9-eclipse-temurin-25-alpine AS build
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copy Maven wrapper and pom first for better layer caching
-COPY pom.xml .
-COPY .mvn/ .mvn/
-COPY mvnw mvnw.cmd ./
-COPY src/ src/
-
-# Build the application (skip tests for faster Docker builds)
-RUN ./mvnw -B package -DskipTests
-
-# Runtime stage
-FROM eclipse-temurin:25-jre
-WORKDIR /app
-
-# Copy the built jar from the build stage
-COPY --from=build /app/target/*.jar app.jar
-
+FROM eclipse-temurin:25-jre-alpine
+COPY --from=build /target/gamerboxd-0.0.1-SNAPSHOT.jar gamerboxd.jar
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","gamerboxd.jar"]
