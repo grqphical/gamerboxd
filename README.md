@@ -6,7 +6,7 @@ Noah Kay: **nka131** (computing), **frikallo** (discord & github)
 Nathan Jacobson: **nmj8** (computing), **grqphical** (discord & github)  
 Milad Abdi: **mka321** (computing), **milad4515** (discord), **Milad244** (github)  
 Anton Bulatov: **adb18** (computing), **jerrythegirrafe** (discord), **a-bulatov1** (github)  
-Travis Jr. Kong-Sloat: **Tjk9** (computing), **.schloss** (discord) **TJK-S** (github)
+Travis Jr Kong-Sloat: **Tjk9** (computing), **.schloss** (discord) **TJK-S** (github)
 
 GitHub Link: [https\://github.com/grqphical/gamerboxd](https://github.com/grqphical/gamerboxd)  
 Render URL: [https\://gamerboxd.onrender.com](https://gamerboxd.onrender.com) 
