@@ -7,23 +7,33 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+// Remember to update `AuthenticatedUser` when adding new fields here
 @Entity
 @Table(name = "Users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int id;                 // not modifiable in settings
     @Column(unique = true)
     private String username;
+
     @Column(unique = true)
     private String email;
-    private String password;
-    private UserRole role;
+
+    private String password;        // modifiable in settings with an "are you sure?" 
+    private UserRole role;          // admin, user, not modifiable in settings
+    private UserPrivacy privacy;    // public, private
+    private String description;     // 250 char limit
+    private String pronouns;        // "x / y" format or ""
 
     public User() {
     }
 
-    public User(int id, String username, String email, String password, UserRole role) {
+    public User(
+        int id, String username, String email, 
+        String password, UserRole role, UserPrivacy privacy, 
+        String description, String pronouns) 
+    {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -69,5 +79,29 @@ public class User {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    public UserPrivacy getPrivacy() {
+        return privacy;
+    }
+
+    public void setPrivacy() {
+        this.privacy = privacy;
+    }
+
+    public UserDescription getDescription() {
+        return description;
+    }
+
+    public void setDescription() {
+        this.description = description;
+    }
+
+    public String getPronouns() {
+        return pronouns;
+    }
+
+    public void setPronouns() {
+        this.pronouns = pronouns;
     }
 }
