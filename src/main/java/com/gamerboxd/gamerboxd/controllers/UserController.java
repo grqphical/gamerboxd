@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.UserService;
 
 @Controller
@@ -26,6 +27,10 @@ public class UserController {
                 "User not found with ID: " + id));
 
         model.addAttribute("user", user);
+
+        if (user.getRole() == UserRole.ADMIN) {
+            // TODO: redirect to admin view
+        }
 
         return "users/profile";
     }
