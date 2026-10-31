@@ -19,6 +19,10 @@ public class ReviewService {
         return reviewRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    public List<Review> getAllByUserId(int userId) {
+        return reviewRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+    }
+
     /** Validates and saves a review. Throws IllegalArgumentException if invalid. */
     public Review create(int userId, String gameName, int rating, String description) {
         validate(gameName, rating, description);

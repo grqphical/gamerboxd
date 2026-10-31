@@ -13,12 +13,6 @@ public class UserService {
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-
-        User u = new User();
-        u.setUsername("grqphical");
-        u.setEmail("test@testing.com");
-
-        this.userRepository.save(u);
     }
 
     public Optional<User> getUserById(int id) {

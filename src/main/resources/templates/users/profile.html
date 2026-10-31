@@ -11,10 +11,17 @@
     <div class="container py-5" style="max-width: 700px;">
         <div class="d-flex flex-column justify-content-between align-items-left mb-4">
             <h1 class="mb-0" th:text="${user.username}"></h1>
-            <span th:text="${user.email}" class="text-muted"></span>
         </div>
 
+        <h3>User Reviews:</h3>
         <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
+        <div class="card shadow-sm mb-3" th:each="r : ${reviews}">
+            <div class="card-body">
+                <h5 class="card-title" th:text="${r.gameName}">Game</h5>
+                <div class="text-warning mb-2" th:text="${#strings.repeat('★', r.rating)}">★★★</div>
+                <p class="card-text" th:text="${r.description}">Description</p>
+            </div>
+        </div>
     </div>
 </body>
 
