@@ -28,4 +28,8 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
+      env:
+        DATABASE_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+        DATABASE_USER: test
+        DATABASE_PASSWORD: test
       run: mvn -B package --file pom.xml
