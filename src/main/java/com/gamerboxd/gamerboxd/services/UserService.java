@@ -82,4 +82,35 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("That email is already registered.");
         }
     }
+
+    /** 
+     * same as `validate(...)` but only one exception gets
+     *  thrown with all the error messages */
+    private void validateWithLongException(String username, String email, String password) {
+        String buffer = "";
+        int errorCount = 0;
+
+        if (!username.matches("[A-Za-z0-9_-]{3,30}")) {
+            buffer += ( ++errorCount + ". Username must be 3-30 characters using only letters, numbers, underscores, and hyphens.\n");
+        }
+        if (email.length() > MAX_EMAIL_LENGTH || !email.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
+            buffer += ( ++errorCount + ". Enter a valid email address.\n");
+        }
+        if (password == null || password.isBlank() || password.length() < MIN_PASSWORD_LENGTH) {
+            buffer += ( ++errorCount + ". Password must be at least " + MIN_PASSWORD_LENGTH + " characters.\n");
+        }
+        if (password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
+            buffer += ( ++errorCount + ". Password must be at most " + MAX_PASSWORD_BYTES + " bytes.\n");
+        }
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
+            buffer += ( ++errorCount + ". That username is already taken.\n");
+        }
+        if (userRepository.existsByEmail(email)) {
+            buffer += ( ++errorCount + ". That email is already registered.\n")
+        }  
+
+        if (errorCount > 0) {
+            throw new IllegalArgumentException(buffer);
+        }
+    }
 }
