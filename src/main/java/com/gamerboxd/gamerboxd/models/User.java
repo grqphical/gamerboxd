@@ -33,14 +33,17 @@ public class User {
 
     public User(
         int id, String username, String email, 
-        String password, UserRole role, UserPrivacy privacy, 
-        String description, String pronouns) 
+        String password, UserRole role) 
     {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
         this.role = role;
+
+        this.privacy = UserPrivacy.public;
+        this.description = "";
+        this.pronouns = "";
     }
 
     public int getId() {
