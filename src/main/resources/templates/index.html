@@ -10,7 +10,8 @@
 
 <body class="bg-light">
     <div class="container py-3 d-flex justify-content-end align-items-center gap-3">
-        <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
+        <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
+        <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
         <a th:if="${currentUser}" th:href="@{/users/{id}(id=${currentUser.id})}" th:text="${currentUser.displayName}"></a>
         <form th:if="${currentUser}" th:action="@{/logout}" method="post">
             <button type="submit" class="btn btn-outline-secondary">Sign Out</button>

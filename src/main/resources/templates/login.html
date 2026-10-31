@@ -11,6 +11,7 @@
 
     <div class="alert alert-danger" th:if="${param.error}">Incorrect email or password.</div>
     <div class="alert alert-success" th:if="${param.logout}">You have been signed out.</div>
+    <div class="alert alert-success" th:if="${param.registered}">Account created. Sign in to continue.</div>
 
     <form th:action="@{/login}" method="post" class="card card-body shadow-sm">
         <div class="mb-3">
@@ -27,6 +28,8 @@
         </div>
         <button type="submit" class="btn btn-primary">Sign In</button>
     </form>
+
+    <p class="text-center mt-3">New to GamerBoxd? <a th:href="@{/signup}">Create an account</a></p>
 </div>
 </body>
 </html>

@@ -10,7 +10,7 @@ import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
-// Sign-up doesn't exist yet, so the dev profile seeds a user to sign in with
+// The default H2 database is in-memory, so this saves signing up again after each restart
 @Configuration
 @Profile("dev")
 public class DevDataConfig {

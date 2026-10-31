@@ -24,8 +24,8 @@ public class SecurityConfig {
             PersistentTokenRepository tokenRepository) throws Exception {
         return http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/", "/reviews", "/users/*").permitAll()
+                        .requestMatchers("/error", "/signup").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/login", "/reviews", "/users/*").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
