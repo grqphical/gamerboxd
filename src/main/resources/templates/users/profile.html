@@ -8,6 +8,14 @@
 </head>
 
 <body class="bg-light">
+    <div class="container py-5" style="max-width: 700px;">
+        <div class="d-flex flex-column justify-content-between align-items-left mb-4">
+            <h1 class="mb-0" th:text="${user.username}"></h1>
+            <span th:text="${user.email}" class="text-muted"></span>
+        </div>
+
+        <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
+    </div>
 </body>
 
 </html>
