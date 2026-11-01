@@ -1,6 +1,8 @@
 package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -16,9 +18,18 @@ import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+
 
 @Controller
 public class SettingsController {
+    private final UserService userService;
+
+    public SettingsController(UserService userService, ReviewService reviewService) {
+        this.userService = userService;
+    }
+
     @GetMapping("/users/{id}/settings")
     public String settingsPage(@AuthenticationPrincipal AuthenticatedUser currentUser, @PathVariable int id, Model model) {
         User user = userService.getUserById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -58,6 +69,6 @@ public class SettingsController {
         // update this users settings
 
         // the happy path
-        return "redirect:/users/profile";
+        return "/users/" + id;
     }
 }

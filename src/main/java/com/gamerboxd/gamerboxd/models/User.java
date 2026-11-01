@@ -41,7 +41,7 @@ public class User {
         this.password = password;
         this.role = role;
 
-        this.privacy = UserPrivacy.public;
+        this.privacy = UserPrivacy.PUBLIC;
         this.description = "";
         this.pronouns = "";
     }
@@ -90,15 +90,15 @@ public class User {
         return privacy;
     }
 
-    public void setPrivacy() {
+    public void setPrivacy(UserPrivacy privacy) {
         this.privacy = privacy;
     }
 
-    public UserDescription getDescription() {
+    public String getDescription() {
         return description;
     }
 
-    public void setDescription() {
+    public void setDescription(String description) {
         this.description = description;
     }
 
@@ -106,7 +106,7 @@ public class User {
         return pronouns;
     }
 
-    public void setPronouns() {
+    public void setPronouns(String pronouns) {
         this.pronouns = pronouns;
     }
 }

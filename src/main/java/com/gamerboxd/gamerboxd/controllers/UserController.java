@@ -16,6 +16,8 @@ import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
+import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Controller
 public class UserController {
@@ -35,7 +37,7 @@ public class UserController {
 
         List<Review> userReviews = reviewService.getAllByUserId(id);
 
-        bool isOwnProfile = false;
+        boolean isOwnProfile = false;
         int currentUserId = currentUser.getId();
         if (currentUserId == id) {
             isOwnProfile = true;

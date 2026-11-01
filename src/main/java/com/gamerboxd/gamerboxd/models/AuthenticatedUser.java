@@ -33,7 +33,7 @@ public class AuthenticatedUser implements UserDetails {
 
     // Spring Security's login identifier, which is the email here
     @Override
-    public String getEmail() {  // was `getUsername()`
+    public String getUsername() {
         return email;
     }
 

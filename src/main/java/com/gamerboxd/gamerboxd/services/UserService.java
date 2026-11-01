@@ -86,7 +86,7 @@ public class UserService implements UserDetailsService {
     /** 
      * same as `validate(...)` but only one exception gets
      *  thrown with all the error messages */
-    private void validateWithLongException(String username, String email, String password) {
+    public void validateWithLongException(String username, String email, String password) {
         String buffer = "";
         int errorCount = 0;
 
@@ -106,7 +106,7 @@ public class UserService implements UserDetailsService {
             buffer += ( ++errorCount + ". That username is already taken.\n");
         }
         if (userRepository.existsByEmail(email)) {
-            buffer += ( ++errorCount + ". That email is already registered.\n")
+            buffer += ( ++errorCount + ". That email is already registered.\n");
         }  
 
         if (errorCount > 0) {
