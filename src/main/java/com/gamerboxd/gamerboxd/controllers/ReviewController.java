@@ -29,6 +29,13 @@ public class ReviewController {
         return "reviews/list";
     }
 
+    @PostMapping("/reviews/{id}/delete")
+    public String delete(@PathVariable int id,
+                        @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        reviewService.delete(id, currentUser.getId());
+        return "redirect:/reviews";
+    }
+
     @GetMapping("/reviews/{id}/edit")
     public String editForm(@PathVariable int id,
                         @AuthenticationPrincipal AuthenticatedUser currentUser,

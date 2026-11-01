@@ -70,4 +70,9 @@ public class ReviewService {
         review.setUpdatedAt(LocalDateTime.now());
         return reviewRepository.save(review);
     }
+
+    public void delete(int reviewId, int userId) {
+        Review review = getOwnedReview(reviewId, userId);
+        reviewRepository.delete(review);
+    }
 }

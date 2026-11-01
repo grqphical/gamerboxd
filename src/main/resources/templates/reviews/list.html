@@ -30,6 +30,12 @@
             <a th:if="${currentUser != null and currentUser.id == r.user.id}"
                 th:href="@{/reviews/{id}/edit(id=${r.id})}"
                 class="btn btn-sm btn-outline-secondary ms-2">Edit</a>
+
+            <form th:if="${currentUser != null and currentUser.id == r.user.id}"
+                th:action="@{/reviews/{id}/delete(id=${r.id})}" method="post" class="d-inline"
+                onsubmit="return confirm('Delete this review?');">
+                <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Delete</button>
+            </form>
         </div>
     </div>
 </div>
