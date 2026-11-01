@@ -13,6 +13,7 @@
     <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
 
     <form th:action="@{/reviews/{id}(id=${review.id})}" method="post" class="card card-body shadow-sm">
+        <input type="hidden" name="from" th:if="${from}" th:value="${from}">
         <div class="mb-3">
             <label class="form-label" for="rating">Rating</label>
             <select class="form-select" id="rating" name="rating" required>
@@ -28,7 +29,8 @@
                       maxlength="2000" required th:text="${review.description}"></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a th:href="@{/reviews}" class="btn btn-link">Cancel</a>
+        <a th:href="${from == 'profile'} ? @{/users/{id}(id=${review.user.id})} : @{/reviews}"
+       class="btn btn-link">Cancel</a>
     </form>
 </div>
 </body>
