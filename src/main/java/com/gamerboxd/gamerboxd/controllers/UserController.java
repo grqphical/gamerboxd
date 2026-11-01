@@ -3,6 +3,7 @@ package com.gamerboxd.gamerboxd.controllers;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,13 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
-import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Controller
 public class UserController {
@@ -30,7 +30,9 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public String getUserProfile(@AuthenticationPrincipal AuthenticatedUser currentUser, @PathVariable int id, Model model) {
+    public String getUserProfile(@PathVariable int id,
+                             @AuthenticationPrincipal AuthenticatedUser currentUser,
+                             Model model) {
 
         User user = userService.getUserById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "User not found with ID: " + id));
@@ -45,6 +47,7 @@ public class UserController {
 
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
+        model.addAttribute("currentUser", currentUser);
         model.addAttribute("isOwnProfile", isOwnProfile);
 
         if (user.getRole() == UserRole.ADMIN) {

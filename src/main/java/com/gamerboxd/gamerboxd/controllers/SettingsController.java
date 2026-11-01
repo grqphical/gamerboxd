@@ -1,6 +1,5 @@
 package com.gamerboxd.gamerboxd.controllers;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -13,14 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
-import com.gamerboxd.gamerboxd.models.UserPrivacy;
-import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 
