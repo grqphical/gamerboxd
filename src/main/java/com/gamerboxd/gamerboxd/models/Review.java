@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -16,7 +17,8 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private int userId;
+    @ManyToOne(optional = false)
+    private User user;
     private String gameName;
     private int rating; // 1-5
 
@@ -28,8 +30,8 @@ public class Review {
     public Review(){
     }
 
-    public Review(int userId, String gameName, int rating, String description) {
-        this.userId = userId;
+    public Review(User user, String gameName, int rating, String description) {
+        this.user = user;
         this.gameName = gameName;
         this.rating = rating;
         this.description = description;
@@ -38,8 +40,8 @@ public class Review {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
     public String getGameName() { return gameName; }
     public void setGameName(String gameName) { this.gameName = gameName; }

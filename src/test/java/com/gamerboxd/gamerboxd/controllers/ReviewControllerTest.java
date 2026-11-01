@@ -1,6 +1,5 @@
 package com.gamerboxd.gamerboxd.controllers;
 
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -35,6 +34,9 @@ class ReviewControllerTest {
     private ReviewService reviewService;
     private MockMvc mockMvc;
 
+    private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
+    private final User olivia = new User(2, "olivia", "olivia@gmail.com", "pw", UserRole.USER);
+
     @BeforeEach
     void setUp() {
         reviewService = mock(ReviewService.class);
@@ -42,8 +44,7 @@ class ReviewControllerTest {
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 
-        AuthenticatedUser principal = new AuthenticatedUser(
-                new User(1, "tester", "t@example.com", "pw", UserRole.USER));
+        AuthenticatedUser principal = new AuthenticatedUser(john);
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
     }
@@ -55,7 +56,9 @@ class ReviewControllerTest {
 
     @Test
     void list_showsReviews() throws Exception {
-        List<Review> reviews = List.of(new Review(1, "Hades", 5, "Great"));
+        List<Review> reviews = List.of(
+        new Review(john, "Hades", 5, "Great"),
+        new Review(olivia, "Celeste", 4, "Tough but fun"));
         Mockito.when(reviewService.getAll()).thenReturn(reviews);
 
         mockMvc.perform(get("/reviews"))
@@ -74,7 +77,6 @@ class ReviewControllerTest {
     @Test
     void create_validReview_redirectsToList() throws Exception {
         mockMvc.perform(post("/reviews")
-                .param("userId", "1")
                 .param("gameName", "Hades")
                 .param("rating", "5")
                 .param("description", "Great"))
@@ -87,10 +89,9 @@ class ReviewControllerTest {
     @Test
     void create_invalidReview_showsFormWithError() throws Exception {
         doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
-                .when(reviewService).create(anyInt(), anyString(), eq(9), anyString());
+                .when(reviewService).create(eq(1), anyString(), eq(9), anyString());
 
         mockMvc.perform(post("/reviews")
-                .param("userId", "1")
                 .param("gameName", "Hades")
                 .param("rating", "9")
                 .param("description", "Great"))

@@ -20,8 +20,10 @@
             <div class="text-warning mb-2"
                  th:text="${#strings.repeat('★', r.rating)}">★★★</div>
             <p class="card-text" th:text="${r.description}">Description</p>
-            <small class="text-muted"
-                   th:text="'User #' + ${r.userId} + ' · ' + ${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></small>
+            <small class="text-muted">
+                <a th:href="@{/users/{id}(id=${r.user.id})}" th:text="${r.user.username}">username</a>
+                · <span th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></span>
+            </small>
         </div>
     </div>
 </div>

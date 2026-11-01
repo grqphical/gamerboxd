@@ -5,14 +5,18 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.gamerboxd.gamerboxd.models.Review;
+import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
+import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
 @Service
 public class ReviewService {
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
 
-    public ReviewService(ReviewRepository reviewRepository) {
+    public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository) {
         this.reviewRepository = reviewRepository;
+        this.userRepository = userRepository;
     }
 
     public List<Review> getAll() {
@@ -26,7 +30,8 @@ public class ReviewService {
     /** Validates and saves a review. Throws IllegalArgumentException if invalid. */
     public Review create(int userId, String gameName, int rating, String description) {
         validate(gameName, rating, description);
-        return reviewRepository.save(new Review(userId, gameName.trim(), rating, description.trim()));
+        User user = userRepository.getReferenceById(userId);
+        return reviewRepository.save(new Review(user, gameName.trim(), rating, description.trim()));
     }
 
     private void validate(String gameName, int rating, String description) {
