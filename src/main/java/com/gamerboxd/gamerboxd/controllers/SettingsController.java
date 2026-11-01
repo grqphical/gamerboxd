@@ -55,16 +55,17 @@ public class SettingsController {
      * - "privacy"
      * - "description"
      * - "pronouns"
-     * 
-     * does param verifying here but also happens in UserService. might be better to make
-     * one verification method/function inside User that returns an optional error message
      */
     @PostMapping("users/{id}/settings")
-    public String updateSettings(@PathVariable int id, Model model, @RequestParam Map<String, String> request) {
-        final String ERROR_PATH = "users/settings";
-        final String HAPPY_PATH = "/users/" + id;
+    public String updateSettings(
+        @AuthenticationPrincipal AuthenticatedUser currentUser,
+        @PathVariable int id, Model model, @RequestParam Map<String, String> request
+    ) {
+        if (currentUser == null) { return "redirect:/login"; }
+        int userId = currentUser.getId();
+        if (userId != id) { return "redirect:/users/" + id; }
 
-        Optional<User> userOpt = userService.getUserById(id);
+        final Optional<User> userOpt = userService.getUserById(id);
         
         // shouldnt ever happen
         if (userOpt.isEmpty()) {
@@ -72,54 +73,28 @@ public class SettingsController {
                 HttpStatus.NOT_FOUND, "User not found with ID: " + id);
         }
 
-        User user = userOpt.get();
+        final User user = userOpt.get();
         model.addAttribute("user", user);
 
-        String errorMessage = "";
-
-        final String username = request.get("username");
-        final String email = request.get("email");
+        final String username = request.get("username");    // form warns between 3-30 chars
+        final String email = request.get("email");          
         final String password = request.get("password");
+        final String privacy = request.get("privacy");      // form dropdown "public/private"
+        final String description = request.get("description");  // form warns less than 250 chars
+        final String pronouns = request.get("pronouns");    // for only allows "[a-zA-z]+/[a-zA-Z]"
 
         try {
-            userService.validateWithLongException(username, email, password);
+            userService.updateSettings(
+                user, 
+                username, email, password, 
+                privacy, description, pronouns
+            );
         }
         catch (IllegalArgumentException exception) {
-            errorMessage += exception.getMessage();
+            model.addAttribute("error", exception.getMessage()); // no Null chekc
+            return "users/settings";
         }
 
-        // front end should only list "private" and "public"
-        final UserPrivacy privacy = request.get("private") == "private" 
-                                  ? UserPrivacy.PRIVATE : UserPrivacy.PUBLIC;
-        
-        final String description = request.get("description") != null 
-                                 ? request.get("description") : "";
-
-        if (description.length() > User.MAX_DESCRIPTION_LENGTH) {
-            errorMessage += "- Description must be shorter than " + 
-                            User.MAX_DESCRIPTION_LENGTH + "characters.\n";
-        }
-
-        // front end should only allow postings of this format
-        final String pronouns = request.get("pronouns") != null ? request.get("pronouns") : "";
-        if (!pronouns.isBlank() && pronouns.matches("[a-zA-z]+/[a-zA-Z")) {
-            errorMessage += "- Invalid pronoun format.\n";
-        }
-
-        if (errorMessage.isBlank()) {
-            model.addAttribute("error", errorMessage);
-            return ERROR_PATH;
-        }
-
-        // at this point everything should be valid
-
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPassword(password);
-        user.setPrivacy(privacy);
-        user.setDescription(description);
-        user.setPronouns(pronouns);
-
-        return HAPPY_PATH;
+        return "redirect:/users/" + id;
     }
 }
