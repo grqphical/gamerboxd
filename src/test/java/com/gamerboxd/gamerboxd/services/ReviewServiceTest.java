@@ -168,4 +168,34 @@ class ReviewServiceTest {
         assertThrows(IllegalArgumentException.class, () -> reviewService.update(5, 1, 4, "   "));
         verify(reviewRepository, never()).save(any());
     }
+
+    @Test
+    void delete_owner_deletesReview() {
+        Review review = new Review(john, "Hades", 3, "Ok");
+        when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
+
+        reviewService.delete(5, 1);
+
+        verify(reviewRepository).delete(review);
+    }
+
+    @Test
+    void delete_otherUsersReview_throwsForbidden() {
+        Review review = new Review(john, "Hades", 3, "Ok");
+        when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> reviewService.delete(5, 2));
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+        verify(reviewRepository, never()).delete(any(Review.class));
+    }
+
+    @Test
+    void delete_missing_throwsNotFound() {
+        when(reviewRepository.findById(99)).thenReturn(Optional.empty());
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> reviewService.delete(99, 1));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
 }

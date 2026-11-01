@@ -8,6 +8,7 @@
 <body class="bg-light">
 <div class="container py-5" style="max-width: 700px;">
     <div class="d-flex justify-content-between align-items-center mb-4">
+        <a th:href="@{/}" class="btn btn-link ps-0">GamerBoxd</a>
         <h1 class="mb-0">Reviews</h1>
         <a th:href="@{/reviews/new}" class="btn btn-primary">Write a Review</a>
     </div>
@@ -29,6 +30,12 @@
             <a th:if="${currentUser != null and currentUser.id == r.user.id}"
                 th:href="@{/reviews/{id}/edit(id=${r.id})}"
                 class="btn btn-sm btn-outline-secondary ms-2">Edit</a>
+
+            <form th:if="${currentUser != null and currentUser.id == r.user.id}"
+                th:action="@{/reviews/{id}/delete(id=${r.id})}" method="post" class="d-inline"
+                onsubmit="return confirm('Delete this review?');">
+                <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Delete</button>
+            </form>
         </div>
     </div>
 </div>

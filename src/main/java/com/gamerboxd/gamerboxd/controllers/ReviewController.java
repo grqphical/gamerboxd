@@ -29,16 +29,27 @@ public class ReviewController {
         return "reviews/list";
     }
 
+    @PostMapping("/reviews/{id}/delete")
+    public String delete(@PathVariable int id,
+                        @AuthenticationPrincipal AuthenticatedUser currentUser,
+                        @RequestParam (required = false) String from) {
+        reviewService.delete(id, currentUser.getId());
+        return redirectAfter(from, currentUser);
+    }
+
     @GetMapping("/reviews/{id}/edit")
     public String editForm(@PathVariable int id,
                         @AuthenticationPrincipal AuthenticatedUser currentUser,
+                        @RequestParam(required = false) String from,
                         Model model) {
         model.addAttribute("review", reviewService.getOwnedReview(id, currentUser.getId()));
+        model.addAttribute("from", from);
         return "reviews/edit";
     }
 
     @PostMapping("/reviews/{id}")
     public String update(@PathVariable int id,
+                        @RequestParam(required = false) String from,
                         @AuthenticationPrincipal AuthenticatedUser currentUser,
                         @RequestParam int rating,
                         @RequestParam String description,
@@ -48,9 +59,14 @@ public class ReviewController {
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("review", reviewService.getOwnedReview(id, currentUser.getId()));
+            model.addAttribute("from", from);
             return "reviews/edit";
         }
-        return "redirect:/reviews";
+        return redirectAfter(from, currentUser);
+    }
+
+    private String redirectAfter(String from, AuthenticatedUser currentUser) {
+        return "profile".equals(from) ? "redirect:/users/" + currentUser.getId() : "redirect:/reviews";
     }
 
     @GetMapping("/reviews/new")
