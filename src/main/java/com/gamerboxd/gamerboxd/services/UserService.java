@@ -103,14 +103,18 @@ public class UserService implements UserDetailsService {
             errorMessage += "- Enter a valid email address.\n";
         }
 
-        if (password == null || password.isBlank() || password.length() < MIN_PASSWORD_LENGTH) {
-            errorMessage += "- Password must be at least " + MIN_PASSWORD_LENGTH + " characters.\n";
-        }
-        else if(password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
-            errorMessage += "- Password must be at most " + MAX_PASSWORD_BYTES + " bytes.\n";
+        final boolean changingPassword = password != null && !password.isEmpty();
+
+        if (changingPassword) {
+            if (password.length() < MIN_PASSWORD_LENGTH) {
+                errorMessage += "- Password must be at least " + MIN_PASSWORD_LENGTH + " characters.\n";
+            }
+            else if (password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
+                errorMessage += "- Password must be at most " + MAX_PASSWORD_BYTES + " bytes.\n";
+            }
         }
         
-        final UserPrivacy updatedPrivacy = privacy.equals("private")
+        final UserPrivacy updatedPrivacy = "private".equalsIgnoreCase(privacy)
             ? UserPrivacy.PRIVATE : UserPrivacy.PUBLIC;
 
         final String updatedDescription = description != null ? description : "";
@@ -141,11 +145,12 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException(errorMessage);
         }
 
-        final String updatedPassword = passwordEncoder.encode(password);
+        if (changingPassword) {
+            user.setPassword(passwordEncoder.encode(password));
+        }
 
         user.setUsername(updatedUsername);
         user.setEmail(updatedEmail);
-        user.setPassword(updatedPassword);
         user.setPrivacy(updatedPrivacy);
         user.setDescription(updatedDescription);
         user.setPronouns(updatedPronouns);
