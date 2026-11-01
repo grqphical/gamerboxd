@@ -8,6 +8,7 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -22,9 +23,34 @@ public class ReviewController {
     }
 
     @GetMapping("/reviews")
-    public String List(Model model) {
+    public String List(@AuthenticationPrincipal AuthenticatedUser currentUser, Model model) {
         model.addAttribute("reviews", reviewService.getAll());
+        model.addAttribute("currentUser", currentUser); // null when logged out
         return "reviews/list";
+    }
+
+    @GetMapping("/reviews/{id}/edit")
+    public String editForm(@PathVariable int id,
+                        @AuthenticationPrincipal AuthenticatedUser currentUser,
+                        Model model) {
+        model.addAttribute("review", reviewService.getOwnedReview(id, currentUser.getId()));
+        return "reviews/edit";
+    }
+
+    @PostMapping("/reviews/{id}")
+    public String update(@PathVariable int id,
+                        @AuthenticationPrincipal AuthenticatedUser currentUser,
+                        @RequestParam int rating,
+                        @RequestParam String description,
+                        Model model) {
+        try {
+            reviewService.update(id, currentUser.getId(), rating, description);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("review", reviewService.getOwnedReview(id, currentUser.getId()));
+            return "reviews/edit";
+        }
+        return "redirect:/reviews";
     }
 
     @GetMapping("/reviews/new")

@@ -24,6 +24,9 @@
                 <a th:href="@{/users/{id}(id=${r.user.id})}" th:text="${r.user.username}">username</a>
                 · <span th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></span>
             </small>
+            <a th:if="${currentUser != null and currentUser.id == r.user.id}"
+                th:href="@{/reviews/{id}/edit(id=${r.id})}"
+                class="btn btn-sm btn-outline-secondary ms-2">Edit</a>
         </div>
     </div>
 </div>
