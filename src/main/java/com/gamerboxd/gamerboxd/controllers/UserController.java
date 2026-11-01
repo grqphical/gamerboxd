@@ -16,6 +16,8 @@ import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
+import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Controller
 public class UserController {
@@ -28,15 +30,22 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public String getUserProfile(@PathVariable int id, Model model) {
+    public String getUserProfile(@AuthenticationPrincipal AuthenticatedUser currentUser, @PathVariable int id, Model model) {
 
         User user = userService.getUserById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "User not found with ID: " + id));
 
         List<Review> userReviews = reviewService.getAllByUserId(id);
 
+        boolean isOwnProfile = false;
+        int currentUserId = currentUser.getId();
+        if (currentUserId == id) {
+            isOwnProfile = true;
+        }
+
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
+        model.addAttribute("isOwnProfile", isOwnProfile);
 
         if (user.getRole() == UserRole.ADMIN) {
             // TODO: redirect to admin view

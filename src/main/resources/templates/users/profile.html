@@ -9,9 +9,16 @@
 
 <body class="bg-light">
     <div class="container py-5" style="max-width: 700px;">
-        <div class="d-flex flex-column justify-content-between align-items-left mb-4">
-            <h1 class="mb-0" th:text="${user.username}"></h1>
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <h1 class="mb-0">
+                <span th:text="${user.username}"></span>
+                <small class="text-muted fs-6" th:if="${!#strings.isEmpty(user.pronouns)}"
+                    th:text="${user.pronouns}"></small>
+            </h1>
+            <a th:if="${isOwnProfile}" th:href="@{/users/{id}/settings(id=${user.id})}" class="btn btn-outline-secondary">Settings</a>
         </div>
+
+        <p class="mb-4" th:if="${!#strings.isEmpty(user.description)}" th:text="${user.description}"></p>
 
         <h3>User Reviews:</h3>
         <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
