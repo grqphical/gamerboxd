@@ -1,5 +1,6 @@
 package com.gamerboxd.gamerboxd.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -66,6 +67,7 @@ public class ReviewService {
         validateContent(rating, description);
         review.setRating(rating);
         review.setDescription(description.trim());
+        review.setUpdatedAt(LocalDateTime.now());
         return reviewRepository.save(review);
     }
 }

@@ -20,8 +20,14 @@
                 <h5 class="card-title" th:text="${r.gameName}">Game</h5>
                 <div class="text-warning mb-2" th:text="${#strings.repeat('★', r.rating)}">★★★</div>
                 <p class="card-text" th:text="${r.description}">Description</p>
-                <small class="text-muted"
-                    th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></small>
+                <small class="text-muted">
+                    <span th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></span>
+                    <span th:if="${r.updatedAt != null}" class="fst-italic"
+                        th:text="'· edited ' + ${#temporals.format(r.updatedAt, 'MMM d, yyyy')}"></span>
+                </small>
+                <a th:if="${currentUser != null and currentUser.id == r.user.id}"
+                th:href="@{/reviews/{id}/edit(id=${r.id})}"
+                class="btn btn-sm btn-outline-secondary ms-2">Edit</a>
             </div>
         </div>
     </div>
