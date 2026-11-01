@@ -1,16 +1,15 @@
 package com.gamerboxd.gamerboxd.controllers;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
-import com.gamerboxd.gamerboxd.models.Review;
-import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
+import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 
@@ -34,13 +33,13 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews")
-    public String create(@RequestParam int userId,
+    public String create(@AuthenticationPrincipal AuthenticatedUser currentUser,
                          @RequestParam String gameName,
                          @RequestParam int rating,
                          @RequestParam String description,
                          Model model) {
         try {
-            reviewService.create(userId, gameName, rating, description);
+            reviewService.create(currentUser.getId(), gameName, rating, description);
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             return "reviews/form";

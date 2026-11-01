@@ -15,13 +15,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Review;
+import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 
 class ReviewControllerTest {
@@ -31,7 +38,19 @@ class ReviewControllerTest {
     @BeforeEach
     void setUp() {
         reviewService = mock(ReviewService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService))
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+                .build();
+
+        AuthenticatedUser principal = new AuthenticatedUser(
+                new User(1, "tester", "t@example.com", "pw", UserRole.USER));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test

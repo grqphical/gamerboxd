@@ -12,11 +12,6 @@
     <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
 
     <form th:action="@{/reviews}" method="post" class="card card-body shadow-sm">
-        <!-- TODO: replace with the logged-in user once auth is wired up -->
-        <div class="mb-3">
-            <label class="form-label" for="userId">User ID (temporary)</label>
-            <input type="number" class="form-control" id="userId" name="userId" value="1" required>
-        </div>
         <!-- TODO: replace with gameId once we have a game table -->
         <div class="mb-3">
             <label class="form-label" for="gameName">Game</label>
