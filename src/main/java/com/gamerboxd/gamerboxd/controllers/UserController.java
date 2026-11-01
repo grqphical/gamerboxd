@@ -39,9 +39,16 @@ public class UserController {
 
         List<Review> userReviews = reviewService.getAllByUserId(id);
 
+        boolean isOwnProfile = false;
+        int currentUserId = currentUser.getId();
+        if (currentUserId == id) {
+            isOwnProfile = true;
+        }
+
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
         model.addAttribute("currentUser", currentUser);
+        model.addAttribute("isOwnProfile", isOwnProfile);
 
         if (user.getRole() == UserRole.ADMIN) {
             // TODO: redirect to admin view

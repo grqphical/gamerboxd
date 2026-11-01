@@ -12,23 +12,40 @@ import jakarta.persistence.Table;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int id;                 // not modifiable in settings
     @Column(unique = true)
     private String username;
+
     @Column(unique = true)
     private String email;
-    private String password;
+
+    private String password;        // modifiable in settings with an "are you sure?"
     private UserRole role;
+
+    // get assigned default values on initialization
+
+    private UserPrivacy privacy;    // public by default, private
+    private String description;     // 250 char limit "" by default
+    private String pronouns;        // "x / y" format or ""
+
+    public static final int MAX_DESCRIPTION_LENGTH = 250;
 
     public User() {
     }
 
-    public User(int id, String username, String email, String password, UserRole role) {
+    public User(
+        int id, String username, String email, 
+        String password, UserRole role) 
+    {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
         this.role = role;
+
+        this.privacy = UserPrivacy.PUBLIC;
+        this.description = "";
+        this.pronouns = "";
     }
 
     public int getId() {
@@ -69,5 +86,29 @@ public class User {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    public UserPrivacy getPrivacy() {
+        return privacy;
+    }
+
+    public void setPrivacy(UserPrivacy privacy) {
+        this.privacy = privacy;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getPronouns() {
+        return pronouns;
+    }
+
+    public void setPronouns(String pronouns) {
+        this.pronouns = pronouns;
     }
 }

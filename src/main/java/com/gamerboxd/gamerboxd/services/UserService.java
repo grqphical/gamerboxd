@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
@@ -80,6 +81,86 @@ public class UserService implements UserDetailsService {
         }
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("That email is already registered.");
+        }
+    }
+
+    /** Updates a user from the user repository
+     *  Throws single IllegalArgumentException if any inputs are invalid */
+    public void updateSettings(
+        User user,
+        String username, String email, String password,
+        String privacy, String description, String pronouns
+    ) {
+        String errorMessage = "";
+
+        final String updatedUsername = username == null ? "" : username.trim();
+        if (!updatedUsername.matches("[A-Za-z0-9_-]{3,30}")) {
+            errorMessage += "- Username must be 3-30 characters using only letters, numbers, underscores, and hyphens.\n";
+        }
+        
+        final String updatedEmail = normalizeEmail(email);
+        if (updatedEmail.length() > MAX_EMAIL_LENGTH || !updatedEmail.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
+            errorMessage += "- Enter a valid email address.\n";
+        }
+
+        final boolean changingPassword = password != null && !password.isEmpty();
+
+        if (changingPassword) {
+            if (password.length() < MIN_PASSWORD_LENGTH) {
+                errorMessage += "- Password must be at least " + MIN_PASSWORD_LENGTH + " characters.\n";
+            }
+            else if (password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
+                errorMessage += "- Password must be at most " + MAX_PASSWORD_BYTES + " bytes.\n";
+            }
+        }
+        
+        final UserPrivacy updatedPrivacy = "private".equalsIgnoreCase(privacy)
+            ? UserPrivacy.PRIVATE : UserPrivacy.PUBLIC;
+
+        final String updatedDescription = description != null ? description : "";
+        if (updatedDescription.length() > User.MAX_DESCRIPTION_LENGTH) {
+            errorMessage += "- Description must be shorter than " + 
+                            User.MAX_DESCRIPTION_LENGTH + " characters.\n";
+        }
+
+        final String updatedPronouns = pronouns != null ? pronouns : "";
+        if (!updatedPronouns.isBlank() && !updatedPronouns.matches("[a-zA-Z]+/[a-zA-Z]+")) {
+            errorMessage += "- Invalid pronoun format.\n";
+        }
+
+        if (errorMessage.isBlank()) {
+            if (!updatedUsername.equalsIgnoreCase(user.getUsername()) 
+                && userRepository.existsByUsernameIgnoreCase(updatedUsername)) 
+            {
+                errorMessage += "- That username is already taken.\n";
+            }
+            if (!updatedEmail.equals(user.getEmail()) 
+                && userRepository.existsByEmail(updatedEmail))
+            {
+                errorMessage += "- That email is already registered.\n";
+            }
+        }
+
+        if (!errorMessage.isBlank()) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        if (changingPassword) {
+            user.setPassword(passwordEncoder.encode(password));
+        }
+
+        user.setUsername(updatedUsername);
+        user.setEmail(updatedEmail);
+        user.setPrivacy(updatedPrivacy);
+        user.setDescription(updatedDescription);
+        user.setPronouns(updatedPronouns);
+
+        try {
+            userRepository.save(user);
+        } 
+        catch (DataIntegrityViolationException e) {
+            // Lost a race with another sign-up using the same username or email (copied from register)
+            throw new IllegalArgumentException("- That username or email is already taken.");
         }
     }
 }
