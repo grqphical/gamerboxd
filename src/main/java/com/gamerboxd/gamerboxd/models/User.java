@@ -20,13 +20,15 @@ public class User {
     private String email;
 
     private String password;        // modifiable in settings with an "are you sure?"
+    private UserRole role;
 
     // get assigned default values on initialization
 
-    private UserRole role;          // user by default or admin, not modifiable in settings
     private UserPrivacy privacy;    // public by default, private
     private String description;     // 250 char limit "" by default
     private String pronouns;        // "x / y" format or ""
+
+    public static final int MAX_DESCRIPTION_LENGTH = 250;
 
     public User() {
     }

@@ -83,33 +83,34 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    /** 
-     * same as `validate(...)` but only one exception gets
-     *  thrown with all the error messages */
+    /** Same as `validate(...)` but with only one IllegalArgumentException being thrown */
     public void validateWithLongException(String username, String email, String password) {
         String buffer = "";
-        int errorCount = 0;
 
-        if (!username.matches("[A-Za-z0-9_-]{3,30}")) {
-            buffer += ( ++errorCount + ". Username must be 3-30 characters using only letters, numbers, underscores, and hyphens.\n");
+        if (username == null || !username.matches("[A-Za-z0-9_-]{3,30}")) {
+            buffer += "- Username must be 3-30 characters using only letters, numbers, underscores, and hyphens.\n";
         }
-        if (email.length() > MAX_EMAIL_LENGTH || !email.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
-            buffer += ( ++errorCount + ". Enter a valid email address.\n");
+        if (email == null || email.length() > MAX_EMAIL_LENGTH || !email.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
+            buffer += "- Enter a valid email address.\n";
         }
+
         if (password == null || password.isBlank() || password.length() < MIN_PASSWORD_LENGTH) {
-            buffer += ( ++errorCount + ". Password must be at least " + MIN_PASSWORD_LENGTH + " characters.\n");
+            buffer += "- Password must be at least " + MIN_PASSWORD_LENGTH + " characters.\n";
         }
-        if (password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
-            buffer += ( ++errorCount + ". Password must be at most " + MAX_PASSWORD_BYTES + " bytes.\n");
+        else if(password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
+            buffer += "- Password must be at most " + MAX_PASSWORD_BYTES + " bytes.\n";
         }
-        if (userRepository.existsByUsernameIgnoreCase(username)) {
-            buffer += ( ++errorCount + ". That username is already taken.\n");
-        }
-        if (userRepository.existsByEmail(email)) {
-            buffer += ( ++errorCount + ". That email is already registered.\n");
-        }  
 
-        if (errorCount > 0) {
+        if (buffer.isBlank()) {
+            if (userRepository.existsByUsernameIgnoreCase(username)) {
+                buffer += "- That username is already taken.\n";
+            }
+            if (userRepository.existsByEmail(email)) {
+                buffer += "- That email is already registered.\n";
+            }  
+        }
+
+        if (!buffer.isBlank()) {
             throw new IllegalArgumentException(buffer);
         }
     }
