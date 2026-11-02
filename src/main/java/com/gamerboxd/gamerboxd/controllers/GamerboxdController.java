@@ -18,7 +18,12 @@ public class GamerboxdController {
 
     @GetMapping("/")
     public String index(@AuthenticationPrincipal AuthenticatedUser currentUser, Model model) {
-        model.addAttribute("reviews", reviewService.getAll());
+        // dont show private reviews on the index
+        // temporary solution until later iterations which will need to consider following/followers
+        model.addAttribute("reviews", reviewService.getAll().stream()
+                .filter(r -> !r.getUser().isPrivateAccount())
+                .toList());
+
         model.addAttribute("currentUser", currentUser);
         return "index";
     }
