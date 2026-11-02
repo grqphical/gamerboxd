@@ -52,35 +52,35 @@
         <div class="d-flex justify-content-between align-items-start mb-3">
             <h1 class="mb-0">
                 <span th:text="${user.username}"></span>
+                <small class="text-muted fs-6" th:if="${user.isPrivateAccount}">(Private)</small>
                 <small class="text-muted fs-6" th:if="${!#strings.isEmpty(user.pronouns)}"
                     th:text="${user.pronouns}"></small>
             </h1>
-            <a th:href="@{/}" class="btn btn-link ps-0">GamerBoxd</a>
             <a th:if="${isOwnProfile}" th:href="@{/users/{id}/settings(id=${user.id})}"
                 class="btn btn-outline-secondary">Settings</a>
         </div>
 
         <p class="mb-4" th:if="${!#strings.isEmpty(user.description)}" th:text="${user.description}"></p>
 
-        <h3>User Reviews:</h3>
-        <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
-        <div class="card shadow-sm mb-3" th:each="r : ${reviews}">
-            <div class="card-body">
-                <h5 class="card-title" th:text="${r.gameName}">Game</h5>
-                <div class="text-warning mb-2" th:text="${#strings.repeat('★', r.rating)}">★★★</div>
-                <p class="card-text" th:text="${r.description}">Description</p>
-                <small class="text-muted">
-                    <span th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></span>
-                    <span th:if="${r.updatedAt != null}" class="fst-italic"
-                        th:text="'· edited ' + ${#temporals.format(r.updatedAt, 'MMM d, yyyy')}"></span>
-                </small>
-                <div th:if="${currentUser != null and currentUser.id == r.user.id}" class="mt-2">
-                    <a th:href="@{/reviews/{id}/edit(id=${r.id}, from='profile')}"
-                        class="btn btn-sm btn-outline-secondary">Edit</a>
-                    <form th:action="@{/reviews/{id}/delete(id=${r.id}, from='profile')}" method="post" class="d-inline"
-                        onsubmit="return confirm('Delete this review?');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                    </form>
+        <div th:unless="${user.isPrivateAccount and !isOwnProfile}">
+            <h3>User Reviews:</h3>
+            <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
+            <p class="text-muted" th:if="${!#lists.isEmpty(reviews) and user.isPrivateAccount}">
+                Only you can see your reviews because your account is set to private
+            </p>
+            <div class="card shadow-sm mb-3" th:each="r : ${reviews}">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${r.gameName}">Game</h5>
+                    <div class="text-warning mb-2" th:text="${#strings.repeat('★', r.rating)}">★★★</div>
+                    <p class="card-text" th:text="${r.description}">Description</p>
+                    <small class="text-muted">
+                        <span th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></span>
+                        <span th:if="${r.updatedAt != null}" class="fst-italic"
+                            th:text="'· edited ' + ${#temporals.format(r.updatedAt, 'MMM d, yyyy')}"></span>
+                    </small>
+                    <a th:if="${currentUser != null and currentUser.id == r.user.id}"
+                    th:href="@{/reviews/{id}/edit(id=${r.id})}"
+                    class="btn btn-sm btn-outline-secondary ms-2">Edit</a>
                 </div>
             </div>
         </div>
