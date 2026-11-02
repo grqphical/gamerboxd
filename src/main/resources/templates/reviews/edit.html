@@ -1,37 +1,80 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>Edit Review - GamerBoxd</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-light">
-<div class="container py-5" style="max-width: 600px;">
-    <h1 class="mb-1">Edit Review</h1>
-    <p class="text-muted mb-4" th:text="${review.gameName}">Game</p>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="/">Gamerboxd</a>
 
-    <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-    <form th:action="@{/reviews/{id}(id=${review.id})}" method="post" class="card card-body shadow-sm">
-        <input type="hidden" name="from" th:if="${from}" th:value="${from}">
-        <div class="mb-3">
-            <label class="form-label" for="rating">Rating</label>
-            <select class="form-select" id="rating" name="rating" required>
-                <option th:each="n : ${#numbers.sequence(5, 1, -1)}"
-                        th:value="${n}"
-                        th:selected="${n == review.rating}"
-                        th:text="${#strings.repeat('★', n) + ' (' + n + ')'}">5</option>
-            </select>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                    <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
+                    <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
+
+                    <div class="dropdown" th:if="${currentUser}">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            th:text="|Hello, ${currentUser.displayName}|">
+                            Hello, username
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" th:href="@{/users/{id}/settings(id=${currentUser.id})}">
+                                    Account Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label" for="description">Review</label>
-            <textarea class="form-control" id="description" name="description" rows="5"
-                      maxlength="2000" required th:text="${review.description}"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a th:href="${from == 'profile'} ? @{/users/{id}(id=${review.user.id})} : @{/reviews}"
-       class="btn btn-link">Cancel</a>
-    </form>
-</div>
+    </nav>
+    <div class="container py-5" style="max-width: 600px;">
+        <h1 class="mb-1">Edit Review</h1>
+        <p class="text-muted mb-4" th:text="${review.gameName}">Game</p>
+
+        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+        <form th:action="@{/reviews/{id}(id=${review.id})}" method="post" class="card card-body shadow-sm">
+            <input type="hidden" name="from" th:if="${from}" th:value="${from}">
+            <div class="mb-3">
+                <label class="form-label" for="rating">Rating</label>
+                <select class="form-select" id="rating" name="rating" required>
+                    <option th:each="n : ${#numbers.sequence(5, 1, -1)}" th:value="${n}"
+                        th:selected="${n == review.rating}" th:text="${#strings.repeat('★', n) + ' (' + n + ')'}">5
+                    </option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="description">Review</label>
+                <textarea class="form-control" id="description" name="description" rows="5" maxlength="2000" required
+                    th:text="${review.description}"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a th:href="${from == 'profile'} ? @{/users/{id}(id=${review.user.id})} : @{/reviews}"
+                class="btn btn-link">Cancel</a>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
