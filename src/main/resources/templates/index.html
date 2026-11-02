@@ -9,14 +9,55 @@
 </head>
 
 <body class="bg-light">
-    <div class="container py-3 d-flex justify-content-end align-items-center gap-3">
-        <a class="btn btn-link me-auto" th:href="@{/reviews}">Reviews</a>
-        <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
-        <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
-        <a th:if="${currentUser}" th:href="@{/users/{id}(id=${currentUser.id})}" th:text="${currentUser.displayName}"></a>
-        <form th:if="${currentUser}" th:action="@{/logout}" method="post">
-            <button type="submit" class="btn btn-outline-secondary">Sign Out</button>
-        </form>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="/">Gamerboxd</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <div class="ms-auto d-flex gap-2 mt-3 mt-lg-0">
+                    <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
+                    <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
+                    <form th:if="${currentUser}" th:action="@{/logout}" method="post">
+                        <button type="submit" class="btn btn-outline-secondary">Sign Out</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container py-5" style="max-width: 700px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Latest Reviews</h1>
+            <a th:if="${currentUser}" th:href="@{/reviews/new}" class="btn btn-primary">Write a Review</a>
+        </div>
+
+        <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
+
+        <div class="card shadow-sm mb-3" th:each="r : ${reviews}">
+            <div class="card-body">
+                <h5 class="card-title" th:text="${r.gameName}">Game</h5>
+                <div class="text-warning mb-2" th:text="${#strings.repeat('★', r.rating)}">★★★</div>
+                <p class="card-text" th:text="${r.description}">Description</p>
+                <small class="text-muted">
+                    <a th:href="@{/users/{id}(id=${r.user.id})}" th:text="${r.user.username}">username</a>
+                    · <span th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></span>
+                    <span th:if="${r.updatedAt != null}" class="fst-italic"
+                        th:text="'· edited ' + ${#temporals.format(r.updatedAt, 'MMM d, yyyy')}"></span>
+                </small>
+                <a th:if="${currentUser != null and currentUser.id == r.user.id}"
+                    th:href="@{/reviews/{id}/edit(id=${r.id})}" class="btn btn-sm btn-outline-secondary ms-2">Edit</a>
+
+                <form th:if="${currentUser != null and currentUser.id == r.user.id}"
+                    th:action="@{/reviews/{id}/delete(id=${r.id})}" method="post" class="d-inline"
+                    onsubmit="return confirm('Delete this review?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Delete</button>
+                </form>
+            </div>
+        </div>
     </div>
 </body>
 
