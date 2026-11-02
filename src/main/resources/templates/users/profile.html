@@ -78,13 +78,14 @@
                         <span th:if="${r.updatedAt != null}" class="fst-italic"
                             th:text="'· edited ' + ${#temporals.format(r.updatedAt, 'MMM d, yyyy')}"></span>
                     </small>
-                    <a th:if="${currentUser != null and currentUser.id == r.user.id}"
-                    th:href="@{/reviews/{id}/edit(id=${r.id})}"
-                    class="btn btn-sm btn-outline-secondary ms-2">Edit</a>
-                    <form th:action="@{/reviews/{id}/delete(id=${r.id}, from='profile')}" method="post" class="d-inline"
-                        onsubmit="return confirm('Delete this review?');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                    </form>
+                    <div th:if="${currentUser != null and currentUser.id == r.user.id}" class="mt-2">
+                        <a th:href="@{/reviews/{id}/edit(id=${r.id}, from='profile')}"
+                            class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <form th:action="@{/reviews/{id}/delete(id=${r.id}, from='profile')}" method="post" class="d-inline"
+                            onsubmit="return confirm('Delete this review?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
