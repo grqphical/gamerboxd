@@ -70,7 +70,7 @@ class ReviewControllerTest {
                                 .param("rating", "5")
                                 .param("description", "Great"))
                                 .andExpect(status().is3xxRedirection())
-                                .andExpect(redirectedUrl("/reviews"));
+                                .andExpect(redirectedUrl("/"));
 
                 verify(reviewService).create(1, "Hades", 5, "Great");
         }
@@ -115,7 +115,7 @@ class ReviewControllerTest {
                                 .param("rating", "4")
                                 .param("description", "Updated"))
                                 .andExpect(status().is3xxRedirection())
-                                .andExpect(redirectedUrl("/reviews"));
+                                .andExpect(redirectedUrl("/"));
 
                 verify(reviewService).update(5, 1, 4, "Updated");
         }
@@ -151,7 +151,7 @@ class ReviewControllerTest {
         void delete_owner_redirectsToList() throws Exception {
                 mockMvc.perform(post("/reviews/5/delete"))
                                 .andExpect(status().is3xxRedirection())
-                                .andExpect(redirectedUrl("/reviews"));
+                                .andExpect(redirectedUrl("/"));
 
                 verify(reviewService).delete(5, 1);
         }
