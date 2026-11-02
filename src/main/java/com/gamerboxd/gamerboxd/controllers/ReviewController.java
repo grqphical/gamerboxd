@@ -35,6 +35,7 @@ public class ReviewController {
             Model model) {
         model.addAttribute("review", reviewService.getOwnedReview(id, currentUser.getId()));
         model.addAttribute("from", from);
+        model.addAttribute("currentUser", currentUser);
         return "reviews/edit";
     }
 
@@ -51,6 +52,7 @@ public class ReviewController {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("review", reviewService.getOwnedReview(id, currentUser.getId()));
             model.addAttribute("from", from);
+            model.addAttribute("currentUser", currentUser);
             return "reviews/edit";
         }
         return redirectAfter(from, currentUser);
@@ -61,7 +63,8 @@ public class ReviewController {
     }
 
     @GetMapping("/reviews/new")
-    public String form() {
+    public String form(@AuthenticationPrincipal AuthenticatedUser currentUser, Model model) {
+        model.addAttribute("currentUser", currentUser);
         return "reviews/form";
     }
 
@@ -75,6 +78,7 @@ public class ReviewController {
             reviewService.create(currentUser.getId(), gameName, rating, description);
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
+            model.addAttribute("currentUser", currentUser);
             return "reviews/form";
         }
         return "redirect:/reviews";

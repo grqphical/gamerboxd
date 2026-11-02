@@ -8,6 +8,46 @@
 </head>
 
 <body class="bg-light">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="/">Gamerboxd</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                    <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
+                    <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
+
+                    <div class="dropdown" th:if="${currentUser}">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            th:text="|Hello, ${currentUser.displayName}|">
+                            Hello, username
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" th:href="@{/users/{id}/settings(id=${currentUser.id})}">
+                                    Account Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
     <div class="container py-5" style="max-width: 700px;">
         <div class="d-flex justify-content-between align-items-start mb-3">
             <h1 class="mb-0">
@@ -16,7 +56,8 @@
                     th:text="${user.pronouns}"></small>
             </h1>
             <a th:href="@{/}" class="btn btn-link ps-0">GamerBoxd</a>
-            <a th:if="${isOwnProfile}" th:href="@{/users/{id}/settings(id=${user.id})}" class="btn btn-outline-secondary">Settings</a>
+            <a th:if="${isOwnProfile}" th:href="@{/users/{id}/settings(id=${user.id})}"
+                class="btn btn-outline-secondary">Settings</a>
         </div>
 
         <p class="mb-4" th:if="${!#strings.isEmpty(user.description)}" th:text="${user.description}"></p>
@@ -34,7 +75,8 @@
                         th:text="'· edited ' + ${#temporals.format(r.updatedAt, 'MMM d, yyyy')}"></span>
                 </small>
                 <div th:if="${currentUser != null and currentUser.id == r.user.id}" class="mt-2">
-                    <a th:href="@{/reviews/{id}/edit(id=${r.id}, from='profile')}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <a th:href="@{/reviews/{id}/edit(id=${r.id}, from='profile')}"
+                        class="btn btn-sm btn-outline-secondary">Edit</a>
                     <form th:action="@{/reviews/{id}/delete(id=${r.id}, from='profile')}" method="post" class="d-inline"
                         onsubmit="return confirm('Delete this review?');">
                         <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
@@ -43,6 +85,7 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

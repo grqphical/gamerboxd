@@ -31,8 +31,8 @@ public class UserController {
 
     @GetMapping("/users/{id}")
     public String getUserProfile(@PathVariable int id,
-                             @AuthenticationPrincipal AuthenticatedUser currentUser,
-                             Model model) {
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
+            Model model) {
 
         User user = userService.getUserById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "User not found with ID: " + id));
@@ -58,16 +58,18 @@ public class UserController {
     }
 
     @GetMapping("/signup")
-    public String signupForm() {
+    public String signupForm(@AuthenticationPrincipal AuthenticatedUser currentUser,
+            Model model) {
+        model.addAttribute("currentUser", currentUser);
         return "signup";
     }
 
     @PostMapping("/signup")
     public String signup(@RequestParam String username,
-                         @RequestParam String email,
-                         @RequestParam String password,
-                         @RequestParam String confirmPassword,
-                         Model model) {
+            @RequestParam String email,
+            @RequestParam String password,
+            @RequestParam String confirmPassword,
+            Model model) {
         try {
             if (!password.equals(confirmPassword)) {
                 throw new IllegalArgumentException("Passwords do not match.");
