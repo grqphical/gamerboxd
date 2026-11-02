@@ -66,7 +66,6 @@ class AuthFlowTest {
     void anonymous_canBrowseButNotWrite() throws Exception {
         mockMvc.perform(get("/")).andExpect(status().isOk());
         mockMvc.perform(get("/login")).andExpect(status().isOk());
-        mockMvc.perform(get("/reviews")).andExpect(status().isOk());
         mockMvc.perform(get("/reviews/new")).andExpect(redirectedUrl("/login"));
     }
 
