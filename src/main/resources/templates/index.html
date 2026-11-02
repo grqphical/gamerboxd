@@ -19,14 +19,32 @@
             </button>
 
             <div class="collapse navbar-collapse" id="mainNav">
-                <div class="ms-auto d-flex gap-2 mt-3 mt-lg-0">
+                <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
                     <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
                     <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
-                    <a th:if="${currentUser}" th:href="@{/users/{id}/settings(id=${currentUser.id})}"
-                        class="btn btn-outline-primary">Account Settings</a>
-                    <form th:if="${currentUser}" th:action="@{/logout}" method="post">
-                        <button type="submit" class="btn btn-outline-secondary">Sign Out</button>
-                    </form>
+
+                    <div class="dropdown" th:if="${currentUser}">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            th:text="|Hello, ${currentUser.displayName}|">
+                            Hello, username
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" th:href="@{/users/{id}/settings(id=${currentUser.id})}">
+                                    Account Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,6 +79,7 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
