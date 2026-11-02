@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
@@ -37,13 +38,13 @@ public class UserController {
         User user = userService.getUserById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "User not found with ID: " + id));
 
+        if (currentUser == null && user.getPrivacy() == UserPrivacy.PRIVATE) {
+            return "redirect:/login";
+        }
+
         List<Review> userReviews = reviewService.getAllByUserId(id);
 
-        boolean isOwnProfile = false;
-        int currentUserId = currentUser.getId();
-        if (currentUserId == id) {
-            isOwnProfile = true;
-        }
+        boolean isOwnProfile = currentUser != null && currentUser.getId() == id;
 
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);

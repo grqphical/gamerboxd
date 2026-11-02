@@ -56,8 +56,13 @@
                 <small class="text-muted fs-6" th:if="${!#strings.isEmpty(user.pronouns)}"
                     th:text="${user.pronouns}"></small>
             </h1>
-            <a th:if="${isOwnProfile}" th:href="@{/users/{id}/settings(id=${user.id})}"
+            <a th:href="@{/}" class="btn btn-link ps-0">GamerBoxd</a>
+            <div class="d-flex flex-row gap-2">
+                <a th:if="${isOwnProfile}" th:href="@{/users/{id}/settings(id=${user.id})}"
                 class="btn btn-outline-secondary">Settings</a>
+                <a th:if="${currentUser != null and currentUser.authorities.![authority].contains('ROLE_ADMIN')}"
+                th:href="@{/admin}" class="btn btn-outline-danger">Admin Panel</a>
+            </div>
         </div>
 
         <p class="mb-4" th:if="${!#strings.isEmpty(user.description)}" th:text="${user.description}"></p>
