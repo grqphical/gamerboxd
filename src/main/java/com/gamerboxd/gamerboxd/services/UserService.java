@@ -1,20 +1,24 @@
 package com.gamerboxd.gamerboxd.services;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
 @Service
@@ -25,16 +29,41 @@ public class UserService implements UserDetailsService {
     private static final int MAX_EMAIL_LENGTH = 254;
 
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, ReviewRepository reviewRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.reviewRepository = reviewRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     public Optional<User> getUserById(int id) {
         return userRepository.findById(id);
     }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll(Sort.by("id"));
+    }
+
+    @Transactional 
+    public void deleteUser(int id) { // Used in admin panel and later self account deletion
+        reviewRepository.deleteAll(reviewRepository.findAllByUserIdOrderByCreatedAtDesc(id));
+        userRepository.deleteById(id);
+    }
+
+    public void toggleRole(int id) { // Used in admin panel exclusively
+        final User user = getUserById(id).get();
+        user.setRole(user.getRole() == UserRole.ADMIN ? UserRole.USER : UserRole.ADMIN);
+        userRepository.save(user);
+    }
+
+    public void editDescription(int id, String description) {
+        final User user = getUserById(id).get();
+        user.setDescription(description);
+        userRepository.save(user);
+    }
+
 
     /** Validates and saves a new user. Throws IllegalArgumentException if invalid. */
     public User register(String username, String email, String password) {
