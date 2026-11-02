@@ -52,6 +52,9 @@
         <h1 class="mb-4">Write a Review</h1>
 
         <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+        <p class="text-muted" th:if="${isPrivateAccount}">
+            This review cannot be seen publicly because your account is private
+        </p>
 
         <form th:action="@{/reviews}" method="post" class="card card-body shadow-sm">
             <!-- TODO: replace with gameId once we have a game table -->

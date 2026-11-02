@@ -96,6 +96,10 @@ public class User {
         this.privacy = privacy;
     }
 
+    public boolean isPrivateAccount() {
+        return privacy == UserPrivacy.PRIVATE;
+    }
+
     public String getDescription() {
         return description;
     }

@@ -6,6 +6,8 @@ import org.springframework.ui.Model;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.services.ReviewService;
+import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.services.UserService;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,9 +26,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class ReviewController {
     private final ReviewService reviewService;
+    private final UserService userService;
 
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService, UserService userService) {
         this.reviewService = reviewService;
+        this.userService = userService;
     }
 
     @PostMapping("/reviews/{id}/delete")
@@ -74,6 +78,11 @@ public class ReviewController {
     @GetMapping("/reviews/new")
     public String form(@AuthenticationPrincipal AuthenticatedUser currentUser, Model model) {
         model.addAttribute("currentUser", currentUser);
+
+        final boolean isPrivate = userService.getUserById(currentUser.getId())
+                .map(User::isPrivateAccount).orElse(false);
+        model.addAttribute("isPrivateAccount", isPrivate);
+
         return "reviews/form";
     }
 
@@ -85,9 +94,15 @@ public class ReviewController {
             Model model) {
         try {
             reviewService.create(currentUser.getId(), gameName, rating, description);
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("currentUser", currentUser);
+
+            final boolean isPrivate = userService.getUserById(currentUser.getId())
+                .map(User::isPrivateAccount).orElse(false);
+            model.addAttribute("isPrivateAccount", isPrivate);
+
             return "reviews/form";
         }
         return "redirect:/"; // /reviews -> homepage  /
