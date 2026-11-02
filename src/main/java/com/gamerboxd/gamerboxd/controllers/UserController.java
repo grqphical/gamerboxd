@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
@@ -31,19 +32,19 @@ public class UserController {
 
     @GetMapping("/users/{id}")
     public String getUserProfile(@PathVariable int id,
-                             @AuthenticationPrincipal AuthenticatedUser currentUser,
-                             Model model) {
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
+            Model model) {
 
         User user = userService.getUserById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "User not found with ID: " + id));
 
+        if (currentUser == null && user.getPrivacy() == UserPrivacy.PRIVATE) {
+            return "redirect:/login";
+        }
+
         List<Review> userReviews = reviewService.getAllByUserId(id);
 
-        boolean isOwnProfile = false;
-        int currentUserId = currentUser.getId();
-        if (currentUserId == id) {
-            isOwnProfile = true;
-        }
+        boolean isOwnProfile = currentUser != null && currentUser.getId() == id;
 
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
@@ -58,16 +59,18 @@ public class UserController {
     }
 
     @GetMapping("/signup")
-    public String signupForm() {
+    public String signupForm(@AuthenticationPrincipal AuthenticatedUser currentUser,
+            Model model) {
+        model.addAttribute("currentUser", currentUser);
         return "signup";
     }
 
     @PostMapping("/signup")
     public String signup(@RequestParam String username,
-                         @RequestParam String email,
-                         @RequestParam String password,
-                         @RequestParam String confirmPassword,
-                         Model model) {
+            @RequestParam String email,
+            @RequestParam String password,
+            @RequestParam String confirmPassword,
+            Model model) {
         try {
             if (!password.equals(confirmPassword)) {
                 throw new IllegalArgumentException("Passwords do not match.");
