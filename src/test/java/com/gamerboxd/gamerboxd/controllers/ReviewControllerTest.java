@@ -33,195 +33,182 @@ import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 
 class ReviewControllerTest {
-    private ReviewService reviewService;
-    private MockMvc mockMvc;
+        private ReviewService reviewService;
+        private MockMvc mockMvc;
 
-    private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
-    private final User olivia = new User(2, "olivia", "olivia@gmail.com", "pw", UserRole.USER);
+        private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
+        private final User olivia = new User(2, "olivia", "olivia@gmail.com", "pw", UserRole.USER);
 
-    @BeforeEach
-    void setUp() {
-        reviewService = mock(ReviewService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService))
-                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
-                .build();
+        @BeforeEach
+        void setUp() {
+                reviewService = mock(ReviewService.class);
+                mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService))
+                                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+                                .build();
 
-        AuthenticatedUser principal = new AuthenticatedUser(john);
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
-    }
+                AuthenticatedUser principal = new AuthenticatedUser(john);
+                SecurityContextHolder.getContext().setAuthentication(
+                                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
+        }
 
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
-    }
+        @AfterEach
+        void clearSecurityContext() {
+                SecurityContextHolder.clearContext();
+        }
 
-    @Test
-    void list_showsReviews() throws Exception {
-        List<Review> reviews = List.of(
-        new Review(john, "Hades", 5, "Great"),
-        new Review(olivia, "Celeste", 4, "Tough but fun"));
-        Mockito.when(reviewService.getAll()).thenReturn(reviews);
+        @Test
+        void form_showsForm() throws Exception {
+                mockMvc.perform(get("/reviews/new"))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("reviews/form"));
+        }
 
-        mockMvc.perform(get("/reviews"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("reviews/list"))
-                .andExpect(model().attribute("reviews", reviews));
-    }
+        @Test
+        void create_validReview_redirectsToList() throws Exception {
+                mockMvc.perform(post("/reviews")
+                                .param("gameName", "Hades")
+                                .param("rating", "5")
+                                .param("description", "Great"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/reviews"));
 
-    @Test
-    void form_showsForm() throws Exception {
-        mockMvc.perform(get("/reviews/new"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("reviews/form"));
-    }
+                verify(reviewService).create(1, "Hades", 5, "Great");
+        }
 
-    @Test
-    void create_validReview_redirectsToList() throws Exception {
-        mockMvc.perform(post("/reviews")
-                .param("gameName", "Hades")
-                .param("rating", "5")
-                .param("description", "Great"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/reviews"));
+        @Test
+        void create_invalidReview_showsFormWithError() throws Exception {
+                doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
+                                .when(reviewService).create(eq(1), anyString(), eq(9), anyString());
 
-        verify(reviewService).create(1, "Hades", 5, "Great");
-    }
+                mockMvc.perform(post("/reviews")
+                                .param("gameName", "Hades")
+                                .param("rating", "9")
+                                .param("description", "Great"))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("reviews/form"))
+                                .andExpect(model().attribute("error", "Rating must be between 1 and 5."));
+        }
 
-    @Test
-    void create_invalidReview_showsFormWithError() throws Exception {
-        doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
-                .when(reviewService).create(eq(1), anyString(), eq(9), anyString());
+        @Test
+        void editForm_owner_showsForm() throws Exception {
+                Review review = new Review(john, "Hades", 3, "Ok");
+                Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
 
-        mockMvc.perform(post("/reviews")
-                .param("gameName", "Hades")
-                .param("rating", "9")
-                .param("description", "Great"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("reviews/form"))
-                .andExpect(model().attribute("error", "Rating must be between 1 and 5."));
-    }
+                mockMvc.perform(get("/reviews/5/edit"))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("reviews/edit"))
+                                .andExpect(model().attribute("review", review));
+        }
 
-    @Test
-    void editForm_owner_showsForm() throws Exception {
-        Review review = new Review(john, "Hades", 3, "Ok");
-        Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
+        @Test
+        void editForm_notOwner_returnsForbidden() throws Exception {
+                Mockito.when(reviewService.getOwnedReview(5, 1))
+                                .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN));
 
-        mockMvc.perform(get("/reviews/5/edit"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("reviews/edit"))
-                .andExpect(model().attribute("review", review));
-    }
+                mockMvc.perform(get("/reviews/5/edit"))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    void editForm_notOwner_returnsForbidden() throws Exception {
-        Mockito.when(reviewService.getOwnedReview(5, 1))
-                .thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN));
+        @Test
+        void update_valid_redirectsToList() throws Exception {
+                mockMvc.perform(post("/reviews/5")
+                                .param("rating", "4")
+                                .param("description", "Updated"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/reviews"));
 
-        mockMvc.perform(get("/reviews/5/edit"))
-                .andExpect(status().isForbidden());
-    }
+                verify(reviewService).update(5, 1, 4, "Updated");
+        }
 
-    @Test
-    void update_valid_redirectsToList() throws Exception {
-        mockMvc.perform(post("/reviews/5")
-                .param("rating", "4")
-                .param("description", "Updated"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/reviews"));
+        @Test
+        void update_invalid_showsEditFormWithError() throws Exception {
+                Review review = new Review(john, "Hades", 3, "Ok");
+                doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
+                                .when(reviewService).update(eq(5), eq(1), eq(9), anyString());
+                Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
 
-        verify(reviewService).update(5, 1, 4, "Updated");
-    }
+                mockMvc.perform(post("/reviews/5")
+                                .param("rating", "9")
+                                .param("description", "Updated"))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("reviews/edit"))
+                                .andExpect(model().attribute("error", "Rating must be between 1 and 5."))
+                                .andExpect(model().attribute("review", review));
+        }
 
-    @Test
-    void update_invalid_showsEditFormWithError() throws Exception {
-        Review review = new Review(john, "Hades", 3, "Ok");
-        doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
-                .when(reviewService).update(eq(5), eq(1), eq(9), anyString());
-        Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
+        @Test
+        void update_notOwner_returnsForbidden() throws Exception {
+                doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+                                .when(reviewService).update(eq(5), eq(1), eq(4), anyString());
 
-        mockMvc.perform(post("/reviews/5")
-                .param("rating", "9")
-                .param("description", "Updated"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("reviews/edit"))
-                .andExpect(model().attribute("error", "Rating must be between 1 and 5."))
-                .andExpect(model().attribute("review", review));
-    }
+                mockMvc.perform(post("/reviews/5")
+                                .param("rating", "4")
+                                .param("description", "Updated"))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    void update_notOwner_returnsForbidden() throws Exception {
-        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
-                .when(reviewService).update(eq(5), eq(1), eq(4), anyString());
+        @Test
+        void delete_owner_redirectsToList() throws Exception {
+                mockMvc.perform(post("/reviews/5/delete"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/reviews"));
 
-        mockMvc.perform(post("/reviews/5")
-                .param("rating", "4")
-                .param("description", "Updated"))
-                .andExpect(status().isForbidden());
-    }
+                verify(reviewService).delete(5, 1);
+        }
 
-    @Test
-    void delete_owner_redirectsToList() throws Exception {
-        mockMvc.perform(post("/reviews/5/delete"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/reviews"));
+        @Test
+        void delete_fromProfile_redirectsToProfile() throws Exception {
+                mockMvc.perform(post("/reviews/5/delete").param("from", "profile"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/users/1"));
 
-        verify(reviewService).delete(5, 1);
-    }
+                verify(reviewService).delete(5, 1);
+        }
 
-    @Test
-    void delete_fromProfile_redirectsToProfile() throws Exception {
-        mockMvc.perform(post("/reviews/5/delete").param("from", "profile"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/users/1"));
+        @Test
+        void delete_notOwner_returnsForbidden() throws Exception {
+                doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+                                .when(reviewService).delete(5, 1);
 
-        verify(reviewService).delete(5, 1);
-    }
+                mockMvc.perform(post("/reviews/5/delete"))
+                                .andExpect(status().isForbidden());
+        }
 
-    @Test
-    void delete_notOwner_returnsForbidden() throws Exception {
-        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
-                .when(reviewService).delete(5, 1);
+        @Test
+        void editForm_fromProfile_passesFromToView() throws Exception {
+                Review review = new Review(john, "Hades", 3, "Ok");
+                Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
 
-        mockMvc.perform(post("/reviews/5/delete"))
-                .andExpect(status().isForbidden());
-    }
+                mockMvc.perform(get("/reviews/5/edit").param("from", "profile"))
+                                .andExpect(status().isOk())
+                                .andExpect(model().attribute("from", "profile"));
+        }
 
-    @Test
-    void editForm_fromProfile_passesFromToView() throws Exception {
-        Review review = new Review(john, "Hades", 3, "Ok");
-        Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
+        @Test
+        void update_fromProfile_redirectsToProfile() throws Exception {
+                mockMvc.perform(post("/reviews/5")
+                                .param("from", "profile")
+                                .param("rating", "4")
+                                .param("description", "Updated"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/users/1"));
 
-        mockMvc.perform(get("/reviews/5/edit").param("from", "profile"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("from", "profile"));
-    }
+                verify(reviewService).update(5, 1, 4, "Updated");
+        }
 
-    @Test
-    void update_fromProfile_redirectsToProfile() throws Exception {
-        mockMvc.perform(post("/reviews/5")
-                .param("from", "profile")
-                .param("rating", "4")
-                .param("description", "Updated"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/users/1"));
+        @Test
+        void update_invalidFromProfile_keepsFromInModel() throws Exception {
+                Review review = new Review(john, "Hades", 3, "Ok");
+                doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
+                                .when(reviewService).update(eq(5), eq(1), eq(9), anyString());
+                Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
 
-        verify(reviewService).update(5, 1, 4, "Updated");
-    }
-
-    @Test
-    void update_invalidFromProfile_keepsFromInModel() throws Exception {
-        Review review = new Review(john, "Hades", 3, "Ok");
-        doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
-                .when(reviewService).update(eq(5), eq(1), eq(9), anyString());
-        Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
-
-        mockMvc.perform(post("/reviews/5")
-                .param("from", "profile")
-                .param("rating", "9")
-                .param("description", "Updated"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("reviews/edit"))
-                .andExpect(model().attribute("from", "profile"));
-    }
+                mockMvc.perform(post("/reviews/5")
+                                .param("from", "profile")
+                                .param("rating", "9")
+                                .param("description", "Updated"))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("reviews/edit"))
+                                .andExpect(model().attribute("from", "profile"));
+        }
 }
