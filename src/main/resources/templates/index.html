@@ -22,6 +22,8 @@
                 <div class="ms-auto d-flex gap-2 mt-3 mt-lg-0">
                     <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
                     <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
+                    <a th:if="${currentUser}" th:href="@{/users/{id}/settings(id=${currentUser.id})}"
+                        class="btn btn-outline-primary">Account Settings</a>
                     <form th:if="${currentUser}" th:action="@{/logout}" method="post">
                         <button type="submit" class="btn btn-outline-secondary">Sign Out</button>
                     </form>
