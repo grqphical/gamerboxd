@@ -30,6 +30,11 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
+                                <a class="dropdown-item" th:href="@{/users/{id}(id=${currentUser.id})}">
+                                    Profile
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" th:href="@{/users/{id}/settings(id=${currentUser.id})}">
                                     Account Settings
                                 </a>
