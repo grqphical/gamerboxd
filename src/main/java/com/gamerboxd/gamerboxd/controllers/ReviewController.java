@@ -12,6 +12,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 
+/**
+ * Pages:
+ * 
+ * - /reviews/edit
+ * 
+ * - /reviews/form
+ * 
+ * - (removed) /reviews -> now just /
+ */
 @Controller
 public class ReviewController {
     private final ReviewService reviewService;
@@ -59,7 +68,7 @@ public class ReviewController {
     }
 
     private String redirectAfter(String from, AuthenticatedUser currentUser) {
-        return "profile".equals(from) ? "redirect:/users/" + currentUser.getId() : "redirect:/reviews";
+        return "profile".equals(from) ? "redirect:/users/" + currentUser.getId() : "redirect:/"; // /reviews -> homepage  /
     }
 
     @GetMapping("/reviews/new")
@@ -81,6 +90,6 @@ public class ReviewController {
             model.addAttribute("currentUser", currentUser);
             return "reviews/form";
         }
-        return "redirect:/reviews";
+        return "redirect:/"; // /reviews -> homepage  /
     }
 }
