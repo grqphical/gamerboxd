@@ -83,9 +83,9 @@
                     <div class="text-warning mb-2" th:text="${#strings.repeat('★', r.rating)}">★★★</div>
                     <p class="card-text" th:text="${r.description}">Description</p>
                     <small class="text-muted">
-                        <span th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></span>
-                        <span th:if="${r.updatedAt != null}" class="fst-italic"
-                            th:text="'· edited ' + ${#temporals.format(r.updatedAt, 'MMM d, yyyy')}"></span>
+                        <time th:attr="datetime=${r.createdAt}" th:text="${r.createdAt}"></time>
+                        <span th:if="${r.updatedAt != null}" class="fst-italic">· edited
+                            <time th:attr="datetime=${r.updatedAt}" th:text="${r.updatedAt}"></time></span>
                     </small>
                     <div th:if="${currentUser != null and currentUser.id == r.user.id}" class="mt-2">
                         <a th:href="@{/reviews/{id}/edit(id=${r.id}, from='profile')}"
@@ -100,6 +100,7 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/local-dates.js}"></script>
 </body>
 
 </html>
