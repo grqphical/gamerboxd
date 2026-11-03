@@ -69,9 +69,9 @@
                 <p class="card-text" th:text="${r.description}">Description</p>
                 <small class="text-muted">
                     <a th:href="@{/users/{id}(id=${r.user.id})}" th:text="${r.user.username}">username</a>
-                    · <span th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}"></span>
-                    <span th:if="${r.updatedAt != null}" class="fst-italic"
-                        th:text="'· edited ' + ${#temporals.format(r.updatedAt, 'MMM d, yyyy')}"></span>
+                    · <time th:attr="datetime=${r.createdAt}" th:text="${r.createdAt}"></time>
+                    <span th:if="${r.updatedAt != null}" class="fst-italic">· edited
+                        <time th:attr="datetime=${r.updatedAt}" th:text="${r.updatedAt}"></time></span>
                 </small>
                 <a th:if="${currentUser != null and currentUser.id == r.user.id}"
                     th:href="@{/reviews/{id}/edit(id=${r.id})}" class="btn btn-sm btn-outline-secondary ms-2">Edit</a>
@@ -85,6 +85,7 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/local-dates.js}"></script>
 </body>
 
 </html>
