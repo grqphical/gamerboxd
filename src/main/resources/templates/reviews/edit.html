@@ -75,7 +75,7 @@
                     th:text="${review.description}"></textarea>
             </div>
             <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a th:href="${from == 'profile'} ? @{/users/{id}(id=${review.user.id})} : @{/reviews}"
+            <a th:href="${from == 'profile'} ? @{/users/{id}(id=${review.user.id})} : @{/}"
                 class="btn btn-link">Cancel</a>
         </form>
     </div>
