@@ -21,10 +21,9 @@ public class TwitchTokenService {
         @JsonProperty("expires_in") long expiresIn) {}
 
     public TwitchTokenService(
-        RestClient.Builder builder,
         @Value("${IGDB_CLIENT_ID}") String clientId,
         @Value("${IGDB_CLIENT_SECRET}") String clientSecret) {
-            this.rest = builder.build();
+            this.rest = RestClient.create();
             this.clientId = clientId;
             this.clientSecret = clientSecret;
     }
