@@ -15,18 +15,20 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 import com.gamerboxd.gamerboxd.models.Game;
 
+/**Class responsible for translating IGDB game database entries into our own Game model.*/
+
 @Service
 public class IGDBService {
 
     private static final String FIELDS =
-        "fields name,summary,rating,first_release_date,genres.name,artworks.image_id;";
+        "fields name,summary,rating,first_release_date,genres.name,artworks.image_id,cover.image_id;";
 
     private final RestClient rest;
     private final TwitchTokenService tokens;
     private final String clientId;
 
     public IGDBService(TwitchTokenService tokens,
-            @Value("${igdb.client-id}") String clientId) {
+            @Value("${IGDB_CLIENT_ID}") String clientId) {
         this.rest = RestClient.builder().baseUrl("https://api.igdb.com/v4").build();
         this.tokens = tokens;
         this.clientId = clientId;
@@ -51,7 +53,10 @@ public class IGDBService {
                 .retrieve()
                 .body(type);
     }
-
+    /** Use for searching the IGDB database for a game by name
+     * @param name the name of the game you want to search
+     * @param limit maximum number of search results you want back
+    */ 
     public List<Game> getSearchResults(String name, int limit) {
         String safe = name.replace("\\", "\\\\").replace("\"", "\\\"");
         String query = "search \"" + safe + "\"; " + FIELDS + " limit " + limit + ";";
@@ -98,6 +103,8 @@ public class IGDBService {
             }
         }
 
-        return new Game(id, name, summary, releaseDate, rating, 0.0, genres, artworks);
+        String cover = n.hasNonNull("cover") ? "https://images.igdb.com/igdb/image/upload/t_cover_big/" + n.get("cover").get("image_id").asString() + ".webp" : null;
+
+        return new Game(id, name, summary, releaseDate, rating, 0.0, genres, artworks, cover);
     }
 }

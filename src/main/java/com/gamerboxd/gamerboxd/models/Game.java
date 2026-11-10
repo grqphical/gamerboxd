@@ -31,11 +31,12 @@ public class Game {
     private Double ratingGamerboxd; // New Average = Old Average + (x - Old Average)/(n + 1)
     private List<String> genres;    // api returns strings so will have to call a different api to translate them
     private List<String> artworkLinks;
+    private String coverLink;
 
     public Game() {}
 
     public Game(int id, String name, String summary, String releaseDate, Double ratingIGDB, Double ratingGamerboxd,
-            List<String> genres, List<String> artworkLinks) {
+            List<String> genres, List<String> artworkLinks, String coverLink) {
         this.id = id;
         this.name = name;
         this.summary = summary;
@@ -44,6 +45,7 @@ public class Game {
         this.ratingGamerboxd = ratingGamerboxd;
         this.genres = genres;
         this.artworkLinks = artworkLinks;
+        this.coverLink = coverLink;
     }
  
     public int getId() {
@@ -76,5 +78,9 @@ public class Game {
     
     public List<String> getArtworkLinks() {
         return artworkLinks;
+    }
+
+    public String getCoverLink() {
+        return coverLink;
     }
 }
