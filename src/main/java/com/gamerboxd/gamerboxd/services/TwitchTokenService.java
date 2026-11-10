@@ -17,18 +17,19 @@ public class TwitchTokenService {
     private Instant expiresAt = Instant.EPOCH;
 
     record TokenResponse(
-            @JsonProperty("access_token") String accessToken,
-            @JsonProperty("expires_in") long expiresIn) {}
+        @JsonProperty("access_token") String accessToken,
+        @JsonProperty("expires_in") long expiresIn) {}
 
     public TwitchTokenService(
         RestClient.Builder builder,
-        @Value("${IGDB-CLIENT-ID}") String clientId,
-        @Value("${IGDB-CLIENT-SECRET}") String clientSecret) {
+        @Value("${IGDB_CLIENT_ID}") String clientId,
+        @Value("${IGDB_CLIENT_SECRET}") String clientSecret) {
             this.rest = builder.build();
             this.clientId = clientId;
             this.clientSecret = clientSecret;
     }
 
+    /** Gets us the Authorization token. */
     public synchronized String getToken() {
         // refresh if missing or within 60s of expiry
         if (token == null || Instant.now().isAfter(expiresAt.minusSeconds(60))) {
@@ -37,6 +38,7 @@ public class TwitchTokenService {
         return token;
     }
 
+    /** The thing that actually gets us the token.*/
     public synchronized void refresh() {
         final String endpoint = 
             "https://id.twitch.tv/oauth2/token?client_id={id}&client_secret={secret}&grant_type=client_credentials"; 
