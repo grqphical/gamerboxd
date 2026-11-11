@@ -54,7 +54,7 @@ public class TwitchTokenService {
     }
 
     /** Gets a new Authorization token. */
-    private  synchronized void refresh() {
+    private synchronized void refresh() {
         final String endpoint = 
             "https://id.twitch.tv/oauth2/token?client_id={id}&client_secret={secret}&grant_type=client_credentials"; 
 

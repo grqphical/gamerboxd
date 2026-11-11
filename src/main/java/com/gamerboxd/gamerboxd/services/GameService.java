@@ -61,12 +61,12 @@ public class GameService {
     /**
      * Iteratively update the id's associated `Game`'s ratingGamerboxd using:
      * <pre> New Average = Old Average + (x - Old Average)/(n + 1) </pre>
-     * @param igdbId The game's id on IGDB (Should be the same id in the db).
+     * @param igdbID The game's id on IGDB (Should be the same id in the db).
      * @param rating The star rating in [0, 5] (star rating).
      * @exception IllegalArgumentException for `rating` not in desired range.
      * @exception IllegalArgumentException for bad `igdbId`.
      */
-    public void updateGameRating(int igdbId, int rating) {
+    public void updateGameRating(int igdbID, int rating) {
         if (rating < 0 || rating > 5) {
             throw new IllegalArgumentException(
                 "GameService::updateGameRating: parameter `rating` " +
@@ -74,9 +74,9 @@ public class GameService {
             );
         }
 
-        Game game = getGameByID(igdbId).orElseThrow(() -> new IllegalArgumentException(
+        Game game = getGameByID(igdbID).orElseThrow(() -> new IllegalArgumentException(
             "GameService::updateGameRatin: parameter `igdbId` " +
-            "doesn't map to any associated `Game`. Got: " + igdbId + "."  
+            "doesn't map to any associated `Game`. Got: " + igdbID + "."  
         ));
 
         game.updateRatingGamerboxd(rating);
