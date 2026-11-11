@@ -77,7 +77,7 @@ public class Game {
         return summary;
     }
 
-    public String getReleaseData() {
+    public String getReleaseDate() {
         return releaseDate;
     }
 
