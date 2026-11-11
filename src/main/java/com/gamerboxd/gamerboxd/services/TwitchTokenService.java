@@ -6,6 +6,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.time.Instant;
+
+/**
+ * Provides and caches the twitch app authorization token
+ * which is required by the IGDBService class.
+ * 
+ * The token is automatically refreshed, but callers can
+ * force a refresh with {@link #invalidate()} after a 401.
+ */
 @Component
 public class TwitchTokenService {
 
@@ -37,8 +45,16 @@ public class TwitchTokenService {
         return token;
     }
 
-    /** The thing that actually gets us the token.*/
-    public synchronized void refresh() {
+    /** 
+     * Invalidates this token so it can be refreshed on the
+     * next getToken() call
+     */
+    public synchronized void invalidate() {
+        this.token = null;
+    }
+
+    /** Gets a new Authorization token. */
+    private  synchronized void refresh() {
         final String endpoint = 
             "https://id.twitch.tv/oauth2/token?client_id={id}&client_secret={secret}&grant_type=client_credentials"; 
 

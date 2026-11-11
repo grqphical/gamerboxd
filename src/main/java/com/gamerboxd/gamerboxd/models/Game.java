@@ -69,7 +69,7 @@ public class Game {
         return id;
     }
 
-    public String geName() {
+    public String getName() {
         return name;
     }
 

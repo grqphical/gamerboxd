@@ -37,11 +37,13 @@ public class IGDBService {
     private <T> T post(String endpoint, String body, ParameterizedTypeReference<T> type) {
         try {
             return send(endpoint, body, type);
-        } catch (HttpClientErrorException.Unauthorized e) {
-            tokens.refresh();
+        } 
+        catch (HttpClientErrorException.Unauthorized e) {
+            // An error here means the token is no longer valid
+            tokens.invalidate();
             return send(endpoint, body, type);
         }
-    }
+    }   
 
     private <T> T send(String endpoint, String body, ParameterizedTypeReference<T> type) {
         return rest.post()
