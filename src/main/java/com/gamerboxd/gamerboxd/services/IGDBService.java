@@ -21,7 +21,7 @@ import com.gamerboxd.gamerboxd.models.Game;
 public class IGDBService {
 
     private static final String FIELDS =
-        "fields name,summary,rating,first_release_date,genres.name,artworks.image_id,cover.image_id;";
+        "fields name,summary,rating,first_release_date,genres.name,artworks.image_id,platforms.name,cover.image_id;";
 
     private final RestClient rest;
     private final TwitchTokenService tokens;
@@ -55,10 +55,7 @@ public class IGDBService {
                 .retrieve()
                 .body(type);
     }
-    /** Use for searching the IGDB database for a game by name
-     * @param name the name of the game you want to search
-     * @param limit maximum number of search results you want back
-    */ 
+
     public List<Game> getSearchResults(String name, int limit) {
         String safe = name.replace("\\", "\\\\").replace("\"", "\\\"");
         String query = "search \"" + safe + "\"; " + FIELDS + " limit " + limit + ";";
@@ -105,8 +102,15 @@ public class IGDBService {
             }
         }
 
+        List<String> platforms = new ArrayList<>();
+        if (n.hasNonNull("platforms")) {
+            for (JsonNode g : n.get("platforms")) {
+                platforms.add(g.get("name").asString());
+            }
+        }
+
         String cover = n.hasNonNull("cover") ? "https://images.igdb.com/igdb/image/upload/t_cover_big/" + n.get("cover").get("image_id").asString() + ".webp" : null;
 
-        return new Game(id, name, summary, releaseDate, rating, 0.0, genres, artworks, cover);
+        return new Game(id, name, summary, releaseDate, rating, 0.0, genres, artworks, platforms, cover);
     }
 }

@@ -41,19 +41,21 @@ public class Game {
     @Id
     private int id;                     // should match the id from IGDB
     private String name;
+    @Column(columnDefinition = "text")
     private String summary;
     private String releaseDate;
     private Double ratingIGDB;
     private Double ratingGamerboxd;
-    private Double numRatingsGamerboxd; // the number of ratings done with the gamerboxd review system.
+    private int numRatingsGamerboxd; // the number of ratings done with the gamerboxd review system.
     private List<String> genres;        // api returns strings so will have to call a different api to translate them
     private List<String> artworkLinks;
+    private List<String> platforms;
     private String coverLink;
 
     public Game() {}
 
     public Game(int id, String name, String summary, String releaseDate, Double ratingIGDB, Double ratingGamerboxd,
-            List<String> genres, List<String> artworkLinks, String coverLink) {
+            List<String> genres, List<String> artworkLinks, List<String> platforms, String coverLink) {
         this.id = id;
         this.name = name;
         this.summary = summary;
@@ -62,6 +64,7 @@ public class Game {
         this.ratingGamerboxd = ratingGamerboxd;
         this.genres = genres;
         this.artworkLinks = artworkLinks;
+        this.platforms = platforms;
         this.coverLink = coverLink;
     }
  
@@ -97,17 +100,21 @@ public class Game {
         return artworkLinks;
     }
 
+    public int getNumRatingsGamerboxd() {
+        return numRatingsGamerboxd;
+    }
+
+    public List<String> getPlatforms() {
+        return platforms;
+    }
+
     public String getCoverLink() {
         return coverLink;
     }
 
-    /** 
-     * Call this to iteratively update this `Game`'s ratingGamerboxd using:
-     * <pre> New Average = Old Average + (x - Old Average)/(n + 1) </pre>
-     * @param x A newly added rating between [0, 5]
-     */
+    /** Dont use this, use the one in GameService */
     public void updateRatingGamerboxd(int x) {
         ++this.numRatingsGamerboxd;
-        this.ratingGamerboxd += (x - this.ratingGamerboxd) / (this.numRatingsGamerboxd + 1.0);
+        this.ratingGamerboxd += (x - this.ratingGamerboxd) / (this.numRatingsGamerboxd);
     }
 }

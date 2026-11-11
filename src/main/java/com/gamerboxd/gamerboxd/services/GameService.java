@@ -1,5 +1,6 @@
 package com.gamerboxd.gamerboxd.services;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import org.springframework.stereotype.Service;
@@ -45,5 +46,40 @@ public class GameService {
         }
 
         return Optional.of(gameRepository.save(fetchedGame));
+    }
+    /**
+     * - A wrapper function for the IGDBService function. <br>
+     * - Use for searching the IGDB database for a game by name. <br>
+     * - Skips the cache to make sure results are unified.
+     * @param name the name of the game you want to search
+     * @param limit maximum number of search results you want back
+    */ 
+    public List<Game> getSearchResultsByName(String name, int limit) {
+        return igdbService.getSearchResults(name, limit);
+    }
+
+    /**
+     * Iteratively update the id's associated `Game`'s ratingGamerboxd using:
+     * <pre> New Average = Old Average + (x - Old Average)/(n + 1) </pre>
+     * @param igdbId The game's id on IGDB (Should be the same id in the db).
+     * @param rating The star rating in [0, 5] (star rating).
+     * @exception IllegalArgumentException for `rating` not in desired range.
+     * @exception IllegalArgumentException for bad `igdbId`.
+     */
+    public void updateGameRating(int igdbId, int rating) {
+        if (rating < 0 || rating > 5) {
+            throw new IllegalArgumentException(
+                "GameService::updateGameRating: parameter `rating` " +
+                "must be between 0 and 5. Got: "  + rating + "."
+            );
+        }
+
+        Game game = getGameByID(igdbId).orElseThrow(() -> new IllegalArgumentException(
+            "GameService::updateGameRatin: parameter `igdbId` " +
+            "doesn't map to any associated `Game`. Got: " + igdbId + "."  
+        ));
+
+        game.updateRatingGamerboxd(rating);
+        gameRepository.save(game);
     }
 }
