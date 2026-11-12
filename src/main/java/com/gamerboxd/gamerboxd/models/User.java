@@ -29,7 +29,7 @@ public class User {
     private String pronouns; // "x / y" format or ""
 
     @Column(nullable = true)
-    private Long steamID;
+    private String steamID;
 
     public static final int MAX_DESCRIPTION_LENGTH = 250;
 
@@ -118,11 +118,11 @@ public class User {
         this.pronouns = pronouns;
     }
 
-    public Long getSteamID() {
+    public String getSteamID() {
         return steamID;
     }
 
-    public void setSteamID(Long steamID) {
+    public void setSteamID(String steamID) {
         this.steamID = steamID;
     }
 }
