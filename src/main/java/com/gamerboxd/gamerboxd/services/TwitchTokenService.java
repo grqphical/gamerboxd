@@ -1,0 +1,69 @@
+package com.gamerboxd.gamerboxd.services;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+
+import java.time.Instant;
+
+/**
+ * Provides and caches the twitch app authorization token
+ * which is required by the IGDBService class.
+ * 
+ * The token is automatically refreshed, but callers can
+ * force a refresh with {@link #invalidate()} after a 401.
+ */
+@Component
+public class TwitchTokenService {
+
+    private final RestClient rest;
+    private final String clientId;
+    private final String clientSecret;
+
+    private String token;
+    private Instant expiresAt = Instant.EPOCH;
+
+    record TokenResponse(
+        @JsonProperty("access_token") String accessToken,
+        @JsonProperty("expires_in") long expiresIn) {}
+
+    public TwitchTokenService(
+        @Value("${IGDB_CLIENT_ID}") String clientId,
+        @Value("${IGDB_CLIENT_SECRET}") String clientSecret) {
+            this.rest = RestClient.create();
+            this.clientId = clientId;
+            this.clientSecret = clientSecret;
+    }
+
+    /** Gets us the Authorization token. */
+    public synchronized String getToken() {
+        // refresh if missing or within 60s of expiry
+        if (token == null || Instant.now().isAfter(expiresAt.minusSeconds(60))) {
+            refresh();
+        }
+        return token;
+    }
+
+    /** 
+     * Invalidates this token so it can be refreshed on the
+     * next getToken() call
+     */
+    public synchronized void invalidate() {
+        this.token = null;
+    }
+
+    /** Gets a new Authorization token. */
+    private synchronized void refresh() {
+        final String endpoint = 
+            "https://id.twitch.tv/oauth2/token?client_id={id}&client_secret={secret}&grant_type=client_credentials"; 
+
+        TokenResponse response = rest.post()
+            .uri(endpoint, clientId, clientSecret)
+            .retrieve()
+            .body(TokenResponse.class);
+
+        this.token = response.accessToken();
+        this.expiresAt = Instant.now().plusSeconds(response.expiresIn());
+    }
+}

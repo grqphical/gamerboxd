@@ -32,4 +32,6 @@ jobs:
         DATABASE_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
         DATABASE_USER: test
         DATABASE_PASSWORD: test
+        IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
+        IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
       run: mvn -B package --file pom.xml
