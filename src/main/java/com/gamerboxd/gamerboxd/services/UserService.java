@@ -247,6 +247,15 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void linkSteamAccount(String steamId, int userId) {
-        this.userRepository.updateSteamIDById(steamId, userId);
+        User user = userRepository.findById(userId).orElseThrow();
+        user.setSteamID(steamId);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void unlinkSteamAccount(int userId) {
+        User user = userRepository.findById(userId).orElseThrow();
+        user.setSteamID(null);
+        userRepository.save(user);
     }
 }

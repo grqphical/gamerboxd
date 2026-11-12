@@ -18,8 +18,4 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsBySteamID(String steamId);
 
     Optional<User> findBySteamID(String steamId);
-
-    @Modifying
-    @Query("UPDATE User u SET u.steamID = :steamID WHERE u.id = :id ")
-    int updateSteamIDById(@Param("steamID") String steamID, @Param("id") int id);
 }

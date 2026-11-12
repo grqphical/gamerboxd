@@ -121,4 +121,13 @@ public class SteamLoginController {
         return "redirect:/login?registered";
 
     }
+
+    @GetMapping("/auth/steam/unlink")
+    public String unlinkSteamAccount(@AuthenticationPrincipal AuthenticatedUser currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+        userService.unlinkSteamAccount(currentUser.getId());
+        return "redirect:/users/" + currentUser.getId() + "/settings";
+    }
 }
