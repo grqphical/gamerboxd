@@ -36,6 +36,7 @@ public class GamerboxdControllerTest {
     @BeforeEach
     void setUp() {
         reviewService = mock(ReviewService.class);
+        gameService = mock(GameService.class);
         mockMvc = MockMvcBuilders.standaloneSetup(new GamerboxdController(reviewService, gameService))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
