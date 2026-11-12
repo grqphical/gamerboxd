@@ -4,21 +4,25 @@ import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.servlet.http.HttpServletRequest;
+import tools.jackson.databind.JsonNode;
 
 @Service
 public class SteamService {
     private final UserService userService;
     private final RestClient rest;
+    private final String apiKey;
 
     private static String STEAM_OPENID_URL = "https://steamcommunity.com/openid/login";
     private static String STEAM_AUTH_CALLBACK_ENDPOINT = "/auth/steam/callback";
@@ -36,9 +40,13 @@ public class SteamService {
         }
     }
 
-    public SteamService(UserService userService) {
+    public record SteamProfile(String steamId, String name) {
+    }
+
+    public SteamService(UserService userService, @Value("${steam.api_key}") String apiKey) {
         this.userService = userService;
         this.rest = RestClient.create();
+        this.apiKey = apiKey;
     }
 
     /*
@@ -93,5 +101,23 @@ public class SteamService {
         }
         String steamId = m.group(1);
         return steamId;
+    }
+
+    public SteamProfile fetchProfile(String steamId) {
+        try {
+            JsonNode root = rest.get()
+                    .uri("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={key}&steamids={id}",
+                            apiKey, steamId)
+                    .retrieve()
+                    .body(JsonNode.class);
+
+            JsonNode player = root.path("response").path("players").path(0);
+            return new SteamProfile(
+                    steamId,
+                    player.path("personaname").asString());
+        } catch (RestClientException e) {
+            // Profile is nice-to-have; don't fail the login over it
+            return new SteamProfile(steamId, "");
+        }
     }
 }

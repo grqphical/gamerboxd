@@ -29,7 +29,7 @@ public class SecurityConfig {
                                                                 "/favicon.*", "/*.ico")
                                                 .permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/", "/login", "/reviews", "/users/*",
-                                                                "/auth/*")
+                                                                "/auth/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form

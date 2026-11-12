@@ -6,12 +6,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.gamerboxd.gamerboxd.services.SteamService;
+import com.gamerboxd.gamerboxd.services.SteamService.SteamProfile;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -37,7 +41,7 @@ public class SteamLoginController {
     }
 
     @GetMapping("/auth/steam/callback")
-    public String steamAuthCallback(HttpServletRequest request) {
+    public String steamAuthCallback(HttpServletRequest request, RedirectAttributes attrs) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         for (Map.Entry<String, String[]> e : request.getParameterMap().entrySet()) {
             if (e.getKey().startsWith("openid.")) {
@@ -56,6 +60,20 @@ public class SteamLoginController {
 
         String steamId = this.steamService.verifySteamLogin(params);
 
-        return "redirect:/";
+        attrs.addAttribute("steamid", steamId);
+        return "redirect:/auth/steam/finish";
+    }
+
+    @GetMapping("/auth/steam/finish")
+    public String steamSignInFinish(Model model, @RequestParam("steamid") String steamId) {
+        SteamProfile profile = this.steamService.fetchProfile(steamId);
+
+        if (profile.name() == "") {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to retrieve profile");
+        }
+
+        model.addAttribute("profile", profile);
+
+        return "steam/accountSetup";
     }
 }
