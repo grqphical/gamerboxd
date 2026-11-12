@@ -31,6 +31,8 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/", "/login", "/reviews", "/users/*",
                                                                 "/auth/**")
                                                 .permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/auth/**")
+                                                .permitAll()
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")

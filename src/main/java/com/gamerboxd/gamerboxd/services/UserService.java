@@ -90,6 +90,25 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    /**
+     * Validates and saves a new user. Throws IllegalArgumentException if invalid.
+     */
+    public User registerWithSteam(String username, String email, String password, String steamId) {
+        String cleanUsername = username == null ? "" : username.trim();
+        String cleanEmail = normalizeEmail(email);
+        validate(cleanUsername, cleanEmail, password);
+
+        try {
+            User newUser = new User(0, cleanUsername, cleanEmail, passwordEncoder.encode(password),
+                    UserRole.USER);
+            newUser.setSteamID(steamId);
+            return userRepository.save(newUser);
+        } catch (DataIntegrityViolationException e) {
+            // Lost a race with another sign-up using the same username or email
+            throw new IllegalArgumentException("That username or email is already taken.");
+        }
+    }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(normalizeEmail(email))
