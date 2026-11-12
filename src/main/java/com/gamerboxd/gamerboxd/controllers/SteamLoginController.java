@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.gamerboxd.gamerboxd.services.SteamService;
+import com.gamerboxd.gamerboxd.services.UserService;
 import com.gamerboxd.gamerboxd.services.SteamService.SteamProfile;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,12 +24,14 @@ import jakarta.servlet.http.HttpServletRequest;
 public class SteamLoginController {
 
     private final SteamService steamService;
+    private final UserService userService;
 
     @Value("${app.base-url}")
     private String baseUrl;
 
-    public SteamLoginController(SteamService steamService) {
+    public SteamLoginController(SteamService steamService, UserService userService) {
         this.steamService = steamService;
+        this.userService = userService;
     }
 
     /*
@@ -65,11 +68,18 @@ public class SteamLoginController {
     }
 
     @GetMapping("/auth/steam/finish")
-    public String steamSignInFinish(Model model, @RequestParam("steamid") String steamId) {
+    public String steamSignInFinish(HttpServletRequest request, Model model, @RequestParam("steamid") String steamId) {
         SteamProfile profile = this.steamService.fetchProfile(steamId);
 
         if (profile.name() == "") {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to retrieve profile");
+        }
+
+        // If user already has an account linked to steam with us, just log them in
+        // manually
+        if (this.userService.hasLinkedSteamAccount(steamId)) {
+            this.userService.loginWithSteam(steamId, request);
+            return "redirect:/";
         }
 
         model.addAttribute("profile", profile);
