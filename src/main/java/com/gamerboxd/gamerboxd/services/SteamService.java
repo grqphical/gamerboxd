@@ -100,6 +100,11 @@ public class SteamService {
             throw new SteamAuthException("Bad claimed_id");
         }
         String steamId = m.group(1);
+
+        if (this.userService.hasLinkedSteamAccount(steamId)) {
+            throw new SteamAuthException("Account already linked");
+        }
+
         return steamId;
     }
 
