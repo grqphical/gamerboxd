@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.services.SteamService;
 import com.gamerboxd.gamerboxd.services.UserService;
@@ -70,11 +72,18 @@ public class SteamLoginController {
     }
 
     @GetMapping("/auth/steam/finish")
-    public String steamSignInFinish(HttpServletRequest request, Model model, @RequestParam("steamid") String steamId) {
+    public String steamSignInFinish(@AuthenticationPrincipal AuthenticatedUser currentUser, HttpServletRequest request,
+            Model model, @RequestParam("steamid") String steamId) {
         SteamProfile profile = this.steamService.fetchProfile(steamId);
 
         if (profile.name() == "") {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to retrieve profile");
+        }
+
+        if (currentUser != null) {
+            // user is already logged into an account so we just need to link their Steam
+            // account to the current user
+            this.userService.linkSteamAccount(steamId, currentUser.getId());
         }
 
         // If user already has an account linked to steam with us, just log them in

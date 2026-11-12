@@ -244,4 +244,9 @@ public class UserService implements UserDetailsService {
         HttpSession session = request.getSession(true);
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
     }
+
+    @Transactional
+    public void linkSteamAccount(String steamId, int userId) {
+        this.userRepository.updateSteamIDById(steamId, userId);
+    }
 }
