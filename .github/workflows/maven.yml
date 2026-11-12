@@ -34,4 +34,6 @@ jobs:
         DATABASE_PASSWORD: test
         IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
         IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
+        STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+        APP_BASE_URL: http://localhost:8080
       run: mvn -B package --file pom.xml
