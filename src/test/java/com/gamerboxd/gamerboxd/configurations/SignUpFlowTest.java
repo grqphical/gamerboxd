@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.repositories.RememberMeTokenRepository;
+import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
 @SpringBootTest
@@ -39,9 +40,12 @@ class SignUpFlowTest {
     private RememberMeTokenRepository tokenRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     @BeforeEach
     void setUp() {
+        reviewRepository.deleteAll();
         tokenRepository.deleteAll();
         userRepository.deleteAll();
     }

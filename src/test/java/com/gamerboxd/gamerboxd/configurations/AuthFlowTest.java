@@ -26,6 +26,7 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.repositories.RememberMeTokenRepository;
+import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
 import jakarta.servlet.http.Cookie;
@@ -44,11 +45,14 @@ class AuthFlowTest {
     private RememberMeTokenRepository tokenRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     private User user;
 
     @BeforeEach
     void setUp() {
+        reviewRepository.deleteAll();
         tokenRepository.deleteAll();
         userRepository.deleteAll();
         user = userRepository.save(new User(0, "ada", EMAIL, passwordEncoder.encode(PASSWORD), UserRole.USER));
