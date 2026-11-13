@@ -64,12 +64,7 @@ public class SteamLoginController {
         if (!expectedReturnTo.equals(params.getFirst("openid.return_to"))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "return_to mismatch");
         }
-        String steamId;
-        try {
-            steamId = this.steamService.verifySteamLogin(params);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Steam account already linked");
-        }
+        String steamId = this.steamService.verifySteamLogin(params);
 
         attrs.addAttribute("steamid", steamId);
         return "redirect:/auth/steam/finish";
