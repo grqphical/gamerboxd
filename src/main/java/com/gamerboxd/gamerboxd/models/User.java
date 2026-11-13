@@ -12,21 +12,24 @@ import jakarta.persistence.Table;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;                 // not modifiable in settings
+    private int id; // not modifiable in settings
     @Column(unique = true)
     private String username;
 
     @Column(unique = true)
     private String email;
 
-    private String password;        // modifiable in settings with an "are you sure?"
+    private String password; // modifiable in settings with an "are you sure?"
     private UserRole role;
 
     // get assigned default values on initialization
 
-    private UserPrivacy privacy;    // public by default, private
-    private String description;     // 250 char limit "" by default
-    private String pronouns;        // "x / y" format or ""
+    private UserPrivacy privacy; // public by default, private
+    private String description; // 250 char limit "" by default
+    private String pronouns; // "x / y" format or ""
+
+    @Column(nullable = true)
+    private String steamID;
 
     public static final int MAX_DESCRIPTION_LENGTH = 250;
 
@@ -34,9 +37,8 @@ public class User {
     }
 
     public User(
-        int id, String username, String email, 
-        String password, UserRole role) 
-    {
+            int id, String username, String email,
+            String password, UserRole role) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -114,5 +116,13 @@ public class User {
 
     public void setPronouns(String pronouns) {
         this.pronouns = pronouns;
+    }
+
+    public String getSteamID() {
+        return steamID;
+    }
+
+    public void setSteamID(String steamID) {
+        this.steamID = steamID;
     }
 }

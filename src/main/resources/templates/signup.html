@@ -84,10 +84,17 @@
             </div>
             <button type="submit" class="btn btn-primary">Create Account</button>
         </form>
-
-        <p class="text-center mt-3">Already have an account? <a th:href="@{/login}">Sign in</a></p>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <div class="text-center mt-3">
+            <a href="/auth/steam"
+                class="btn btn-dark d-inline-flex align-items-center gap-2 px-3 py-2 text-decoration-none shadow-sm"
+                style="background-color: #171a21; border-color: #171a21;">
+                <img src="/images/steam.svg" alt="Steam logo" width="24" height="24"
+                    style="filter: brightness(0) invert(1);">
+                <span class="fw-semibold text-white">Sign in through Steam</span>
+            </a>
+            <p class="text-center mt-3">Already have an account? <a th:href="@{/login}">Sign in</a></p>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

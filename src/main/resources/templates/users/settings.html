@@ -95,6 +95,21 @@
                     th:text="${#strings.equalsIgnoreCase(user.privacy.name(), 'private')} ? 'Privacy: Private' : 'Privacy: Public'">Privacy:
                     Public</label>
             </div>
+            <div class="mb-4" th:if="${user.steamID == null}">
+                <a href="/auth/steam"
+                    class="btn btn-dark d-inline-flex align-items-center gap-2 px-3 py-2 text-decoration-none shadow-sm"
+                    style="background-color: #171a21; border-color: #171a21;">
+                    <img src="/images/steam.svg" alt="Steam logo" width="24" height="24"
+                        style="filter: brightness(0) invert(1);">
+                    <span class="fw-semibold text-white">Link Steam Account</span>
+                </a>
+            </div>
+            <div class="mb-4" th:if="${user.steamID != null}">
+                <img src="/images/steam.svg" alt="Steam logo" width="24" height="24" style="color: black !important;">
+                <span class="fw-semibold">Steam Account Linked!</span>
+                <a href="/auth/steam/unlink"
+                    onclick="confirm('Are you sure you wish to unlink your Steam account?')">Unlink</a>
+            </div>
 
             <div class="d-flex justify-content-between">
                 <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-outline-secondary">Cancel</a>
