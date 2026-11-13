@@ -54,12 +54,13 @@ public class SteamService {
      * the user to Steam to sign-in
      */
     public ResponseEntity<Void> getSteamSignInRedirect(HttpServletRequest request, String baseURL) {
+        String cleanBase = baseURL.trim().replaceAll("/+$", "");
         URI steamURL = UriComponentsBuilder
                 .fromUriString("https://steamcommunity.com/openid/login")
                 .queryParam("openid.ns", "http://specs.openid.net/auth/2.0")
                 .queryParam("openid.mode", "checkid_setup")
-                .queryParam("openid.return_to", baseURL + STEAM_AUTH_CALLBACK_ENDPOINT)
-                .queryParam("openid.realm", baseURL)
+                .queryParam("openid.return_to", cleanBase + STEAM_AUTH_CALLBACK_ENDPOINT)
+                .queryParam("openid.realm", cleanBase)
                 .queryParam("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select")
                 .queryParam("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select")
                 .build()

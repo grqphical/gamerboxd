@@ -60,14 +60,15 @@ public class SteamLoginController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Login cancelled or failed");
         }
 
-        String expectedReturnTo = baseUrl + "/auth/steam/callback";
+        String cleanBase = baseUrl.trim().replaceAll("/+$", "");
+        String expectedReturnTo = cleanBase + "/auth/steam/callback";
         if (!expectedReturnTo.equals(params.getFirst("openid.return_to"))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "return_to mismatch");
         }
         String steamId = this.steamService.verifySteamLogin(params);
 
         attrs.addAttribute("steamid", steamId);
-        return "redirect:/auth/steam/finish";
+        return "redirect:" + cleanBase + "/auth/steam/finish";
     }
 
     @GetMapping("/auth/steam/finish")
