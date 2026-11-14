@@ -21,7 +21,6 @@ public class Review {
     private User user;
     private String gameName;
     private int rating; // 1-5
-    private int likes = 0;
 
     @Column(length = 2000)
     private String description;
@@ -50,9 +49,6 @@ public class Review {
 
     public int getRating() { return rating; }
     public void setRating(int rating) { this.rating = rating; }
-
-    public int getLikes() { return likes; }
-    public void setLikes(int likes) { this.likes = likes; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
