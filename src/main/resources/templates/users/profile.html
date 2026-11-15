@@ -93,12 +93,13 @@
                     </div>
                     
                     <span class="fw-bold fs-5" style="width: 2rem;" th:text="|#${stat.count}|"></span>
-
+                    <!-- IGDB covers are 264 x 352 which is 3:4 ratio 
+                         so im making these 66x88 to avoid cropping -->
                     <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="rounded" 
-                        style="width: 65px; height: 90px; object-fit: cover;">
+                        style="width: 66px; height: 88px; object-fit: cover;">
 
                     <div th:if="${game.coverLink == null}" class="rounded bg-secondary-subtle"
-                        style="width: 65px; height: 90px;"></div>
+                        style="width: 66px; height: 88px;"></div>
 
                     <span class="fw-semibold" th:text="${game.name}"></span>
                     
@@ -133,12 +134,12 @@
                             <input type="hidden" name="igdbID" th:value="${game.id}">
 
                             <button type="submit" class="card h-100 w-100 p-0 text-start shadow-sm overflow-hidden">
-
+                                <!-- Covers are 3:4 ratio -->
                                 <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="w-100" 
-                                    style="height: 180px; object-fit: cover;">
+                                    style="aspect-ratio: 3 / 4;">
 
                                 <div th:if="${game.coverLink == null}" class="w-100 bg-secondary-subtle"
-                                    style="height: 180px; object-fit: cover;">
+                                    style="aspect-ratio: 3 / 4;">
                                 </div>
 
                                 <div class="p-1 w-100">
