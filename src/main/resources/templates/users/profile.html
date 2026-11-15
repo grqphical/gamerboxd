@@ -102,14 +102,18 @@
                     <span class="fw-bold fs-5" style="width: 2rem;" th:text="|#${stat.count}|"></span>
                     <!-- IGDB covers are 264 x 352 which is 3:4 ratio 
                          so im making these 90x120 to avoid cropping -->
-                    <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="rounded" 
-                        style="width: 90px; height: 120px; object-fit: cover;">
+                    <a th:href="@{/games/{id}(id=${game.id})}" 
+                        class="d-flex align-items-center gap-2 text-reset text-decoration-none">
 
-                    <div th:if="${game.coverLink == null}" class="rounded bg-secondary-subtle"
-                        style="width: 90px; height: 120px;"></div>
+                        <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="rounded" 
+                            style="width: 90px; height: 120px; object-fit: cover;">
 
-                    <span class="fw-semibold" th:text="${game.name}"></span>
-                    
+                        <div th:if="${game.coverLink == null}" class="rounded bg-secondary-subtle"
+                            style="width: 90px; height: 120px;"></div>
+
+                        <span class="fw-semibold" th:text="${game.name}"></span>
+                    </a>
+
                     <form th:if="${isOwnProfile}" th:action="@{/favourites/remove}" method="post"
                         class="position-absolute top-0 end-0 m-2">
                         <input type="hidden" name="igdbID" th:value="${game.id}">
@@ -175,7 +179,7 @@
                     No games marked yet.
                 </p>
 
-                <div th:if="${isOwnProfile}" id="statusGameSearch" class="collapse mb-3"
+                <div th:if="${isOwnProfile}" id="statusGameSearch"  class="collapse mb-3"
                     th:classappend="${statusGameSearch != null ? 'show' : ''}">
                     <form th:action="@{/users/{id}(id=${user.id})}" method="get" class="d-flex gap-2 mb-2">
                         <input type="text" name="statusGameSearch" class="form-control"
@@ -215,9 +219,12 @@
                         <ul class="list-group overflow-auto" style="max-height: 360px;">
                             <li class="list-group-item p-2" th:each="game : ${gamesByStatus.get(status)}">
                                 <div class="d-flex align-items-center gap-2">
-                                    <img th:if="${game.coverLink != null}" th:src="${game.coverLink}"
-                                        class="rounded" style="width: 42px; height: 56px; object-fit: cover;">
-                                    <span class="small fw-semibold flex-grow-1" th:text="${game.name}"></span>
+                                    <a th:href="@{/games/{id}(id=${game.id})}" 
+                                        class="d-flex align-items-center gap-2 flex-grow-1 text-reset text-decoration-none">
+                                        <img th:if="${game.coverLink != null}" th:src="${game.coverLink}"
+                                            class="rounded" style="width: 42px; height: 56px; object-fit: cover;">
+                                        <span class="small fw-semibold" th:text="${game.name}"></span>
+                                    </a>
                                     <form th:if="${isOwnProfile}"
                                         th:action="@{/users/{id}/games/status(id=${user.id})}" method="post"
                                         class="d-flex gap-1">
