@@ -1,6 +1,7 @@
 package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+import com.gamerboxd.gamerboxd.models.Game;
+import com.gamerboxd.gamerboxd.models.GameStatus;
 import com.gamerboxd.gamerboxd.models.SteamGame;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.services.GameService;
@@ -179,12 +182,14 @@ public class SteamLoginController {
     public String linkSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser,
             @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds) {
 
-        // This is the code you would use to mark the selected games as played.
-        // for (int i = 0; i < selectedAppIds.size(); i++) {
-        // Game game = gameService.getGameBySteamAppId(selectedAppIds.get(i));
-        // User user = userService.getUserById(currentUser.getId()).get();
-        // // TODO: mark game as "played" for the user
-        // }
+        for (int i = 0; i < selectedAppIds.size(); i++) {
+            Optional<Game> game = gameService.getGameBySteamAppID(selectedAppIds.get(i));
+            User user = userService.getUserById(currentUser.getId()).get();
+
+            if (game.isPresent()) {
+                user.setGameStatus(game.get().getId(), GameStatus.PLAYED);
+            }
+        }
 
         if (currentUser != null) {
             return "redirect:/";
