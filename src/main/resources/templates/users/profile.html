@@ -71,6 +71,8 @@
 
         <p class="mb-4" th:if="${!#strings.isEmpty(user.description)}" th:text="${user.description}"></p>
 
+        <!-- Todo: Create top five section. After the description, and before the reviews. -->
+
         <div th:unless="${user.isPrivateAccount and !isOwnProfile}">
             <h3>User Reviews:</h3>
             <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
