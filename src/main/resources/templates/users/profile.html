@@ -79,6 +79,19 @@
             </p>
             <ol class="list-group" th:if="${!favouriteGames.isEmpty() or canAddFavourite}">
                 <li class="list-group-item d-flex align-items-center gap-2" th:each="game, stat : ${favouriteGames}">
+                    <div th:if="${isOwnProfile}" class="d-flex flex-column gap-1">
+                        <form th:action="@{/favourites/move}" method="post">
+                            <input type="hidden" name="igdbID" th:value="${game.id}">
+                            <input type="hidden" name="direction" value="up">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary" th:disabled="${stat.first}">↑</button>
+                        </form>
+                        <form th:action="@{/favourites/move}" method="post">
+                            <input type="hidden" name="igdbID" th:value="${game.id}">
+                            <input type="hidden" name="direction" value="down">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary" th:disabled="${stat.last}">↓</button>
+                        </form>
+                    </div>
+                    
                     <span class="fw-bold fs-5" style="width: 2rem;" th:text="|#${stat.count}|"></span>
 
                     <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="rounded" 

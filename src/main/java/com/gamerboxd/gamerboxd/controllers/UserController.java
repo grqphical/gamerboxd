@@ -162,7 +162,7 @@ public class UserController {
 
     @PostMapping("/favourites/move")
     public String moveFavourite(@RequestParam int igdbID,
-            @RequestParam String direction,
+            @RequestParam String direction, // "up" or "down"
             @AuthenticationPrincipal AuthenticatedUser currentUser) {
         if (currentUser == null) {
             return "redirect:/login";
@@ -171,7 +171,7 @@ public class UserController {
         User user = userService.getUserById(currentUser.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "User not found with ID: " + currentUser.getId()));
 
-        List<Integer> ids = user.getFavouriteIgdbIDs();
+        List<Integer> ids = new ArrayList<>(user.getFavouriteIgdbIDs());
         int fromIndex = ids.indexOf(igdbID);
         int toIndex = (direction.equals("up")) ? fromIndex - 1 : fromIndex + 1;
 
