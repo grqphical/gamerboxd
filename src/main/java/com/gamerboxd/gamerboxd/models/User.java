@@ -44,7 +44,7 @@ public class User {
         new ArrayList<>(Collections.nCopies(MAX_FAVOURITE_GAMES, 0)); // initialized to MAX_FAVOURITE_GAMES copies of 0.
 
     public static final int MAX_DESCRIPTION_LENGTH = 250;
-    public static final int MAX_FAVOURITE_GAMES = 5;
+    public static final int MAX_FAVOURITE_GAMES = 5; // safe to change, lowering will drop the lowest ranked favourites
     public static final int NULL_FAVOURITE_GAME = 0;
 
     public User() {
@@ -141,11 +141,22 @@ public class User {
     }
 
     /** 
-     * Read-only copy. To modify this `User`s favourite Ids 
-     * please use {@code .setFavouriteIgdbIDs} or {@code .setFavouriteIgdbID}. 
+     * Read-only copy that is always {@code MAX_FAVOURITE_GAMES} long. 
+     * 
+     * To modify this `User`s favourite Ids please use 
+     * {@code .setFavouriteIgdbIDs} or {@code .setFavouriteIgdbID}. 
      */
     public List<Integer> getFavouriteIgdbIDs() {
-        return List.copyOf(favouriteIgdbIDs);
+        List<Integer> ids = new ArrayList<>(favouriteIgdbIDs.stream()
+            .filter(id -> id != NULL_FAVOURITE_GAME)
+            .limit(MAX_FAVOURITE_GAMES)
+            .toList());
+
+        while (ids.size() < MAX_FAVOURITE_GAMES) {
+            ids.add(NULL_FAVOURITE_GAME);
+        }   
+
+        return List.copyOf(ids);
     }
 
     /**
@@ -193,7 +204,7 @@ public class User {
                 "setFavouriteIgdbID: " + index + " not in [0, " + MAX_FAVOURITE_GAMES + ").");
         }
 
-        List<Integer> updated = new ArrayList<>(favouriteIgdbIDs);
+        List<Integer> updated = new ArrayList<>(getFavouriteIgdbIDs());
 
         updated.set(index, igdbID);
         setFavouriteIgdbIDs(updated);
