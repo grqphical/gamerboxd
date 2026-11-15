@@ -105,7 +105,7 @@ class UserControllerTest {
     @Test
     void profile_includesLikeCountsAndLikedIds() throws Exception {
         signInAs(john);
-        Review review = new Review(olivia, "Celeste", 4, "Fun");
+        Review review = new Review(olivia, 26226, 4, "Fun");
         review.setId(11);
         when(userService.getUserById(2)).thenReturn(Optional.of(olivia));
         when(reviewService.getAllByUserId(2)).thenReturn(List.of(review));
@@ -121,7 +121,7 @@ class UserControllerTest {
 
     @Test
     void profile_anonymous_hasNoLikedIds() throws Exception {
-        Review review = new Review(john, "Hades", 5, "Great");
+        Review review = new Review(john, 113112, 5, "Great");
         review.setId(10);
         when(reviewService.getAllByUserId(1)).thenReturn(List.of(review));
 

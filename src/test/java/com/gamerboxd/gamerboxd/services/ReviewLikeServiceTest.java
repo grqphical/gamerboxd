@@ -48,7 +48,7 @@ class ReviewLikeServiceTest {
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
     private final User olivia = new User(2, "olivia", "olivia@gmail.com", "pw", UserRole.USER);
-    private final Review johnsReview = new Review(john, "Hades", 5, "Great");
+    private final Review johnsReview = new Review(john, 113112, 5, "Great");
 
     @Test
     void toggleLike_notLiked_createsLikeAndReturnsTrue() {

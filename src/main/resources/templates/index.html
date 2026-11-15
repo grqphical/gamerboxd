@@ -70,7 +70,10 @@
 
         <div class="card shadow-sm mb-3" th:each="r : ${reviews}">
             <div class="card-body">
-                <h5 class="card-title" th:text="${r.gameName}">Game</h5>
+                <h5 class="card-title">
+                    <a th:href="@{/games/{id}(id=${r.gameId})}" class="text-reset text-decoration-none"
+                    th:text="${reviewGameNames[r.gameId] ?: 'Unknown game'}">Game</a>
+                </h5>
                 <div class="text-warning mb-2" th:text="${#strings.repeat('★', r.rating)}">★★★</div>
                 <p class="card-text" th:text="${r.description}">Description</p>
                 <small class="text-muted">

@@ -2,30 +2,36 @@ package com.gamerboxd.gamerboxd.services;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
+import com.gamerboxd.gamerboxd.services.GameService;
 
 @Service
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final ReviewLikeRepository reviewLikeRepository;
+    private final GameService gameService;
 
     public ReviewService(
         ReviewRepository reviewRepository, 
         UserRepository userRepository, 
-        ReviewLikeRepository reviewLikeRepository) {
+        ReviewLikeRepository reviewLikeRepository,
+        GameService gameService) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.reviewLikeRepository = reviewLikeRepository;
+        this.gameService = gameService;
     }
 
     public List<Review> getAll() {
@@ -36,9 +42,10 @@ public class ReviewService {
         return reviewRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    private void validate(String gameName, int rating, String description) {
-        if (gameName == null || gameName.isBlank()) {
-            throw new IllegalArgumentException("Game name is required.");
+    private void validate(int gameId, int rating, String description) {
+        Optional<Game> game = gameService.getGameByID(gameId);
+        if (!game.isPresent()) {
+            throw new IllegalArgumentException("Invalid Game ID");
         }
         validateContent(rating, description);
     }
@@ -53,10 +60,10 @@ public class ReviewService {
     }
 
     /** Validates and saves a review. Throws IllegalArgumentException if invalid. */
-    public Review create(int userId, String gameName, int rating, String description) {
-        validate(gameName, rating, description);
+    public Review create(int userId, int gameId, int rating, String description) {
+        validate(gameId, rating, description);
         User user = userRepository.getReferenceById(userId);
-        return reviewRepository.save(new Review(user, gameName.trim(), rating, description.trim()));
+        return reviewRepository.save(new Review(user, gameId, rating, description.trim()));
     }
 
     public Review getOwnedReview(int reviewId, int userId) {

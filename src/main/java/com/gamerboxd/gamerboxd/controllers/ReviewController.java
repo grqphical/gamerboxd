@@ -102,12 +102,12 @@ public class ReviewController {
 
     @PostMapping("/reviews")
     public String create(@AuthenticationPrincipal AuthenticatedUser currentUser,
-            @RequestParam String gameName,
+            @RequestParam int gameId,
             @RequestParam int rating,
             @RequestParam String description,
             Model model) {
         try {
-            reviewService.create(currentUser.getId(), gameName, rating, description);
+            reviewService.create(currentUser.getId(), gameId, rating, description);
         }
         catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());

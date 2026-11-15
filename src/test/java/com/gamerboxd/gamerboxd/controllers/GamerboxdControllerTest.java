@@ -65,8 +65,8 @@ public class GamerboxdControllerTest {
     @Test
     void list_showsReviews() throws Exception {
         List<Review> reviews = List.of(
-                new Review(john, "Hades", 5, "Great"),
-                new Review(olivia, "Celeste", 4, "Tough but fun"));
+                new Review(john, 113112, 5, "Great"),
+                new Review(olivia, 26226, 4, "Tough but fun"));
         Mockito.when(reviewService.getAll()).thenReturn(reviews);
 
         mockMvc.perform(get("/"))
@@ -76,9 +76,9 @@ public class GamerboxdControllerTest {
     }
 
     private List<Review> twoReviews() {
-        Review r1 = new Review(john, "Hades", 5, "Great");
+        Review r1 = new Review(john, 113112, 5, "Great");
         r1.setId(10);
-        Review r2 = new Review(olivia, "Celeste", 4, "Fun");
+        Review r2 = new Review(olivia, 26226, 4, "Fun");
         r2.setId(11);
         return List.of(r1, r2);
     }

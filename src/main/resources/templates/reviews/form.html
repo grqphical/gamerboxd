@@ -62,10 +62,10 @@
         </p>
 
         <form th:action="@{/reviews}" method="post" class="card card-body shadow-sm">
-            <!-- TODO: replace with gameId once we have a game table -->
             <div class="mb-3">
                 <label class="form-label" for="gameName">Game</label>
-                <input type="text" class="form-control" id="gameName" name="gameName" required>
+                <!-- temp gameId field -->
+                <input type="text" class="form-control" id="gameId" name="gameId" required>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="rating">Rating</label>

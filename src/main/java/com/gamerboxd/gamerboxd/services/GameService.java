@@ -1,9 +1,15 @@
 package com.gamerboxd.gamerboxd.services;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.repositories.GameRepository;
@@ -82,4 +88,19 @@ public class GameService {
         game.updateRatingGamerboxd(rating);
         gameRepository.save(game);
     }
+
+    public Map<Integer, String> getGameNames(Collection<Integer> gameIds) {
+        List<Integer> ids = gameIds.stream().distinct().toList();
+
+        Map<Integer, String> names = gameRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Game::getId, Game::getName));
+
+        for (int id : ids) {
+            if (!names.containsKey(id)) {
+                getGameByID(id).ifPresent(g -> names.put(id, g.getName()));
+            }
+        }
+        return names;
+    }
+
 }

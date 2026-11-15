@@ -19,7 +19,7 @@ public class Review {
 
     @ManyToOne(optional = false)
     private User user;
-    private String gameName;
+    private int gameId;
     private int rating; // 1-5
 
     @Column(length = 2000)
@@ -31,9 +31,9 @@ public class Review {
     public Review(){
     }
 
-    public Review(User user, String gameName, int rating, String description) {
+    public Review(User user, int gameId, int rating, String description) {
         this.user = user;
-        this.gameName = gameName;
+        this.gameId = gameId;
         this.rating = rating;
         this.description = description;
     }
@@ -44,8 +44,8 @@ public class Review {
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
 
-    public String getGameName() { return gameName; }
-    public void setGameName(String gameName) { this.gameName = gameName; }
+    public int getGameId() { return gameId; }
+    public void setGameId(int gameId) { this.gameId = gameId; }
 
     public int getRating() { return rating; }
     public void setRating(int rating) { this.rating = rating; }
