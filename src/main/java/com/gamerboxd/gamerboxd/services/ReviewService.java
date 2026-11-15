@@ -42,6 +42,10 @@ public class ReviewService {
         return reviewRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }
 
+    public List<Review> getAllByGameId(int gameId) {
+        return reviewRepository.findAllByGameIdOrderByCreatedAtDesc(gameId);
+    }
+
     private void validate(int gameId, int rating, String description) {
         Optional<Game> game = gameService.getGameByID(gameId);
         if (!game.isPresent()) {

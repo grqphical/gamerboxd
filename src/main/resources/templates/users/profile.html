@@ -157,7 +157,11 @@
         </div>
 
         <div th:unless="${user.isPrivateAccount and !isOwnProfile}">
-            <h3>User Reviews:</h3>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Reviews</h3>
+                <a th:if="${currentUser}" th:href="@{/reviews/new}" class="btn btn-primary">Write a
+                    Review</a>
+             </div>
             <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
             <p class="text-muted" th:if="${!#lists.isEmpty(reviews) and user.isPrivateAccount}">
                 Only you can see your reviews because your account is set to private

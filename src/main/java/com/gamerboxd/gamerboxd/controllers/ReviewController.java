@@ -1,6 +1,7 @@
 package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -103,6 +104,7 @@ public class ReviewController {
     @GetMapping("/reviews/new")
     public String form(@AuthenticationPrincipal AuthenticatedUser currentUser,
                     @RequestParam(defaultValue = "") String q,
+                    @RequestParam(required = false) Integer gameId,
                     Model model) {
         model.addAttribute("currentUser", currentUser);
 
@@ -111,12 +113,23 @@ public class ReviewController {
         model.addAttribute("isPrivateAccount", isPrivate);
 
         String query = q.trim();
-        List<Game> results = query.isEmpty()
-                ? List.of()
-                : gameService.getSearchResultsByName(query, 10);
+        List<Game> results = List.of();
+        Integer selectedGameId = null;
+
+        if (!query.isEmpty()) {
+            results = gameService.getSearchResultsByName(query, 10);
+        } else if (gameId != null) {
+            Optional<Game> game = gameService.getGameByID(gameId);
+            if (game.isPresent()) {
+                results = List.of(game.get());
+                selectedGameId = gameId;
+                query = game.get().getName(); 
+            }
+        }
+
         model.addAttribute("query", query);
         model.addAttribute("gameResults", results);
-
+        model.addAttribute("selectedGameId", selectedGameId);
         return "reviews/form";
     }
 

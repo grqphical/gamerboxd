@@ -19,21 +19,38 @@ import com.gamerboxd.gamerboxd.services.GameService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.models.Review;
+import com.gamerboxd.gamerboxd.models.User;
+
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 
 @Controller
-public class GameViewController {
+public class GameViewController {  
     private final GameService gameService;
+    private final ReviewService reviewService;
+    private final ReviewLikeService reviewLikeService;
 
-    public GameViewController(GameService gameService) {
+    public GameViewController(GameService gameService, ReviewService reviewService, ReviewLikeService reviewLikeService) {
        this.gameService = gameService;
+       this.reviewService = reviewService;
+       this.reviewLikeService = reviewLikeService;
     }
 
     @GetMapping("/games/{id}")
     public String gameView(@AuthenticationPrincipal AuthenticatedUser currentUser, @PathVariable int id, Model model) {
         Game game = gameService.getGameByID(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game ID does not match an existing game."));
+        List<Review> reviews = reviewService.getAllByGameId(id).stream()
+                .filter(r -> !r.getUser().isPrivateAccount()
+                        || (currentUser != null && r.getUser().getId() == currentUser.getId()))
+                .toList();
+        List<Integer> reviewIds = reviews.stream().map(Review::getId).toList();
+
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
+        model.addAttribute("likedIds", currentUser == null
+                ? Set.<Integer>of()
+                : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("game", game);
         return "games";
