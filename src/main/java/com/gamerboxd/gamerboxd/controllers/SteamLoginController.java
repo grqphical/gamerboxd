@@ -160,6 +160,26 @@ public class SteamLoginController {
         return "redirect:/users/" + currentUser.getId() + "/settings";
     }
 
+    @GetMapping("/auth/steam/sync-library")
+    public String syncSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser, Model model) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        User user = userService.getUserById(currentUser.getId()).get();
+
+        if (user.getSteamID() == "") {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No Steam account linked");
+        }
+
+        List<SteamGame> games = steamService.getUserSteamLibrary(user.getSteamID());
+        model.addAttribute("games", games);
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("userID", user.getId());
+
+        return "steam/linkLibrary";
+    }
+
     @PostMapping("/auth/steam/link-library")
     public String linkSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser, @RequestParam int userID,
             @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds) {
