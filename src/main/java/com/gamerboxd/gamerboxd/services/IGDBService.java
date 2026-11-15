@@ -122,6 +122,6 @@ public class IGDBService {
                         + ".webp"
                 : null;
 
-        return new Game(id, name, summary, releaseDate, rating, 0.0, genres, artworks, platforms, cover);
+        return new Game(id, name, summary, releaseDate, rating, null, genres, artworks, platforms, cover);
     }
 }
