@@ -49,10 +49,10 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         userService = mock(UserService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new UserController(userService, mock(ReviewService.class), gameService))
         reviewService = mock(ReviewService.class);
+        gameService = mock(GameService.class);
         reviewLikeService = mock(ReviewLikeService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new UserController(userService, reviewService, reviewLikeService))
+        mockMvc = MockMvcBuilders.standaloneSetup(new UserController(userService, reviewService, gameService, reviewLikeService))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 
