@@ -105,6 +105,7 @@ public class SteamLoginController {
             @RequestParam String email,
             @RequestParam String password,
             @RequestParam String confirmPassword,
+            @RequestParam boolean importLibrary,
             Model model) {
 
         try {
@@ -118,6 +119,12 @@ public class SteamLoginController {
             model.addAttribute("email", email);
             return "signup";
         }
+
+        if (importLibrary) {
+            // TODO: Import user's steam library and redirect them to view where they select
+            // which games they want added
+        }
+
         return "redirect:/login?registered";
 
     }
