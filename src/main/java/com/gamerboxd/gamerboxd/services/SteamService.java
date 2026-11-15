@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.gamerboxd.gamerboxd.models.Game;
+import com.gamerboxd.gamerboxd.models.SteamGame;
 
 import jakarta.servlet.http.HttpServletRequest;
 import tools.jackson.databind.JsonNode;
@@ -31,6 +32,7 @@ public class SteamService {
 
     private static String STEAM_OPENID_URL = "https://steamcommunity.com/openid/login";
     private static String STEAM_AUTH_CALLBACK_ENDPOINT = "/auth/steam/callback";
+    private static String STEAM_ICON_URL = "https://media.steampowered.com/steamcommunity/public/images/apps/%s/%s.jpg";
 
     // the regex to extract the user's steam ID
     private static final Pattern CLAIMED_ID = Pattern.compile("^https://steamcommunity\\.com/openid/id/(\\d{17})$");
@@ -129,11 +131,11 @@ public class SteamService {
         }
     }
 
-    public List<Game> getUserSteamLibrary(String steamId) {
-        ArrayList<Game> games = new ArrayList<Game>();
+    public List<SteamGame> getUserSteamLibrary(String steamId) {
+        ArrayList<SteamGame> games = new ArrayList<SteamGame>();
 
         JsonNode root = rest.get().uri(
-                "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={key}&steamid={id}&format=json",
+                "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={key}&steamid={id}&format=json&include_appinfo=true",
                 apiKey, steamId).retrieve().body(JsonNode.class);
 
         JsonNode response = root.path("response");
@@ -152,9 +154,11 @@ public class SteamService {
         for (int i = 0; i < gameCount; i++) {
             JsonNode gameJSON = gamesJSON.get(i);
             int gameAppId = gameJSON.path("appid").asInt();
+            String gameName = gameJSON.path("name").asString();
+            String iconHash = gameJSON.path("img_icon_url").asString();
+            String gameIconURL = String.format(STEAM_ICON_URL, gameAppId, iconHash);
 
-            Game game = igdbService.getGameBySteamAppId(gameAppId);
-            games.add(game);
+            games.add(new SteamGame(gameAppId, gameName, gameIconURL));
         }
 
         return games;
