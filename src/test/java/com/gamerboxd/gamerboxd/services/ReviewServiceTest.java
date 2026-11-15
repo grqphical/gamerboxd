@@ -27,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
@@ -37,6 +38,9 @@ class ReviewServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ReviewLikeRepository reviewLikeRepository;
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
     private final User olivia = new User(2, "olivia", "olivia@gmail.com", "pw", UserRole.USER);

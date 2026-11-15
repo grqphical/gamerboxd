@@ -79,7 +79,7 @@ public class ReviewService {
 
     public void delete(int reviewId, int userId) {
         Review review = getOwnedReview(reviewId, userId);
-        reviewLikeRepository.deletebyReviewId(reviewId);
+        reviewLikeRepository.deleteByReviewId(reviewId);
         reviewRepository.delete(review);
     }
 }

@@ -12,8 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import java.util.List;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,12 +28,14 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
 
 class ReviewControllerTest {
         private ReviewService reviewService;
         private UserService userService;
+        private ReviewLikeService reviewLikeService;
         private MockMvc mockMvc;
 
         private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
@@ -45,7 +45,8 @@ class ReviewControllerTest {
         void setUp() {
                 reviewService = mock(ReviewService.class);
                 userService = mock(UserService.class);
-                mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService, userService))
+                reviewLikeService = mock(ReviewLikeService.class);
+                mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService, userService, reviewLikeService))
                                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                                 .build();
 

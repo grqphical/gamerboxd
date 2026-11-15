@@ -13,5 +13,5 @@ public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Integer>
     boolean existsByReviewIdAndUserId(int reviewId, int userId);
     Optional<ReviewLike> findByReviewIdAndUserId(int reviewId, int userId);
     @Transactional 
-    void deletebyReviewId(int reviewId);
+    void deleteByReviewId(int reviewId);
 }
