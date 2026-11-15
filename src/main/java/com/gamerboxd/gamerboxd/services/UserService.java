@@ -262,4 +262,12 @@ public class UserService implements UserDetailsService {
         user.setSteamID(null);
         userRepository.save(user);
     }
+
+    /** 
+     * Exposed wrapper for saving to the UserRepository 
+     * Used in UserController.java
+     * */
+    public User save(User user) {
+        return userRepository.save(user);
+    }
 }
