@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.services.UserService;
@@ -27,12 +28,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class ReviewController {
     private final ReviewService reviewService;
     private final UserService userService;
+    private final ReviewLikeService reviewLikeService;
 
-    public ReviewController(ReviewService reviewService, UserService userService) {
+    public ReviewController(
+        ReviewService reviewService, 
+        UserService userService, 
+        ReviewLikeService reviewLikeService) {
         this.reviewService = reviewService;
         this.userService = userService;
+        this.reviewLikeService = reviewLikeService;
     }
 
+    @PostMapping("/reviews/{id}/like")
+    public String like(@PathVariable int id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
+            @RequestParam(required = false) Integer profileId) {
+        reviewLikeService.toggleLike(id, currentUser.getId());
+        return profileId != null ? "redirect:/users/" + profileId : "redirect:/";
+    }
+    
     @PostMapping("/reviews/{id}/delete")
     public String delete(@PathVariable int id,
             @AuthenticationPrincipal AuthenticatedUser currentUser,

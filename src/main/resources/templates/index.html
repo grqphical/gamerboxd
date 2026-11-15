@@ -73,14 +73,23 @@
                     <span th:if="${r.updatedAt != null}" class="fst-italic">· edited
                         <time th:attr="datetime=${r.updatedAt}" th:text="${r.updatedAt}"></time></span>
                 </small>
-                <a th:if="${currentUser != null and currentUser.id == r.user.id}"
-                    th:href="@{/reviews/{id}/edit(id=${r.id})}" class="btn btn-sm btn-outline-secondary ms-2">Edit</a>
+                <div class="mt-2 d-flex align-items-center gap-2">
+                    <form th:if="${currentUser}" th:action="@{/reviews/{id}/like(id=${r.id})}" method="post" class="m-0">
+                        <button type="submit" class="btn btn-sm"
+                                th:classappend="${likedIds.contains(r.id)} ? 'btn-danger' : 'btn-outline-danger'"
+                                th:text="${likedIds.contains(r.id)} ? '♥ Liked' : '♡ Like'">♡ Like</button>
+                    </form>
+                    <span class="text-muted small" th:text="${'♥ ' + (likeCounts[r.id] ?: 0)}">♥ 0</span>
 
-                <form th:if="${currentUser != null and currentUser.id == r.user.id}"
-                    th:action="@{/reviews/{id}/delete(id=${r.id})}" method="post" class="d-inline"
-                    onsubmit="return confirm('Delete this review?');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Delete</button>
-                </form>
+                    <a th:if="${currentUser != null and currentUser.id == r.user.id}"
+                    th:href="@{/reviews/{id}/edit(id=${r.id})}" class="btn btn-sm btn-outline-secondary">Edit</a>
+
+                    <form th:if="${currentUser != null and currentUser.id == r.user.id}"
+                        th:action="@{/reviews/{id}/delete(id=${r.id})}" method="post" class="m-0"
+                        onsubmit="return confirm('Delete this review?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

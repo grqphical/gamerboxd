@@ -18,17 +18,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.repositories.RememberMeTokenRepository;
+import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class SignUpFlowTest {
     private static final String PASSWORD = "s3cret-passphrase";
 
@@ -42,9 +45,12 @@ class SignUpFlowTest {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private ReviewRepository reviewRepository;
+    @Autowired
+    private ReviewLikeRepository reviewLikeRepository;
 
     @BeforeEach
     void setUp() {
+        reviewLikeRepository.deleteAll();
         reviewRepository.deleteAll();
         tokenRepository.deleteAll();
         userRepository.deleteAll();
