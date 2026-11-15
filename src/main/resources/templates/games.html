@@ -17,18 +17,14 @@
             </button>
 
             <div class="collapse navbar-collapse" id="mainNav">
-                <div class="row w-100 g-0 align-items-center">
-                <div class="col-lg-4"></div>
-                <div class="col-lg-4">
-                <form class="d-flex mx-lg-auto mt-3 mt-lg-0" style="max-width: 280px;" role="search"
+                <form class="d-flex flex-grow-1 mx-lg-auto mt-3 mt-lg-0" style="max-width: 280px;" role="search"
                     th:action="@{/search}" method="get">
                     <input class="form-control me-2" type="search" name="q" placeholder="Search games"
                         aria-label="Search games" required>
                     <button class="btn btn-outline-primary" type="submit">Search</button>
                 </form>
 
-                </div>
-                <div class="col-lg-4 d-flex justify-content-lg-end align-items-center gap-2 mt-3 mt-lg-0">
+                <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
                     <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
                     <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
 
@@ -59,7 +55,6 @@
                             </li>
                         </ul>
                     </div>
-                </div>
                 </div>
             </div>
         </div>
