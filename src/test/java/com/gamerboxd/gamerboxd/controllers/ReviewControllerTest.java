@@ -12,8 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import java.util.List;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,12 +28,14 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
 
 class ReviewControllerTest {
         private ReviewService reviewService;
         private UserService userService;
+        private ReviewLikeService reviewLikeService;
         private MockMvc mockMvc;
 
         private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
@@ -45,7 +45,8 @@ class ReviewControllerTest {
         void setUp() {
                 reviewService = mock(ReviewService.class);
                 userService = mock(UserService.class);
-                mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService, userService))
+                reviewLikeService = mock(ReviewLikeService.class);
+                mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService, userService, reviewLikeService))
                                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                                 .build();
 
@@ -213,5 +214,32 @@ class ReviewControllerTest {
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("reviews/edit"))
                                 .andExpect(model().attribute("from", "profile"));
+        }
+
+        @Test
+        void like_redirectsToHome() throws Exception {
+        mockMvc.perform(post("/reviews/5/like"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
+
+        verify(reviewLikeService).toggleLike(5, 1);
+        }
+
+        @Test
+        void like_fromProfile_redirectsToThatProfile() throws Exception {
+        mockMvc.perform(post("/reviews/5/like").param("profileId", "2"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/2"));
+
+        verify(reviewLikeService).toggleLike(5, 1);
+        }
+
+        @Test
+        void like_missingReview_returnsNotFound() throws Exception {
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
+                .when(reviewLikeService).toggleLike(99, 1);
+
+        mockMvc.perform(post("/reviews/99/like"))
+                .andExpect(status().isNotFound());
         }
 }

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
@@ -37,6 +39,9 @@ class ReviewServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ReviewLikeRepository reviewLikeRepository;
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
     private final User olivia = new User(2, "olivia", "olivia@gmail.com", "pw", UserRole.USER);
@@ -188,6 +193,7 @@ class ReviewServiceTest {
                 () -> reviewService.delete(5, 2));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
         verify(reviewRepository, never()).delete(any(Review.class));
+        verify(reviewLikeRepository, never()).deleteByReviewId(anyInt());
     }
 
     @Test

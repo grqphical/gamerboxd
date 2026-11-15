@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,6 +23,7 @@ import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
 
@@ -30,11 +32,13 @@ public class UserController {
     private final UserService userService;
     private final ReviewService reviewService;
     private final GameService gameService;
+    private final ReviewLikeService reviewLikeService;
 
-    public UserController(UserService userService, ReviewService reviewService, GameService gameService) {
+    public UserController(UserService userService, ReviewService reviewService, GameService gameService, ReviewLikeService reviewLikeService) {
         this.userService = userService;
         this.reviewService = reviewService;
         this.gameService = gameService;
+        this.reviewLikeService = reviewLikeService;
     }
 
     @GetMapping("/users/{id}")
@@ -75,6 +79,8 @@ public class UserController {
             ? gameService.getSearchResultsByName(gameSearch, searchLimit) // search doesnt cache results
             : List.of();
 
+        List<Integer> ids = userReviews.stream().map(Review::getId).toList();
+
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
         model.addAttribute("favouriteGames", favouriteGames);
@@ -83,6 +89,10 @@ public class UserController {
         model.addAttribute("canAddFavourite", canAddFavourite);
         model.addAttribute("gameSearch", gameSearch);
         model.addAttribute("gameSearchResults", gameSearchResults);
+        model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(ids));
+        model.addAttribute("likedIds", currentUser == null
+                ? Set.<Integer>of()
+                : reviewLikeService.getLikedReviewIds(ids, currentUser.getId()));
 
         if (user.getRole() == UserRole.ADMIN) {
             // TODO: redirect to admin view

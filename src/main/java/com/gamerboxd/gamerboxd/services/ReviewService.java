@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
@@ -16,10 +17,15 @@ import com.gamerboxd.gamerboxd.repositories.UserRepository;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
 
-    public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository) {
+    public ReviewService(
+        ReviewRepository reviewRepository, 
+        UserRepository userRepository, 
+        ReviewLikeRepository reviewLikeRepository) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.reviewLikeRepository = reviewLikeRepository;
     }
 
     public List<Review> getAll() {
@@ -73,6 +79,7 @@ public class ReviewService {
 
     public void delete(int reviewId, int userId) {
         Review review = getOwnedReview(reviewId, userId);
+        reviewLikeRepository.deleteByReviewId(reviewId);
         reviewRepository.delete(review);
     }
 }

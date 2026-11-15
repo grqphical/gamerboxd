@@ -15,13 +15,15 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 import com.gamerboxd.gamerboxd.models.Game;
 
-/**Class responsible for translating IGDB game database entries into our own Game model.*/
+/**
+ * Class responsible for translating IGDB game database entries into our own
+ * Game model.
+ */
 
 @Service
 public class IGDBService {
 
-    private static final String FIELDS =
-        "fields name,summary,rating,first_release_date,genres.name,artworks.image_id,platforms.name,cover.image_id;";
+    private static final String FIELDS = "fields name,summary,rating,first_release_date,genres.name,artworks.image_id,platforms.name,cover.image_id;";
 
     private final RestClient rest;
     private final TwitchTokenService tokens;
@@ -37,13 +39,12 @@ public class IGDBService {
     private <T> T post(String endpoint, String body, ParameterizedTypeReference<T> type) {
         try {
             return send(endpoint, body, type);
-        } 
-        catch (HttpClientErrorException.Unauthorized e) {
+        } catch (HttpClientErrorException.Unauthorized e) {
             // An error here means the token is no longer valid
             tokens.invalidate();
             return send(endpoint, body, type);
         }
-    }   
+    }
 
     private <T> T send(String endpoint, String body, ParameterizedTypeReference<T> type) {
         return rest.post()
@@ -69,9 +70,16 @@ public class IGDBService {
         return result.isEmpty() ? null : result.get(0);
     }
 
+    public Game getGameBySteamAppId(int appId) {
+        String query = FIELDS + "where where external_game_source = 1 & uid = (\"" + appId + "\"); limit 1;";
+        List<Game> result = fetchGames(query);
+        return result.isEmpty() ? null : result.get(0);
+    }
+
     private List<Game> fetchGames(String query) {
         List<JsonNode> nodes = post("/games", query,
-                new ParameterizedTypeReference<List<JsonNode>>() {});
+                new ParameterizedTypeReference<List<JsonNode>>() {
+                });
         return nodes.stream().map(this::toGame).toList();
     }
 
@@ -84,7 +92,7 @@ public class IGDBService {
         String releaseDate = null;
         if (n.hasNonNull("first_release_date")) {
             releaseDate = Instant.ofEpochSecond(n.get("first_release_date").asLong())
-                    .atZone(ZoneOffset.UTC).toLocalDate().toString();   // e.g. "2017-03-03"
+                    .atZone(ZoneOffset.UTC).toLocalDate().toString(); // e.g. "2017-03-03"
         }
 
         List<String> genres = new ArrayList<>();
@@ -109,7 +117,10 @@ public class IGDBService {
             }
         }
 
-        String cover = n.hasNonNull("cover") ? "https://images.igdb.com/igdb/image/upload/t_cover_big/" + n.get("cover").get("image_id").asString() + ".webp" : null;
+        String cover = n.hasNonNull("cover")
+                ? "https://images.igdb.com/igdb/image/upload/t_cover_big/" + n.get("cover").get("image_id").asString()
+                        + ".webp"
+                : null;
 
         return new Game(id, name, summary, releaseDate, rating, 0.0, genres, artworks, platforms, cover);
     }
