@@ -33,6 +33,14 @@ public class ReviewController {
         this.userService = userService;
     }
 
+    @PostMapping("/reviews/{id}/like")
+    public String like(@PathVariable int id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
+            @RequestParam(required = false) String from) {
+        return "";
+    }
+    
+
     @PostMapping("/reviews/{id}/delete")
     public String delete(@PathVariable int id,
             @AuthenticationPrincipal AuthenticatedUser currentUser,
