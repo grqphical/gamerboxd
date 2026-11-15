@@ -7,11 +7,13 @@ public class SteamGame {
     private int appId;
     private String gameName;
     private String iconURL;
+    private int playtimeForever;
 
-    public SteamGame(int appId, String gameName, String iconURL) {
+    public SteamGame(int appId, String gameName, String iconURL, int playtimeForever) {
         this.appId = appId;
         this.gameName = gameName;
         this.iconURL = iconURL;
+        this.playtimeForever = playtimeForever;
     }
 
     public int getAppId() {
@@ -36,5 +38,13 @@ public class SteamGame {
 
     public void setIconURL(String iconURL) {
         this.iconURL = iconURL;
+    }
+
+    public int getPlaytimeForever() {
+        return playtimeForever;
+    }
+
+    public void setPlaytimeForever(int playtimeForever) {
+        this.playtimeForever = playtimeForever;
     }
 }

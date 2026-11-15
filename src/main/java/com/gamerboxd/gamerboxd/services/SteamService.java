@@ -2,6 +2,7 @@ package com.gamerboxd.gamerboxd.services;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -157,9 +158,12 @@ public class SteamService {
             String gameName = gameJSON.path("name").asString();
             String iconHash = gameJSON.path("img_icon_url").asString();
             String gameIconURL = String.format(STEAM_ICON_URL, gameAppId, iconHash);
+            int playtimeForever = gameJSON.path("playtime_forever").asInt();
 
-            games.add(new SteamGame(gameAppId, gameName, gameIconURL));
+            games.add(new SteamGame(gameAppId, gameName, gameIconURL, playtimeForever));
         }
+
+        games.sort((g1, g2) -> -Integer.compare(g1.getPlaytimeForever(), g2.getPlaytimeForever()));
 
         return games;
     }
