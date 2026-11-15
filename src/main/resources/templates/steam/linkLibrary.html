@@ -61,7 +61,7 @@
         <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
 
         <form th:action="@{/auth/steam/link-library}" method="post">
-            <input type="text" name="steamID" id="steamID" th:value="${steamID}" hidden>
+            <input type="text" name="userID" id="userID" th:value="${userID}" hidden>
             <div class="list-group mb-3">
                 <label class="list-group-item d-flex align-items-center gap-3"
                        th:each="game : ${games}">

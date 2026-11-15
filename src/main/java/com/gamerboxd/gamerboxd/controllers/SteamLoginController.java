@@ -86,17 +86,24 @@ public class SteamLoginController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to retrieve profile");
         }
 
-        if (currentUser != null) {
-            // user is already logged into an account so we just need to link their Steam
-            // account to the current user
-            this.userService.linkSteamAccount(steamId, currentUser.getId());
-        }
-
         // If user already has an account linked to steam with us, just log them in
         // manually
         if (this.userService.hasLinkedSteamAccount(steamId)) {
             this.userService.loginWithSteam(steamId, request);
             return "redirect:/";
+        }
+
+        if (currentUser != null) {
+            // user is already logged into an account so we just need to link their Steam
+            // account to the current user
+            this.userService.linkSteamAccount(steamId, currentUser.getId());
+
+            List<SteamGame> games = steamService.getUserSteamLibrary(steamId);
+            model.addAttribute("games", games);
+            model.addAttribute("currentUser", currentUser);
+            model.addAttribute("userID", currentUser.getId());
+
+            return "steam/linkLibrary";
         }
 
         model.addAttribute("profile", profile);
@@ -154,7 +161,7 @@ public class SteamLoginController {
     }
 
     @PostMapping("/auth/steam/link-library")
-    public String linkSteamLibrary(@RequestParam int userID,
+    public String linkSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser, @RequestParam int userID,
             @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds) {
 
         // This is the code you would use to mark the selected games as played.
@@ -163,6 +170,10 @@ public class SteamLoginController {
         // User user = userService.getUserById(userID).get();
         // // TODO: mark game as "played" for the user
         // }
+
+        if (currentUser != null) {
+            return "redirect:/";
+        }
 
         return "redirect:/login?registered";
     }
