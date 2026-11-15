@@ -79,13 +79,28 @@ public class GameService {
     /**
      * - A wrapper function for the IGDBService function. <br>
      * - Use for searching the IGDB database for a game by name. <br>
-     * - Skips the cache to make sure results are unified.
+     * - Skips the cache to make sure results are unified. <br>
+     * - Merges in the cached Gamerboxd ratings, as IGDB knows nothing about them.
      * 
      * @param name  the name of the game you want to search
      * @param limit maximum number of search results you want back
      */
     public List<Game> getSearchResultsByName(String name, int limit) {
-        return igdbService.getSearchResults(name, limit);
+        List<Game> results = igdbService.getSearchResults(name, limit);
+
+        List<Integer> ids = results.stream().map(Game::getId).toList();
+        Map<Integer, Game> cached = gameRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Game::getId, Function.identity()));
+
+        return results.stream().map(g -> {
+            Game c = cached.get(g.getId());
+            if (c == null) {
+                return g;
+            }
+            return new Game(g.getId(), g.getName(), g.getSummary(), g.getReleaseDate(),
+                    g.getRatingIGDB(), c.getRatingGamerboxd(),
+                    g.getGenres(), g.getArtworkLinks(), g.getPlatforms(), g.getCoverLink());
+        }).toList();
     }
 
     /**

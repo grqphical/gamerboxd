@@ -13,13 +13,13 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "Reviews")
 public class Review {
-    @Id 
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne(optional = false)
     private User user;
-    private int gameId;
+    private Integer gameId;
     private int rating; // 1-5
 
     @Column(length = 2000)
@@ -28,7 +28,7 @@ public class Review {
     private Instant createdAt = Instant.now();
     private Instant updatedAt; // null until the review is edited
 
-    public Review(){
+    public Review() {
     }
 
     public Review(User user, int gameId, int rating, String description) {
@@ -38,24 +38,59 @@ public class Review {
         this.description = description;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId() {
+        return id;
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public int getGameId() { return gameId; }
-    public void setGameId(int gameId) { this.gameId = gameId; }
+    public User getUser() {
+        return user;
+    }
 
-    public int getRating() { return rating; }
-    public void setRating(int rating) { this.rating = rating; }
+    public void setUser(User user) {
+        this.user = user;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public int getGameId() {
+        return gameId;
+    }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
+    }
 
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }
