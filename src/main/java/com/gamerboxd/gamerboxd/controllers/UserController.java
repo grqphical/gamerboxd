@@ -79,7 +79,8 @@ public class UserController {
             ? gameService.getSearchResultsByName(gameSearch, searchLimit) // search doesnt cache results
             : List.of();
 
-        List<Integer> ids = userReviews.stream().map(Review::getId).toList();
+        List<Integer> reviewIds = userReviews.stream().map(Review::getId).toList();
+        List<Integer> gameIds = userReviews.stream().map(Review::getGameId).toList();
 
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
@@ -89,14 +90,11 @@ public class UserController {
         model.addAttribute("canAddFavourite", canAddFavourite);
         model.addAttribute("gameSearch", gameSearch);
         model.addAttribute("gameSearchResults", gameSearchResults);
-        model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(ids));
+        model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
+        model.addAttribute("reviewGameNames", gameService.getGameNames(gameIds));
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
-                : reviewLikeService.getLikedReviewIds(ids, currentUser.getId()));
-
-        if (user.getRole() == UserRole.ADMIN) {
-            // TODO: redirect to admin view
-        }
+                : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));
 
         return "users/profile";
     }
