@@ -69,10 +69,11 @@ public class GameService {
      * <pre> New Average = Old Average + (x - Old Average)/(n + 1) </pre>
      * @param igdbID The game's id on IGDB (Should be the same id in the db).
      * @param rating The star rating in [0, 5] (star rating).
+     * @param adding Choice whether to add rating to total or remove it
      * @exception IllegalArgumentException for `rating` not in desired range.
      * @exception IllegalArgumentException for bad `igdbId`.
      */
-    public void updateGameRating(int igdbID, int rating) {
+    public void updateGameRating(int igdbID, int rating, boolean adding) {
         if (rating < 0 || rating > 5) {
             throw new IllegalArgumentException(
                 "GameService::updateGameRating: parameter `rating` " +
@@ -85,7 +86,11 @@ public class GameService {
             "doesn't map to any associated `Game`. Got: " + igdbID + "."  
         ));
 
-        game.updateRatingGamerboxd(rating);
+        if (adding) {
+            game.updateRatingGamerboxd(rating);
+        } else {
+            game.removeRatingGamerboxd(rating);
+        }
         gameRepository.save(game);
     }
 

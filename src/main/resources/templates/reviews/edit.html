@@ -54,8 +54,11 @@
         </div>
     </nav>
     <div class="container py-5" style="max-width: 600px;">
-        <h1 class="mb-1">Edit Review</h1>
-        <p class="text-muted mb-4" th:text="${review.gameName}">Game</p>
+        <h1 class="mb-4">Edit Review</h1>
+        <h2 class="h3 mb-2">
+            <a th:href="@{/games/{id}(id=${review.gameId})}" class="text-reset"
+                th:text="${gameName ?: 'Unknown game'}">Game</a>
+        </h2>
 
         <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
 

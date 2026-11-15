@@ -1,10 +1,15 @@
 package com.gamerboxd.gamerboxd.controllers;
 
+import java.util.List;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+import com.gamerboxd.gamerboxd.models.Game;
+import com.gamerboxd.gamerboxd.models.Review;
+import com.gamerboxd.gamerboxd.services.GameService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.models.User;
@@ -28,14 +33,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class ReviewController {
     private final ReviewService reviewService;
     private final UserService userService;
+    private final GameService gameService;
     private final ReviewLikeService reviewLikeService;
 
     public ReviewController(
         ReviewService reviewService, 
         UserService userService, 
+        GameService gameService,
         ReviewLikeService reviewLikeService) {
         this.reviewService = reviewService;
         this.userService = userService;
+        this.gameService = gameService;
         this.reviewLikeService = reviewLikeService;
     }
 
@@ -60,7 +68,10 @@ public class ReviewController {
             @AuthenticationPrincipal AuthenticatedUser currentUser,
             @RequestParam(required = false) String from,
             Model model) {
-        model.addAttribute("review", reviewService.getOwnedReview(id, currentUser.getId()));
+        Review review = reviewService.getOwnedReview(id, currentUser.getId());
+
+        model.addAttribute("review", review);
+        model.addAttribute("gameName", gameService.getGameNames(List.of(review.getGameId())).get(review.getGameId()));
         model.addAttribute("from", from);
         model.addAttribute("currentUser", currentUser);
         return "reviews/edit";
@@ -90,12 +101,21 @@ public class ReviewController {
     }
 
     @GetMapping("/reviews/new")
-    public String form(@AuthenticationPrincipal AuthenticatedUser currentUser, Model model) {
+    public String form(@AuthenticationPrincipal AuthenticatedUser currentUser,
+                    @RequestParam(defaultValue = "") String q,
+                    Model model) {
         model.addAttribute("currentUser", currentUser);
 
         final boolean isPrivate = userService.getUserById(currentUser.getId())
                 .map(User::isPrivateAccount).orElse(false);
         model.addAttribute("isPrivateAccount", isPrivate);
+
+        String query = q.trim();
+        List<Game> results = query.isEmpty()
+                ? List.of()
+                : gameService.getSearchResultsByName(query, 10);
+        model.addAttribute("query", query);
+        model.addAttribute("gameResults", results);
 
         return "reviews/form";
     }

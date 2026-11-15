@@ -32,8 +32,9 @@ public class GameViewController {
     }
 
     @GetMapping("/games/{id}")
-    public String gameView(@PathVariable int id, Model model) {
+    public String gameView(@AuthenticationPrincipal AuthenticatedUser currentUser, @PathVariable int id, Model model) {
         Game game = gameService.getGameByID(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game ID does not match an existing game."));
+        model.addAttribute("currentUser", currentUser);
         model.addAttribute("game", game);
         return "games";
     }

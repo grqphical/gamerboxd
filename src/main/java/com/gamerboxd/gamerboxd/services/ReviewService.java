@@ -63,6 +63,7 @@ public class ReviewService {
     public Review create(int userId, int gameId, int rating, String description) {
         validate(gameId, rating, description);
         User user = userRepository.getReferenceById(userId);
+        gameService.updateGameRating(gameId, rating, true);
         return reviewRepository.save(new Review(user, gameId, rating, description.trim()));
     }
 
@@ -77,15 +78,18 @@ public class ReviewService {
 
     public Review update(int reviewId, int userId, int rating, String description) {
         Review review = getOwnedReview(reviewId, userId);
+        gameService.updateGameRating(review.getGameId(), review.getRating(), false);
         validateContent(rating, description);
         review.setRating(rating);
         review.setDescription(description.trim());
         review.setUpdatedAt(Instant.now());
+        gameService.updateGameRating(review.getGameId(), review.getRating(), true);
         return reviewRepository.save(review);
     }
 
     public void delete(int reviewId, int userId) {
         Review review = getOwnedReview(reviewId, userId);
+        gameService.updateGameRating(review.getGameId(), review.getRating(), false);
         reviewLikeRepository.deleteByReviewId(reviewId);
         reviewRepository.delete(review);
     }

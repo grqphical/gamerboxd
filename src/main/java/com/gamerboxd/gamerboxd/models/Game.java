@@ -117,4 +117,16 @@ public class Game {
         ++this.numRatingsGamerboxd;
         this.ratingGamerboxd += (x - this.ratingGamerboxd) / (this.numRatingsGamerboxd);
     }
+
+    public void removeRatingGamerboxd(int x) {
+        if (this.numRatingsGamerboxd <= 0) {
+            throw new IllegalStateException("No ratings to remove.");
+        }
+        --this.numRatingsGamerboxd;
+        if (this.numRatingsGamerboxd == 0) {
+            this.ratingGamerboxd = 0.0;
+        } else {
+            this.ratingGamerboxd += (this.ratingGamerboxd - x) / this.numRatingsGamerboxd;
+        }
+    }
 }
