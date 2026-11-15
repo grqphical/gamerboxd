@@ -1,6 +1,7 @@
 package com.gamerboxd.gamerboxd.services;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
+import com.gamerboxd.gamerboxd.models.GameStatus;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -263,10 +265,18 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    /** 
-     * Exposed wrapper for saving to the UserRepository 
+    @Transactional
+    public void setGameStatuses(int userId, Collection<Integer> gameIds, GameStatus status) {
+        User user = userRepository.findById(userId).orElseThrow();
+        for (int gameId : gameIds) {
+            user.setGameStatus(gameId, status);
+        }
+    }
+
+    /**
+     * Exposed wrapper for saving to the UserRepository
      * Used in UserController.java
-     * */
+     */
     public User save(User user) {
         return userRepository.save(user);
     }

@@ -24,6 +24,7 @@ import com.gamerboxd.gamerboxd.models.GameStatus;
 import com.gamerboxd.gamerboxd.models.SteamGame;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.SteamLibraryLinkJobService;
 import com.gamerboxd.gamerboxd.services.SteamService;
 import com.gamerboxd.gamerboxd.services.UserService;
 import com.gamerboxd.gamerboxd.services.SteamService.SteamProfile;
@@ -35,15 +36,16 @@ public class SteamLoginController {
 
     private final SteamService steamService;
     private final UserService userService;
-    private final GameService gameService;
+    private final SteamLibraryLinkJobService steamLibraryLinkJobService;
 
     @Value("${app.base-url}")
     private String baseUrl;
 
-    public SteamLoginController(SteamService steamService, UserService userService, GameService gameService) {
+    public SteamLoginController(SteamService steamService, UserService userService,
+            SteamLibraryLinkJobService steamLibraryLinkJobService) {
         this.steamService = steamService;
         this.userService = userService;
-        this.gameService = gameService;
+        this.steamLibraryLinkJobService = steamLibraryLinkJobService;
     }
 
     /*
@@ -183,22 +185,8 @@ public class SteamLoginController {
             @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds,
             @RequestParam Map<String, String> params) {
 
-        // set the status on a single loaded user, then persist it — without an
-        // explicit save the changes are only flushed if a later game insert
-        // happens to trigger a flush, which silently drops some statuses
         if (selectedAppIds != null) {
-            User user = userService.getUserById(currentUser.getId()).get();
-
-            for (int appId : selectedAppIds) {
-                String name = params.get("gameNames[" + appId + "]");
-                Optional<Game> game = gameService.getGameBySteamAppID(appId, name);
-
-                if (game.isPresent()) {
-                    user.setGameStatus(game.get().getId(), GameStatus.PLAYED);
-                }
-            }
-
-            userService.save(user);
+            steamLibraryLinkJobService.linkUserSteamLibrary(currentUser.getId(), selectedAppIds, params);
         }
 
         if (currentUser != null) {
