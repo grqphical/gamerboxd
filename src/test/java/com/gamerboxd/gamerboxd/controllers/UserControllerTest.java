@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,6 +28,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+import com.gamerboxd.gamerboxd.models.Game;
+import com.gamerboxd.gamerboxd.models.GameStatus;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
@@ -133,5 +136,32 @@ class UserControllerTest {
                 .andExpect(model().attribute("likedIds", Set.of()));
 
         verify(reviewLikeService, never()).getLikedReviewIds(anyCollection(), anyInt());
+    }
+
+    @Test
+    void updateGameStatus_savesStatusForOwnProfile() throws Exception {
+        signInAs(john);
+        when(gameService.getGameByID(99)).thenReturn(Optional.of(mock(Game.class)));
+
+        mockMvc.perform(post("/users/1/games/status")
+                        .param("igdbID", "99")
+                        .param("status", "PLAYED"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/1"));
+
+        org.junit.jupiter.api.Assertions.assertEquals(GameStatus.PLAYED, john.getGameStatuses().get(99));
+        verify(userService).save(john);
+    }
+
+    @Test
+    void updateGameStatus_rejectsOtherUsersProfile() throws Exception {
+        signInAs(olivia);
+
+        mockMvc.perform(post("/users/1/games/status")
+                        .param("igdbID", "99")
+                        .param("status", "PLAYED"))
+                .andExpect(status().isForbidden());
+
+        verify(userService, never()).save(john);
     }
 }

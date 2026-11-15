@@ -2,14 +2,21 @@ package com.gamerboxd.gamerboxd.models;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 
@@ -42,6 +49,13 @@ public class User {
     @OrderColumn 
     private List<Integer> favouriteIgdbIDs = 
         new ArrayList<>(Collections.nCopies(MAX_FAVOURITE_GAMES, 0)); // initialized to MAX_FAVOURITE_GAMES copies of 0.
+
+    @ElementCollection
+    @CollectionTable(name = "user_game_statuses", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "igdb_id")
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Map<Integer, GameStatus> gameStatuses = new HashMap<>();
 
     public static final int MAX_DESCRIPTION_LENGTH = 250;
     public static final int MAX_FAVOURITE_GAMES = 5; // safe to change, lowering will drop the lowest ranked favourites
@@ -208,5 +222,17 @@ public class User {
 
         updated.set(index, igdbID);
         setFavouriteIgdbIDs(updated);
+    }
+
+    public Map<Integer, GameStatus> getGameStatuses() {
+        return Map.copyOf(gameStatuses);
+    }
+
+    public void setGameStatus(int igdbID, GameStatus status) {
+        if (status == null) {
+            gameStatuses.remove(igdbID);
+        } else {
+            gameStatuses.put(igdbID, status);
+        }
     }
 }
