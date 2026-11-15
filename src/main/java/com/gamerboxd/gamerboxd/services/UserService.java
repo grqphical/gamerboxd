@@ -23,6 +23,7 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
@@ -39,12 +40,14 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ReviewLikeRepository reviewLikeRepository;
 
     public UserService(UserRepository userRepository, ReviewRepository reviewRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder, ReviewLikeRepository reviewLikeRepository) {
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.passwordEncoder = passwordEncoder;
+        this.reviewLikeRepository = reviewLikeRepository;
     }
 
     public Optional<User> getUserById(int id) {
@@ -58,6 +61,7 @@ public class UserService implements UserDetailsService {
     @Transactional
     public void deleteUser(int id) { // Used in admin panel and later self account deletion
         reviewRepository.deleteAll(reviewRepository.findAllByUserIdOrderByCreatedAtDesc(id));
+        reviewLikeRepository.deleteByUserId(id);
         userRepository.deleteById(id);
     }
 
