@@ -180,10 +180,12 @@ public class SteamLoginController {
 
     @PostMapping("/auth/steam/link-library")
     public String linkSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser,
-            @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds) {
+            @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds,
+            @RequestParam Map<String, String> params) {
 
         for (int i = 0; i < selectedAppIds.size(); i++) {
-            Optional<Game> game = gameService.getGameBySteamAppID(selectedAppIds.get(i));
+            String name = params.get("gameNames[" + selectedAppIds.get(i) + "]");
+            Optional<Game> game = gameService.getGameBySteamAppID(selectedAppIds.get(i), name);
             User user = userService.getUserById(currentUser.getId()).get();
 
             if (game.isPresent()) {

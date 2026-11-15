@@ -70,14 +70,18 @@ public class IGDBService {
         return result.isEmpty() ? null : result.get(0);
     }
 
-    public Game getGameBySteamAppId(int appId) {
+    public Game getGameBySteamAppId(int appId, String gameName) {
         String query = "fields game; where external_game_source = 1 & uid = \"" + appId + "\"; limit 1;";
         List<JsonNode> nodes = post("/external_games", query,
                 new ParameterizedTypeReference<List<JsonNode>>() {
                 });
 
         if (nodes.isEmpty() || !nodes.get(0).hasNonNull("game")) {
-            return null; // IGDB has no entry for this Steam app
+            List<Game> searchResults = this.getSearchResults(gameName, 1);
+            if (searchResults.size() == 0)
+                return null;
+            else
+                return searchResults.get(0);
         }
         return getGame(nodes.get(0).get("game").asInt());
     }

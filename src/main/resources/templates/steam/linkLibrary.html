@@ -83,6 +83,10 @@
                            name="selectedAppIds"
                            th:value="${game.appId}"
                            th:id="${'game-' + game.appId}">
+                    <input type="hidden"
+                           th:name="${'gameNames[' + game.appId + ']'}"
+                           th:value="${game.gameName}"
+                           disabled>
                     <img th:src="${game.iconURL}"
                          th:alt="${game.gameName}"
                          width="32" height="32"
@@ -94,9 +98,20 @@
             <script>
                 (function () {
                     const form = document.currentScript.closest('form');
+                    const checkboxes = form.querySelectorAll('input[name="selectedAppIds"]');
+        
+                    // Enable the hidden name input only while its checkbox is checked
+                    const sync = (cb) => {
+                        cb.parentElement.querySelector('input[type="hidden"]').disabled = !cb.checked;
+                    };
+        
                     const setAll = (checked) =>
-                        form.querySelectorAll('input[name="selectedAppIds"]')
-                            .forEach(cb => cb.checked = checked);
+                        checkboxes.forEach(cb => {
+                            cb.checked = checked;
+                            sync(cb);
+                        });
+        
+                    checkboxes.forEach(cb => cb.addEventListener('change', () => sync(cb)));
         
                     form.querySelector('#select-all').addEventListener('click', () => setAll(true));
                     form.querySelector('#deselect-all').addEventListener('click', () => setAll(false));
