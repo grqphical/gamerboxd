@@ -94,12 +94,12 @@
                     
                     <span class="fw-bold fs-5" style="width: 2rem;" th:text="|#${stat.count}|"></span>
                     <!-- IGDB covers are 264 x 352 which is 3:4 ratio 
-                         so im making these 66x88 to avoid cropping -->
+                         so im making these 90x120 to avoid cropping -->
                     <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="rounded" 
-                        style="width: 66px; height: 88px; object-fit: cover;">
+                        style="width: 90px; height: 120px; object-fit: cover;">
 
                     <div th:if="${game.coverLink == null}" class="rounded bg-secondary-subtle"
-                        style="width: 66px; height: 88px;"></div>
+                        style="width: 90px; height: 120px;"></div>
 
                     <span class="fw-semibold" th:text="${game.name}"></span>
                     
