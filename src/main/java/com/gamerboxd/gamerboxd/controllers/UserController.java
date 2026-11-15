@@ -1,6 +1,7 @@
 package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -153,6 +154,30 @@ public class UserController {
         int slot = user.getFavouriteIgdbIDs().indexOf(igdbID);
         if (slot != -1) {
             user.setFavouriteIgdbID(slot, User.NULL_FAVOURITE_GAME);
+            userService.save(user);
+        }
+
+        return "redirect:/users/" + user.getId();
+    }
+
+    @PostMapping("/favourites/move")
+    public String moveFavourite(@RequestParam int igdbID,
+            @RequestParam String direction,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        User user = userService.getUserById(currentUser.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "User not found with ID: " + currentUser.getId()));
+
+        List<Integer> ids = user.getFavouriteIgdbIDs();
+        int fromIndex = ids.indexOf(igdbID);
+        int toIndex = (direction.equals("up")) ? fromIndex - 1 : fromIndex + 1;
+
+        if (fromIndex != -1 && toIndex >= 0 && toIndex < ids.size()) {
+            Collections.swap(ids, fromIndex, toIndex);
+            user.setFavouriteIgdbIDs(ids);
             userService.save(user);
         }
 
