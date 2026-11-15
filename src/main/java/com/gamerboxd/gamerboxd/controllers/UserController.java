@@ -117,9 +117,9 @@ public class UserController {
         return "redirect:/login?registered";
     }
 
-    /** Put a igbd game id in the users first available slot if any */
+    /** Put a igdb game id in the users first available slot if any */
     @PostMapping("/favourites/add")
-    public String addFavourite(@RequestParam int igbdID,
+    public String addFavourite(@RequestParam int igdbID,
         @AuthenticationPrincipal AuthenticatedUser currentUser) {
         if (currentUser == null) {
             return "redirect:/login";
@@ -131,8 +131,8 @@ public class UserController {
         List<Integer> ids = user.getFavouriteIgdbIDs();
         int emptySlot = ids.indexOf(User.NULL_FAVOURITE_GAME); // index of the first occurrence of 0
 
-        if (emptySlot != -1 && !ids.contains(igbdID) && gameService.getGameByID(igbdID).isPresent()) {
-            user.setFavouriteIgdbID(emptySlot, igbdID);
+        if (emptySlot != -1 && !ids.contains(igdbID) && gameService.getGameByID(igdbID).isPresent()) {
+            user.setFavouriteIgdbID(emptySlot, igdbID);
             userService.save(user);
         }
 

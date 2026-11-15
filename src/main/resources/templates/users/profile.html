@@ -73,25 +73,73 @@
 
         <div th:unless="${user.isPrivateAccount and !isOwnProfile}" class="mb-4">
             <h3>Favourite Games</h3>
-            <p class="text-muted" th:if="${#lists.isEmpty(favouriteGames)}">No favourites yet.</p>
-            <p class="text-muted" th:if="${!#lists.isEmpty(favouriteGames) and user.isPrivateAccount}">
+            <p class="text-muted" th:if="${favouriteGames.isEmpty()}">No favourites yet.</p>
+            <p class="text-muted" th:if="${!favouriteGames.isEmpty() and user.isPrivateAccount}">
                 Only you can see your favourites because your account is set to private
             </p>
-            <ol class="list-group" th:unless="${#lists.isEmpty(favouriteGames)}">
+            <ol class="list-group" th:if="${!favouriteGames.isEmpty() or canAddFavourite}">
                 <li class="list-group-item d-flex align-items-center gap-2" th:each="game, stat : ${favouriteGames}">
-
                     <span class="fw-bold fs-5" style="width: 2rem;" th:text="|#${stat.count}|"></span>
-                    
-                    <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" th:alt="${game.name}"
-                        class="rounded" style="width: 65px; height: 90px; object-fit: cover;">
+
+                    <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="rounded" 
+                        style="width: 65px; height: 90px; object-fit: cover;">
 
                     <div th:if="${game.coverLink == null}" class="rounded bg-secondary-subtle"
                         style="width: 65px; height: 90px;"></div>
 
                     <span class="fw-semibold" th:text="${game.name}"></span>
                     
+                    <form th:if="${isOwnProfile}" th:action="@{/favourites/remove}" method="post"
+                        class="position-absolute top-0 end-0 m-2">
+                        <input type="hidden" name="igdbID" th:value="${game.id}">
+                        <button type="submit" class="btn-close" aria-label="Remove"></button>
+                    </form>
+
+                </li>
+
+                <li th:if="${canAddFavourite}" class="list-group-item list-group-item-action position-relative text-center">
+                    <a href="#favouriteSearch" data-bs-toggle="collapse"
+                        class="stretched-link text-decoration-none text-muted fs-1" style="line-height: 90px;">+</a>
                 </li>
             </ol>
+
+            <div th:if="${canAddFavourite}" id="favouriteSearch" class="collapse mt-2"
+                th:classappend="${gameSearch != null ? 'show' : ''}">
+                <form th:action="@{/users/{id}(id=${user.id})}" method="get" class="d-flex gap-2 mb-2">
+                    <input type="text" name="gameSearch" class="form-control" placeholder="Search for a game"
+                        th:value="${gameSearch}" required>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+
+                <p class="text-muted" th:if="${gameSearch != null and gameSearchResults.isEmpty()}">No games found</p>
+
+                <div class="row row-cols-5 g-2" th:unless="${gameSearchResults.isEmpty()}">
+                    <div class="col" th:each="game : ${gameSearchResults}">
+
+                        <form th:action="@{/favourites/add}" method="post" class="h-100">
+                            <input type="hidden" name="igdbID" th:value="${game.id}">
+
+                            <button type="submit" class="card h-100 w-100 p-0 text-start shadow-sm overflow-hidden">
+
+                                <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="w-100" 
+                                    style="height: 180px; object-fit: cover;">
+
+                                <div th:if="${game.coverLink == null}" class="w-100 bg-secondary-subtle"
+                                    style="height: 180px; object-fit: cover;">
+                                </div>
+
+                                <div class="p-1 w-100">
+                                    <div class="small fw-semibold text-truncate" th:text="${game.name}"></div>
+                                </div>
+                            </button>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+
         </div>
 
         <div th:unless="${user.isPrivateAccount and !isOwnProfile}">
