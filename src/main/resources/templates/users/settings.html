@@ -100,7 +100,7 @@
                     <div class="d-flex align-items-center gap-3">
                         <img th:src="@{/images/steam.svg}" alt="Steam logo" width="32" height="32">
                         <div>
-                            <div class="fw-semibold">Steam account not linked</div>
+                            <div class="fw-semibold">Steam account</div>
                             <small class="text-muted">
                                 <i class="bi bi-x-circle"></i> Not connected
                             </small>
@@ -110,7 +110,7 @@
                     <a th:href="@{/auth/steam}"
                        class="btn btn-dark btn-sm d-inline-flex align-items-center gap-2"
                        style="background-color: #171a21; border-color: #171a21;">
-                        <i class="bi bi-link-45deg"></i> Link Steam Account
+                        Link Steam Account
                     </a>
                 </div>
             </div>
@@ -127,8 +127,8 @@
                     </div>
             
                     <div class="d-flex gap-2">
-                        <a th:href="@{/auth/steam/sync-library}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-arrow-repeat"></i> Sync Library
+                        <a th:href="@{/auth/steam/sync-library}" class="btn btn-secondary btn-sm">
+                            Sync Library
                         </a>
                         <a th:href="@{/auth/steam/unlink}"
                            class="btn btn-outline-danger btn-sm"
