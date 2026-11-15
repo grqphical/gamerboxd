@@ -1,6 +1,7 @@
 package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.Map;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+import com.gamerboxd.gamerboxd.models.SteamGame;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.services.SteamService;
 import com.gamerboxd.gamerboxd.services.UserService;
@@ -106,6 +108,7 @@ public class SteamLoginController {
             @RequestParam String password,
             @RequestParam String confirmPassword,
             @RequestParam boolean importLibrary,
+            HttpServletRequest request,
             Model model) {
 
         try {
@@ -121,8 +124,14 @@ public class SteamLoginController {
         }
 
         if (importLibrary) {
-            // TODO: Import user's steam library and redirect them to view where they select
-            // which games they want added
+            if (steamID == "") {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "failed to retrieve steam ID");
+            }
+
+            List<SteamGame> games = steamService.getUserSteamLibrary(steamID);
+            model.addAttribute("games", games);
+
+            return "steam/linkLibrary.html";
         }
 
         return "redirect:/login?registered";

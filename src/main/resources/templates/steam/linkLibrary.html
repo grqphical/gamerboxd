@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamerboxd</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="/">Gamerboxd</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                    <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
+                    <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
+
+                    <div class="dropdown" th:if="${currentUser}">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            th:text="|Hello, ${currentUser.displayName}|">
+                            Hello, username
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" th:href="@{/users/{id}(id=${currentUser.id})}">
+                                    Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" th:href="@{/users/{id}/settings(id=${currentUser.id})}">
+                                    Account Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5" style="max-width: 400px;">
+        <h1 class="mb-4" th:text="|Select Steam games to import|"></h1>
+
+        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+        <form th:action="@{/games/select}" method="post">
+            <div class="list-group mb-3">
+                <label class="list-group-item d-flex align-items-center gap-3"
+                       th:each="game : ${games}">
+                    <input class="form-check-input flex-shrink-0 m-0"
+                           type="checkbox"
+                           name="selectedAppIds"
+                           th:value="${game.appId}"
+                           th:id="${'game-' + game.appId}">
+                    <img th:src="${game.iconURL}"
+                         th:alt="${game.gameName}"
+                         width="32" height="32"
+                         class="rounded">
+                    <span th:text="${game.gameName}">Game Name</span>
+                </label>
+            </div>
+        
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
