@@ -10,8 +10,13 @@ import jakarta.transaction.Transactional;
 
 public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Integer> {
     long countByReviewId(int reivewId);
+
     boolean existsByReviewIdAndUserId(int reviewId, int userId);
+
     Optional<ReviewLike> findByReviewIdAndUserId(int reviewId, int userId);
-    @Transactional 
+
+    @Transactional
     void deleteByReviewId(int reviewId);
+
+    void deleteByUserId(int userId);
 }

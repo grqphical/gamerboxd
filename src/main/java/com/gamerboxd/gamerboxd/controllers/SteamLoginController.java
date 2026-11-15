@@ -1,6 +1,7 @@
 package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.Map;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,9 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+import com.gamerboxd.gamerboxd.models.SteamGame;
 import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.services.GameService;
 import com.gamerboxd.gamerboxd.services.SteamService;
 import com.gamerboxd.gamerboxd.services.UserService;
 import com.gamerboxd.gamerboxd.services.SteamService.SteamProfile;
@@ -29,13 +32,15 @@ public class SteamLoginController {
 
     private final SteamService steamService;
     private final UserService userService;
+    private final GameService gameService;
 
     @Value("${app.base-url}")
     private String baseUrl;
 
-    public SteamLoginController(SteamService steamService, UserService userService) {
+    public SteamLoginController(SteamService steamService, UserService userService, GameService gameService) {
         this.steamService = steamService;
         this.userService = userService;
+        this.gameService = gameService;
     }
 
     /*
@@ -80,17 +85,23 @@ public class SteamLoginController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to retrieve profile");
         }
 
-        if (currentUser != null) {
-            // user is already logged into an account so we just need to link their Steam
-            // account to the current user
-            this.userService.linkSteamAccount(steamId, currentUser.getId());
-        }
-
         // If user already has an account linked to steam with us, just log them in
         // manually
         if (this.userService.hasLinkedSteamAccount(steamId)) {
             this.userService.loginWithSteam(steamId, request);
             return "redirect:/";
+        }
+
+        if (currentUser != null) {
+            // user is already logged into an account so we just need to link their Steam
+            // account to the current user
+            this.userService.linkSteamAccount(steamId, currentUser.getId());
+
+            List<SteamGame> games = steamService.getUserSteamLibrary(steamId);
+            model.addAttribute("games", games);
+            model.addAttribute("currentUser", currentUser);
+
+            return "steam/linkLibrary";
         }
 
         model.addAttribute("profile", profile);
@@ -105,6 +116,8 @@ public class SteamLoginController {
             @RequestParam String email,
             @RequestParam String password,
             @RequestParam String confirmPassword,
+            @RequestParam boolean importLibrary,
+            HttpServletRequest request,
             Model model) {
 
         try {
@@ -118,7 +131,19 @@ public class SteamLoginController {
             model.addAttribute("email", email);
             return "signup";
         }
-        return "redirect:/login?registered";
+
+        // since user was already authenticated with Steam, log them in
+        userService.loginWithSteam(steamID, request);
+
+        if (importLibrary) {
+            if (steamID == "") {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "failed to retrieve steam ID");
+            }
+
+            return "redirect:/auth/steam/sync-library";
+        }
+
+        return "redirect:/";
 
     }
 
@@ -129,5 +154,42 @@ public class SteamLoginController {
         }
         userService.unlinkSteamAccount(currentUser.getId());
         return "redirect:/users/" + currentUser.getId() + "/settings";
+    }
+
+    @GetMapping("/auth/steam/sync-library")
+    public String syncSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser, Model model) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        User user = userService.getUserById(currentUser.getId()).get();
+
+        if (user.getSteamID() == "") {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No Steam account linked");
+        }
+
+        List<SteamGame> games = steamService.getUserSteamLibrary(user.getSteamID());
+        model.addAttribute("games", games);
+        model.addAttribute("currentUser", currentUser);
+
+        return "steam/linkLibrary";
+    }
+
+    @PostMapping("/auth/steam/link-library")
+    public String linkSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser,
+            @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds) {
+
+        // This is the code you would use to mark the selected games as played.
+        // for (int i = 0; i < selectedAppIds.size(); i++) {
+        // Game game = gameService.getGameBySteamAppId(selectedAppIds.get(i));
+        // User user = userService.getUserById(currentUser.getId()).get();
+        // // TODO: mark game as "played" for the user
+        // }
+
+        if (currentUser != null) {
+            return "redirect:/";
+        }
+
+        return "redirect:/login?registered";
     }
 }

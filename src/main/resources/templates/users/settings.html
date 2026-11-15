@@ -95,20 +95,48 @@
                     th:text="${#strings.equalsIgnoreCase(user.privacy.name(), 'private')} ? 'Privacy: Private' : 'Privacy: Public'">Privacy:
                     Public</label>
             </div>
-            <div class="mb-4" th:if="${user.steamID == null}">
-                <a href="/auth/steam"
-                    class="btn btn-dark d-inline-flex align-items-center gap-2 px-3 py-2 text-decoration-none shadow-sm"
-                    style="background-color: #171a21; border-color: #171a21;">
-                    <img src="/images/steam.svg" alt="Steam logo" width="24" height="24"
-                        style="filter: brightness(0) invert(1);">
-                    <span class="fw-semibold text-white">Link Steam Account</span>
-                </a>
+            <div class="card mb-4" th:if="${user.steamID == null}">
+                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <img th:src="@{/images/steam.svg}" alt="Steam logo" width="32" height="32">
+                        <div>
+                            <div class="fw-semibold">Steam account</div>
+                            <small class="text-muted">
+                                <i class="bi bi-x-circle"></i> Not connected
+                            </small>
+                        </div>
+                    </div>
+            
+                    <a th:href="@{/auth/steam}"
+                       class="btn btn-dark btn-sm d-inline-flex align-items-center gap-2"
+                       style="background-color: #171a21; border-color: #171a21;">
+                        Link Steam Account
+                    </a>
+                </div>
             </div>
-            <div class="mb-4" th:if="${user.steamID != null}">
-                <img src="/images/steam.svg" alt="Steam logo" width="24" height="24" style="color: black !important;">
-                <span class="fw-semibold">Steam Account Linked!</span>
-                <a href="/auth/steam/unlink"
-                    onclick="confirm('Are you sure you wish to unlink your Steam account?')">Unlink</a>
+            <div class="card mb-4" th:if="${user.steamID != null}">
+                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <img th:src="@{/images/steam.svg}" alt="Steam logo" width="32" height="32">
+                        <div>
+                            <div class="fw-semibold">Steam account</div>
+                            <small class="text-success">
+                                <i class="bi bi-check-circle-fill"></i> Connected
+                            </small>
+                        </div>
+                    </div>
+            
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/auth/steam/sync-library}" class="btn btn-secondary btn-sm">
+                            Sync Library
+                        </a>
+                        <a th:href="@{/auth/steam/unlink}"
+                           class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('Are you sure you wish to unlink your Steam account?')">
+                            <i class="bi bi-link-45deg"></i> Unlink
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <div class="d-flex justify-content-between">

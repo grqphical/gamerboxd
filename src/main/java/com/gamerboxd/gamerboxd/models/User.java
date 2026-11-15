@@ -1,10 +1,16 @@
 package com.gamerboxd.gamerboxd.models;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 
 @Entity
@@ -13,6 +19,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id; // not modifiable in settings
+
     @Column(unique = true)
     private String username;
 
@@ -31,7 +38,14 @@ public class User {
     @Column(nullable = true)
     private String steamID;
 
+    @ElementCollection 
+    @OrderColumn 
+    private List<Integer> favouriteIgdbIDs = 
+        new ArrayList<>(Collections.nCopies(MAX_FAVOURITE_GAMES, 0)); // initialized to MAX_FAVOURITE_GAMES copies of 0.
+
     public static final int MAX_DESCRIPTION_LENGTH = 250;
+    public static final int MAX_FAVOURITE_GAMES = 5; // safe to change, lowering will drop the lowest ranked favourites
+    public static final int NULL_FAVOURITE_GAME = 0;
 
     public User() {
     }
@@ -124,5 +138,75 @@ public class User {
 
     public void setSteamID(String steamID) {
         this.steamID = steamID;
+    }
+
+    /** 
+     * Read-only copy that is always {@code MAX_FAVOURITE_GAMES} long. 
+     * 
+     * To modify this `User`s favourite Ids please use 
+     * {@code .setFavouriteIgdbIDs} or {@code .setFavouriteIgdbID}. 
+     */
+    public List<Integer> getFavouriteIgdbIDs() {
+        List<Integer> ids = new ArrayList<>(favouriteIgdbIDs.stream()
+            .filter(id -> id != NULL_FAVOURITE_GAME)
+            .limit(MAX_FAVOURITE_GAMES)
+            .toList());
+
+        while (ids.size() < MAX_FAVOURITE_GAMES) {
+            ids.add(NULL_FAVOURITE_GAME);
+        }   
+
+        return List.copyOf(ids);
+    }
+
+    /**
+     * @param ids List of up to {@code MAX_FAVOURITE_GAMES} IGDB ids. 
+     * Cannot be duplicates except for multiple 0s meaning "no favourite".
+     * A list shorter than {@code MAX_FAVOURITE_GAMES} will fill the remaining 
+     * favourite game slots with 0.
+     * 
+     * @throws IllegalArgumentException {@code if (ids.size() > User.MAX_FAVOURITE_GAMES)}
+     * @throws IllegalArgumentException If duplicate igdbIDs in {@code ids}, 
+     * with the exception of multiple ids of 0 which is allowed.
+     */
+    public void setFavouriteIgdbIDs(List<Integer> ids) {
+        final int size = ids.size();
+        if (size > MAX_FAVOURITE_GAMES) {
+            throw new IllegalArgumentException(
+                "setFavouriteIgdbIDs: New list has " + size + 
+                " elements; greater than maximum " + MAX_FAVOURITE_GAMES + ".");
+        }
+
+        List<Integer> noZeros = ids.stream().filter(id -> id != NULL_FAVOURITE_GAME).toList();
+        if (noZeros.stream().distinct().count() != noZeros.size()) {
+            throw new IllegalArgumentException(
+                "setFavouriteIgdbIDs: Duplicate games in favourites!");
+        }
+
+        this.favouriteIgdbIDs.clear();
+        this.favouriteIgdbIDs.addAll(noZeros);
+        while (this.favouriteIgdbIDs.size() < MAX_FAVOURITE_GAMES) {
+            this.favouriteIgdbIDs.add(NULL_FAVOURITE_GAME);
+        }
+    }
+
+    /**
+     * @param index 0-indexed. Slot of game to modify ie #2 favourite game: index = 1. 
+     * If the ids before index are 0 then the actual igbd id being set might end up
+     * at an earlier index.
+     * @param igdbID Id of the game which is the new favourite.
+     * 
+     * @throws ArrayIndexOutOfBoundsException If index not in [0, {@code MAX_FAVOURITE_GAMES})
+     */
+    public void setFavouriteIgdbID(int index, int igdbID) {
+        if (index < 0 || index >= MAX_FAVOURITE_GAMES) {
+            throw new ArrayIndexOutOfBoundsException(
+                "setFavouriteIgdbID: " + index + " not in [0, " + MAX_FAVOURITE_GAMES + ").");
+        }
+
+        List<Integer> updated = new ArrayList<>(getFavouriteIgdbIDs());
+
+        updated.set(index, igdbID);
+        setFavouriteIgdbIDs(updated);
     }
 }
