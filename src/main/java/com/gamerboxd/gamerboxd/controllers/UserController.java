@@ -2,7 +2,9 @@ package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -18,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Game;
+import com.gamerboxd.gamerboxd.models.GameStatus;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
@@ -44,6 +47,7 @@ public class UserController {
     @GetMapping("/users/{id}")
     public String getUserProfile(@PathVariable int id,
             @RequestParam(required = false) String gameSearch,
+            @RequestParam(required = false) String statusGameSearch,
             @AuthenticationPrincipal AuthenticatedUser currentUser,
             Model model) {
 
@@ -78,6 +82,16 @@ public class UserController {
             (canAddFavourite && gameSearch != null && !gameSearch.isBlank())
             ? gameService.getSearchResultsByName(gameSearch, searchLimit) // search doesnt cache results
             : List.of();
+        List<Game> statusGameSearchResults = isOwnProfile && statusGameSearch != null && !statusGameSearch.isBlank()
+                ? gameService.getSearchResultsByName(statusGameSearch, searchLimit)
+                : List.of();
+
+        Map<GameStatus, List<Game>> gamesByStatus = new EnumMap<>(GameStatus.class);
+        for (GameStatus status : GameStatus.values()) {
+            gamesByStatus.put(status, new ArrayList<>());
+        }
+        user.getGameStatuses().forEach((igdbID, status) -> gameService.getGameByID(igdbID)
+                .ifPresent(game -> gamesByStatus.get(status).add(game)));
 
         List<Integer> ids = userReviews.stream().map(Review::getId).toList();
 
@@ -89,6 +103,10 @@ public class UserController {
         model.addAttribute("canAddFavourite", canAddFavourite);
         model.addAttribute("gameSearch", gameSearch);
         model.addAttribute("gameSearchResults", gameSearchResults);
+        model.addAttribute("statusGameSearch", statusGameSearch);
+        model.addAttribute("statusGameSearchResults", statusGameSearchResults);
+        model.addAttribute("gamesByStatus", gamesByStatus);
+        model.addAttribute("gameStatuses", GameStatus.values());
         model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(ids));
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
@@ -99,6 +117,42 @@ public class UserController {
         }
 
         return "users/profile";
+    }
+
+    @PostMapping("/users/{id}/games/status")
+    public String updateGameStatus(@PathVariable int id,
+            @RequestParam int igdbID,
+            @RequestParam GameStatus status,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        User user = getOwnUser(id, currentUser);
+        if (gameService.getGameByID(igdbID).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found with ID: " + igdbID);
+        }
+
+        user.setGameStatus(igdbID, status);
+        userService.save(user);
+        return "redirect:/users/" + user.getId();
+    }
+
+    @PostMapping("/users/{id}/games/remove")
+    public String removeGameStatus(@PathVariable int id,
+            @RequestParam int igdbID,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        User user = getOwnUser(id, currentUser);
+        user.setGameStatus(igdbID, null);
+        userService.save(user);
+        return "redirect:/users/" + user.getId();
+    }
+
+    private User getOwnUser(int id, AuthenticatedUser currentUser) {
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        if (currentUser.getId() != id) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        return userService.getUserById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "User not found with ID: " + id));
     }
 
     @GetMapping("/signup")
