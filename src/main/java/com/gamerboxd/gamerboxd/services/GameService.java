@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.repositories.GameRepository;
 
-@Service 
+@Service
 public class GameService {
     private final GameRepository gameRepository;
     private final IGDBService igdbService;
@@ -16,7 +16,7 @@ public class GameService {
     public GameService(GameRepository gameRepository, IGDBService igdbService) {
         this.gameRepository = gameRepository;
         this.igdbService = igdbService;
-    } 
+    }
 
     /**
      * Look up a {@code Game} by ID and get back our cached copy if we have one;
@@ -24,8 +24,8 @@ public class GameService {
      * 
      * @param igdbID The game's id on IGDB (Should be the same id in the db).
      * @return The game, or empty if this igdbID associates with nothing.
-     * @throws IllegalStateException if the fetched game from IGDB has a 
-     * differing id from the provided igdbID.
+     * @throws IllegalStateException if the fetched game from IGDB has a
+     *                               differing id from the provided igdbID.
      */
     public Optional<Game> getGameByID(int igdbID) {
         Optional<Game> cachedGame = gameRepository.findById(igdbID);
@@ -37,30 +37,35 @@ public class GameService {
         if (fetchedGame == null) {
             return Optional.empty();
         }
-        
+
         if (fetchedGame.getId() != igdbID) {
             throw new IllegalStateException(
-                "GameService::getGame: IGDB returned game id " + fetchedGame.getId() + 
-                " for requested id " + igdbID 
-            );
+                    "GameService::getGame: IGDB returned game id " + fetchedGame.getId() +
+                            " for requested id " + igdbID);
         }
 
         return Optional.of(gameRepository.save(fetchedGame));
     }
+
     /**
      * - A wrapper function for the IGDBService function. <br>
      * - Use for searching the IGDB database for a game by name. <br>
      * - Skips the cache to make sure results are unified.
-     * @param name the name of the game you want to search
+     * 
+     * @param name  the name of the game you want to search
      * @param limit maximum number of search results you want back
-    */ 
+     */
     public List<Game> getSearchResultsByName(String name, int limit) {
         return igdbService.getSearchResults(name, limit);
     }
 
     /**
      * Iteratively update the id's associated `Game`'s ratingGamerboxd using:
-     * <pre> New Average = Old Average + (x - Old Average)/(n + 1) </pre>
+     * 
+     * <pre>
+     *  New Average = Old Average + (x - Old Average)/(n + 1)
+     * </pre>
+     * 
      * @param igdbID The game's id on IGDB (Should be the same id in the db).
      * @param rating The star rating in [0, 5] (star rating).
      * @exception IllegalArgumentException for `rating` not in desired range.
@@ -69,15 +74,13 @@ public class GameService {
     public void updateGameRating(int igdbID, int rating) {
         if (rating < 0 || rating > 5) {
             throw new IllegalArgumentException(
-                "GameService::updateGameRating: parameter `rating` " +
-                "must be between 0 and 5. Got: "  + rating + "."
-            );
+                    "GameService::updateGameRating: parameter `rating` " +
+                            "must be between 0 and 5. Got: " + rating + ".");
         }
 
         Game game = getGameByID(igdbID).orElseThrow(() -> new IllegalArgumentException(
-            "GameService::updateGameRatin: parameter `igdbId` " +
-            "doesn't map to any associated `Game`. Got: " + igdbID + "."  
-        ));
+                "GameService::updateGameRatin: parameter `igdbId` " +
+                        "doesn't map to any associated `Game`. Got: " + igdbID + "."));
 
         game.updateRatingGamerboxd(rating);
         gameRepository.save(game);
