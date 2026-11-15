@@ -64,8 +64,6 @@
         <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
 
         <form th:action="@{/auth/steam/link-library}" method="post">
-            <input type="hidden" name="userID" id="userID" th:value="${userID}">
-        
             <div class="mb-3 d-flex flex-wrap gap-2">
                 <button type="button" class="btn btn-outline-secondary btn-sm" id="select-all">
                     Select all

@@ -100,7 +100,6 @@ public class SteamLoginController {
             List<SteamGame> games = steamService.getUserSteamLibrary(steamId);
             model.addAttribute("games", games);
             model.addAttribute("currentUser", currentUser);
-            model.addAttribute("userID", currentUser.getId());
 
             return "steam/linkLibrary";
         }
@@ -172,19 +171,18 @@ public class SteamLoginController {
         List<SteamGame> games = steamService.getUserSteamLibrary(user.getSteamID());
         model.addAttribute("games", games);
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("userID", user.getId());
 
         return "steam/linkLibrary";
     }
 
     @PostMapping("/auth/steam/link-library")
-    public String linkSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser, @RequestParam int userID,
+    public String linkSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser,
             @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds) {
 
         // This is the code you would use to mark the selected games as played.
         // for (int i = 0; i < selectedAppIds.size(); i++) {
         // Game game = gameService.getGameBySteamAppId(selectedAppIds.get(i));
-        // User user = userService.getUserById(userID).get();
+        // User user = userService.getUserById(currentUser.getId()).get();
         // // TODO: mark game as "played" for the user
         // }
 
