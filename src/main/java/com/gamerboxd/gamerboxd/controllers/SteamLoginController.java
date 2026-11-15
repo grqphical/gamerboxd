@@ -135,19 +135,18 @@ public class SteamLoginController {
             return "signup";
         }
 
+        // since user was already authenticated with Steam, log them in
+        userService.loginWithSteam(steamID, request);
+
         if (importLibrary) {
             if (steamID == "") {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "failed to retrieve steam ID");
             }
 
-            List<SteamGame> games = steamService.getUserSteamLibrary(steamID);
-            model.addAttribute("games", games);
-            model.addAttribute("userID", user.getId());
-
-            return "steam/linkLibrary.html";
+            return "redirect:/auth/steam/sync-library";
         }
 
-        return "redirect:/login?registered";
+        return "redirect:/";
 
     }
 
