@@ -157,6 +157,87 @@
         </div>
 
         <div th:unless="${user.isPrivateAccount and !isOwnProfile}">
+            <section class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h3 class="mb-0">Game Status</h3>
+                    <button th:if="${isOwnProfile}" class="btn btn-outline-primary" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#statusGameSearch" aria-expanded="false"
+                        aria-controls="statusGameSearch">Add a game</button>
+                </div>
+                <p class="text-muted" th:if="${!isOwnProfile and user.getGameStatuses().isEmpty()}">
+                    No games marked yet.
+                </p>
+
+                <div th:if="${isOwnProfile}" id="statusGameSearch" class="collapse mb-3"
+                    th:classappend="${statusGameSearch != null ? 'show' : ''}">
+                    <form th:action="@{/users/{id}(id=${user.id})}" method="get" class="d-flex gap-2 mb-2">
+                        <input type="text" name="statusGameSearch" class="form-control"
+                            placeholder="Search for a game to mark" th:value="${statusGameSearch}" required>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                    <p class="text-muted" th:if="${statusGameSearch != null and statusGameSearchResults.isEmpty()}">
+                        No games found.
+                    </p>
+                    <ul class="list-group" th:unless="${statusGameSearchResults.isEmpty()}">
+                        <li class="list-group-item d-flex align-items-center gap-3"
+                            th:each="game : ${statusGameSearchResults}">
+                            <img th:if="${game.coverLink != null}" th:src="${game.coverLink}"
+                                class="rounded" style="width: 48px; height: 64px; object-fit: cover;">
+                            <span class="fw-semibold flex-grow-1" th:text="${game.name}"></span>
+                            <form th:action="@{/users/{id}/games/status(id=${user.id})}" method="post"
+                                class="d-flex gap-2">
+                                <input type="hidden" name="igdbID" th:value="${game.id}">
+                                <select class="form-select" name="status" aria-label="Game status">
+                                    <option value="WANT_TO_PLAY" selected>Want to play</option>
+                                    <option value="PLAYED">Played</option>
+                                    <option value="DROPPED">Dropped</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary text-nowrap">Save</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12" th:each="status : ${gameStatuses}">
+                        <h5 th:text="${status == T(com.gamerboxd.gamerboxd.models.GameStatus).PLAYED ? 'Played' :
+                            (status == T(com.gamerboxd.gamerboxd.models.GameStatus).WANT_TO_PLAY ? 'Want to play' : 'Dropped')}">
+                            Played
+                        </h5>
+                        <p class="small text-muted mb-2" th:if="${gamesByStatus.get(status).isEmpty()}">No games yet.</p>
+                        <ul class="list-group overflow-auto" style="max-height: 360px;">
+                            <li class="list-group-item p-2" th:each="game : ${gamesByStatus.get(status)}">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img th:if="${game.coverLink != null}" th:src="${game.coverLink}"
+                                        class="rounded" style="width: 42px; height: 56px; object-fit: cover;">
+                                    <span class="small fw-semibold flex-grow-1" th:text="${game.name}"></span>
+                                    <form th:if="${isOwnProfile}"
+                                        th:action="@{/users/{id}/games/status(id=${user.id})}" method="post"
+                                        class="d-flex gap-1">
+                                        <input type="hidden" name="igdbID" th:value="${game.id}">
+                                        <select class="form-select form-select-sm" name="status"
+                                            aria-label="Change game status">
+                                            <option th:each="option : ${gameStatuses}" th:value="${option}"
+                                                th:selected="${option == status}"
+                                                th:text="${option == T(com.gamerboxd.gamerboxd.models.GameStatus).PLAYED ? 'Played' :
+                                                    (option == T(com.gamerboxd.gamerboxd.models.GameStatus).WANT_TO_PLAY ? 'Want to play' : 'Dropped')}">
+                                            </option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                                    </form>
+                                    <form th:if="${isOwnProfile}"
+                                        th:action="@{/users/{id}/games/remove(id=${user.id})}" method="post">
+                                        <input type="hidden" name="igdbID" th:value="${game.id}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            aria-label="Remove game status">×</button>
+                                    </form>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
             <h3>User Reviews:</h3>
             <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
             <p class="text-muted" th:if="${!#lists.isEmpty(reviews) and user.isPrivateAccount}">
