@@ -84,11 +84,11 @@ public class Game {
         return releaseDate;
     }
 
-    public double getRatingIGDB() {
+    public Double getRatingIGDB() {
         return ratingIGDB;
     }
 
-    public double getRatingGamerboxd() {
+    public Double getRatingGamerboxd() {
         return ratingGamerboxd;
     }
 
@@ -116,5 +116,17 @@ public class Game {
     public void updateRatingGamerboxd(int x) {
         ++this.numRatingsGamerboxd;
         this.ratingGamerboxd += (x - this.ratingGamerboxd) / (this.numRatingsGamerboxd);
+    }
+
+    public void removeRatingGamerboxd(int x) {
+        if (this.numRatingsGamerboxd <= 0) {
+            throw new IllegalStateException("No ratings to remove.");
+        }
+        --this.numRatingsGamerboxd;
+        if (this.numRatingsGamerboxd == 0) {
+            this.ratingGamerboxd = 0.0;
+        } else {
+            this.ratingGamerboxd += (this.ratingGamerboxd - x) / this.numRatingsGamerboxd;
+        }
     }
 }

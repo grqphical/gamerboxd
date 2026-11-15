@@ -12,4 +12,8 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
     // Get a user's reviews in order of createdAt (newest first)
     List<Review> findAllByUserIdOrderByCreatedAtDesc(int userId);
+
+    // Get a game's reviews in order of createdAt (newest first) 
+    List<Review> findAllByGameIdOrderByCreatedAtDesc(int gameId);
+
 }

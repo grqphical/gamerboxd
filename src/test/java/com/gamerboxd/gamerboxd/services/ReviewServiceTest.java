@@ -25,12 +25,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
+import com.gamerboxd.gamerboxd.services.GameService;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewServiceTest {
@@ -43,6 +45,9 @@ class ReviewServiceTest {
     @Mock
     private ReviewLikeRepository reviewLikeRepository;
 
+    @Mock
+    private GameService gameService;
+
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
     private final User olivia = new User(2, "olivia", "olivia@gmail.com", "pw", UserRole.USER);
 
@@ -52,35 +57,32 @@ class ReviewServiceTest {
     @Test
     void create_savesTrimmedReview() {
         when(userRepository.getReferenceById(1)).thenReturn(john);
+
+        Game game = new Game();
+        when(gameService.getGameByID(113112)).thenReturn(Optional.of(game));
         
-        reviewService.create(1, "Hades", 5, "Great game");
+        reviewService.create(1, 113112, 5, "Great game");
 
         ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
         verify(reviewRepository).save(captor.capture());
         Review saved = captor.getValue();
         assertSame(john, saved.getUser());
-        assertEquals("Hades", saved.getGameName());
+        assertEquals(113112, saved.getGameId());
         assertEquals(5, saved.getRating());
         assertEquals("Great game", saved.getDescription());
         assertNull(saved.getUpdatedAt());
     }
 
     @Test
-    void create_blankGameName_throws() {
-        assertThrows(IllegalArgumentException.class, () -> reviewService.create(1, "  ", 4, "Good"));
-        verify(reviewRepository, never()).save(any());
-    }
-
-    @Test
-    void create_nullGameName_throws() {
-        assertThrows(IllegalArgumentException.class, () -> reviewService.create(1, null, 4, "Good"));
+    void create_invalidGameId_throws() {
+        assertThrows(IllegalArgumentException.class, () -> reviewService.create(1, -1, 4, "Good"));
         verify(reviewRepository, never()).save(any());
     }
 
     @ParameterizedTest
     @ValueSource(ints = { -1, 0, 6, 100 })
     void create_ratingOutOfRange_throws(int rating) {
-        assertThrows(IllegalArgumentException.class, () -> reviewService.create(1, "Hades", rating, "Good"));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.create(1, 113112, rating, "Good"));
         verify(reviewRepository, never()).save(any());
     }
 
@@ -88,22 +90,25 @@ class ReviewServiceTest {
     @ValueSource(ints = { 1, 2, 3, 4, 5 })
     void create_ratingInRange_saves(int rating) {
         when(userRepository.getReferenceById(1)).thenReturn(john);
-        reviewService.create(1, "Hades", rating, "Good");
+        Game game = new Game();
+        when(gameService.getGameByID(113112)).thenReturn(Optional.of(game));
+
+        reviewService.create(1, 113112, rating, "Good");
         verify(reviewRepository).save(any(Review.class));
     }
 
     @Test
     void create_blankDescription_throws() {
-        assertThrows(IllegalArgumentException.class, () -> reviewService.create(1, "Hades", 4, "   "));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.create(1, 113112, 4, "   "));
         verify(reviewRepository, never()).save(any());
     }
 
     @Test
     void getAll_returnsRepositoryResults() {
         List<Review> reviews = List.of(
-            new Review(john, "Hades", 5, "Great"),
-            new Review(olivia, "Celeste", 4, "Evil but fun"),
-            new Review(john, "Hollow Knight", 5, "Amazing"));
+            new Review(john, 113112, 5, "Great"),
+            new Review(olivia, 26226, 4, "Evil but fun"),
+            new Review(john, 14593, 5, "Amazing"));
         when(reviewRepository.findAllByOrderByCreatedAtDesc()).thenReturn(reviews);
 
         List<Review> result = reviewService.getAll();
@@ -114,7 +119,7 @@ class ReviewServiceTest {
 
     @Test
     void getOwnedReview_owner_returnsReview() {
-        Review review = new Review(john, "Hades", 3, "Ok");
+        Review review = new Review(john, 113112, 3, "Ok");
         when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
 
         assertSame(review, reviewService.getOwnedReview(5, 1));
@@ -131,7 +136,7 @@ class ReviewServiceTest {
 
     @Test
     void update_owner_updatesRatingAndTrimmedDescription() {
-        Review review = new Review(john, "Hades", 3, "Ok");
+        Review review = new Review(john, 113112, 3, "Ok");
         when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
 
         reviewService.update(5, 1, 5, "Much better");
@@ -140,13 +145,13 @@ class ReviewServiceTest {
         verify(reviewRepository).save(captor.capture());
         assertEquals(5, captor.getValue().getRating());
         assertEquals("Much better", captor.getValue().getDescription());
-        assertEquals("Hades", captor.getValue().getGameName());
+        assertEquals(113112, captor.getValue().getGameId());
         assertNotNull(captor.getValue().getUpdatedAt());
     }
 
     @Test
     void update_otherUsersReview_throwsForbidden() {
-        Review review = new Review(john, "Hades", 3, "Ok");
+        Review review = new Review(john, 113112, 3, "Ok");
         when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
@@ -158,7 +163,7 @@ class ReviewServiceTest {
     @ParameterizedTest
     @ValueSource(ints = {0, 6})
     void update_ratingOutOfRange_throws(int rating) {
-        Review review = new Review(john, "Hades", 3, "Ok");
+        Review review = new Review(john, 113112, 3, "Ok");
         when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
 
         assertThrows(IllegalArgumentException.class, () -> reviewService.update(5, 1, rating, "Good"));
@@ -167,7 +172,7 @@ class ReviewServiceTest {
 
     @Test
     void update_blankDescription_throws() {
-        Review review = new Review(john, "Hades", 3, "Ok");
+        Review review = new Review(john, 113112, 3, "Ok");
         when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
 
         assertThrows(IllegalArgumentException.class, () -> reviewService.update(5, 1, 4, "   "));
@@ -176,7 +181,7 @@ class ReviewServiceTest {
 
     @Test
     void delete_owner_deletesReview() {
-        Review review = new Review(john, "Hades", 3, "Ok");
+        Review review = new Review(john, 113112, 3, "Ok");
         when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
 
         reviewService.delete(5, 1);
@@ -186,7 +191,7 @@ class ReviewServiceTest {
 
     @Test
     void delete_otherUsersReview_throwsForbidden() {
-        Review review = new Review(john, "Hades", 3, "Ok");
+        Review review = new Review(john, 113112, 3, "Ok");
         when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,

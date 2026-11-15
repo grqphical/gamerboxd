@@ -1,5 +1,6 @@
 package com.gamerboxd.gamerboxd.controllers;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -28,6 +29,7 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.services.GameService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
@@ -35,6 +37,7 @@ import com.gamerboxd.gamerboxd.services.UserService;
 class ReviewControllerTest {
         private ReviewService reviewService;
         private UserService userService;
+        private GameService gameService;
         private ReviewLikeService reviewLikeService;
         private MockMvc mockMvc;
 
@@ -45,8 +48,9 @@ class ReviewControllerTest {
         void setUp() {
                 reviewService = mock(ReviewService.class);
                 userService = mock(UserService.class);
+                gameService = mock(GameService.class);
                 reviewLikeService = mock(ReviewLikeService.class);
-                mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService, userService, reviewLikeService))
+                mockMvc = MockMvcBuilders.standaloneSetup(new ReviewController(reviewService, userService, gameService, reviewLikeService))
                                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                                 .build();
 
@@ -70,22 +74,22 @@ class ReviewControllerTest {
         @Test
         void create_validReview_redirectsToList() throws Exception {
                 mockMvc.perform(post("/reviews")
-                                .param("gameName", "Hades")
+                                .param("gameId", "113112")
                                 .param("rating", "5")
                                 .param("description", "Great"))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/"));
 
-                verify(reviewService).create(1, "Hades", 5, "Great");
+                verify(reviewService).create(1, 113112, 5, "Great");
         }
 
         @Test
         void create_invalidReview_showsFormWithError() throws Exception {
                 doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
-                                .when(reviewService).create(eq(1), anyString(), eq(9), anyString());
+                                .when(reviewService).create(eq(1), anyInt(), eq(9), anyString());
 
                 mockMvc.perform(post("/reviews")
-                                .param("gameName", "Hades")
+                                .param("gameId", "113112")
                                 .param("rating", "9")
                                 .param("description", "Great"))
                                 .andExpect(status().isOk())
@@ -95,7 +99,7 @@ class ReviewControllerTest {
 
         @Test
         void editForm_owner_showsForm() throws Exception {
-                Review review = new Review(john, "Hades", 3, "Ok");
+                Review review = new Review(john, 113112, 3, "Ok");
                 Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
 
                 mockMvc.perform(get("/reviews/5/edit"))
@@ -126,7 +130,7 @@ class ReviewControllerTest {
 
         @Test
         void update_invalid_showsEditFormWithError() throws Exception {
-                Review review = new Review(john, "Hades", 3, "Ok");
+                Review review = new Review(john, 113112, 3, "Ok");
                 doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
                                 .when(reviewService).update(eq(5), eq(1), eq(9), anyString());
                 Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
@@ -180,7 +184,7 @@ class ReviewControllerTest {
 
         @Test
         void editForm_fromProfile_passesFromToView() throws Exception {
-                Review review = new Review(john, "Hades", 3, "Ok");
+                Review review = new Review(john, 113112, 3, "Ok");
                 Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);
 
                 mockMvc.perform(get("/reviews/5/edit").param("from", "profile"))
@@ -202,7 +206,7 @@ class ReviewControllerTest {
 
         @Test
         void update_invalidFromProfile_keepsFromInModel() throws Exception {
-                Review review = new Review(john, "Hades", 3, "Ok");
+                Review review = new Review(john, 113112, 3, "Ok");
                 doThrow(new IllegalArgumentException("Rating must be between 1 and 5."))
                                 .when(reviewService).update(eq(5), eq(1), eq(9), anyString());
                 Mockito.when(reviewService.getOwnedReview(5, 1)).thenReturn(review);

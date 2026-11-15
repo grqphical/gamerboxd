@@ -93,7 +93,8 @@ public class UserController {
         user.getGameStatuses().forEach((igdbID, status) -> gameService.getGameByID(igdbID)
                 .ifPresent(game -> gamesByStatus.get(status).add(game)));
 
-        List<Integer> ids = userReviews.stream().map(Review::getId).toList();
+        List<Integer> reviewIds = userReviews.stream().map(Review::getId).toList();
+        List<Integer> gameIds = userReviews.stream().map(Review::getGameId).toList();
 
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
@@ -107,14 +108,11 @@ public class UserController {
         model.addAttribute("statusGameSearchResults", statusGameSearchResults);
         model.addAttribute("gamesByStatus", gamesByStatus);
         model.addAttribute("gameStatuses", GameStatus.values());
-        model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(ids));
+        model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
+        model.addAttribute("reviewGameNames", gameService.getGameNames(gameIds));
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
-                : reviewLikeService.getLikedReviewIds(ids, currentUser.getId()));
-
-        if (user.getRole() == UserRole.ADMIN) {
-            // TODO: redirect to admin view
-        }
+                : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));
 
         return "users/profile";
     }

@@ -19,6 +19,13 @@
             </button>
 
             <div class="collapse navbar-collapse" id="mainNav">
+                <form class="d-flex flex-grow-1 mx-lg-auto mt-3 mt-lg-0" style="max-width: 280px;" role="search"
+                    th:action="@{/search}" method="get">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Search games"
+                        aria-label="Search games" required>
+                    <button class="btn btn-outline-primary" type="submit">Search</button>
+                </form>
+
                 <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
                     <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
                     <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
@@ -64,7 +71,10 @@
 
         <div class="card shadow-sm mb-3" th:each="r : ${reviews}">
             <div class="card-body">
-                <h5 class="card-title" th:text="${r.gameName}">Game</h5>
+                <h5 class="card-title">
+                    <a th:href="@{/games/{id}(id=${r.gameId})}" class="text-reset text-decoration-none"
+                    th:text="${reviewGameNames[r.gameId] ?: 'Unknown game'}">Game</a>
+                </h5>
                 <div class="text-warning mb-2" th:text="${#strings.repeat('★', r.rating)}">★★★</div>
                 <p class="card-text" th:text="${r.description}">Description</p>
                 <small class="text-muted">

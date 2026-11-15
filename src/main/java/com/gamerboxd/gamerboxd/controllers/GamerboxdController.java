@@ -40,14 +40,16 @@ public class GamerboxdController {
         List<Review> reviews = reviewService.getAll().stream()
             .filter(r -> !r.getUser().isPrivateAccount())
             .toList();
-        List<Integer> ids = reviews.stream().map(Review::getId).toList();
+        List<Integer> reviewIds = reviews.stream().map(Review::getId).toList();
+        List<Integer> gameIds = reviews.stream().map(Review::getGameId).toList();
 
         model.addAttribute("reviews", reviews);
+        model.addAttribute("reviewGameNames", gameService.getGameNames(gameIds));
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(ids));
+        model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
-                : reviewLikeService.getLikedReviewIds(ids, currentUser.getId()));
+                : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));
         return "index";
     }
 
