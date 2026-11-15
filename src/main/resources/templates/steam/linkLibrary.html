@@ -65,7 +65,7 @@
     <div class="container py-5" style="max-width: 800px;">
         <h1 class="mb-3" th:text="|Select Steam games to import|"></h1>
         <div class="alert alert-info mb-4" role="alert">
-            You can always update/change the imported games in your Account Settings later.</a>
+            You can always update/change the imported games in your Account Settings later. It also may take up to a couple minutes to fully import your library.</a>
         </div>
 
         <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
@@ -90,6 +90,10 @@
                            name="selectedAppIds"
                            th:value="${game.appId}"
                            th:id="${'game-' + game.appId}">
+                    <input type="hidden"
+                           th:name="${'gameNames[' + game.appId + ']'}"
+                           th:value="${game.gameName}"
+                           disabled>
                     <img th:src="${game.iconURL}"
                          th:alt="${game.gameName}"
                          width="32" height="32"
@@ -101,9 +105,20 @@
             <script>
                 (function () {
                     const form = document.currentScript.closest('form');
+                    const checkboxes = form.querySelectorAll('input[name="selectedAppIds"]');
+        
+                    // Enable the hidden name input only while its checkbox is checked
+                    const sync = (cb) => {
+                        cb.parentElement.querySelector('input[type="hidden"]').disabled = !cb.checked;
+                    };
+        
                     const setAll = (checked) =>
-                        form.querySelectorAll('input[name="selectedAppIds"]')
-                            .forEach(cb => cb.checked = checked);
+                        checkboxes.forEach(cb => {
+                            cb.checked = checked;
+                            sync(cb);
+                        });
+        
+                    checkboxes.forEach(cb => cb.addEventListener('change', () => sync(cb)));
         
                     form.querySelector('#select-all').addEventListener('click', () => setAll(true));
                     form.querySelector('#deselect-all').addEventListener('click', () => setAll(false));

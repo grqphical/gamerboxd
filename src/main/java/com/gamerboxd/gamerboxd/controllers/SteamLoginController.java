@@ -1,6 +1,7 @@
 package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +19,12 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
+import com.gamerboxd.gamerboxd.models.Game;
+import com.gamerboxd.gamerboxd.models.GameStatus;
 import com.gamerboxd.gamerboxd.models.SteamGame;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.SteamLibraryLinkJobService;
 import com.gamerboxd.gamerboxd.services.SteamService;
 import com.gamerboxd.gamerboxd.services.UserService;
 import com.gamerboxd.gamerboxd.services.SteamService.SteamProfile;
@@ -32,15 +36,16 @@ public class SteamLoginController {
 
     private final SteamService steamService;
     private final UserService userService;
-    private final GameService gameService;
+    private final SteamLibraryLinkJobService steamLibraryLinkJobService;
 
     @Value("${app.base-url}")
     private String baseUrl;
 
-    public SteamLoginController(SteamService steamService, UserService userService, GameService gameService) {
+    public SteamLoginController(SteamService steamService, UserService userService,
+            SteamLibraryLinkJobService steamLibraryLinkJobService) {
         this.steamService = steamService;
         this.userService = userService;
-        this.gameService = gameService;
+        this.steamLibraryLinkJobService = steamLibraryLinkJobService;
     }
 
     /*
@@ -177,14 +182,12 @@ public class SteamLoginController {
 
     @PostMapping("/auth/steam/link-library")
     public String linkSteamLibrary(@AuthenticationPrincipal AuthenticatedUser currentUser,
-            @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds) {
+            @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds,
+            @RequestParam Map<String, String> params) {
 
-        // This is the code you would use to mark the selected games as played.
-        // for (int i = 0; i < selectedAppIds.size(); i++) {
-        // Game game = gameService.getGameBySteamAppId(selectedAppIds.get(i));
-        // User user = userService.getUserById(currentUser.getId()).get();
-        // // TODO: mark game as "played" for the user
-        // }
+        if (selectedAppIds != null) {
+            steamLibraryLinkJobService.linkUserSteamLibrary(currentUser.getId(), selectedAppIds, params);
+        }
 
         if (currentUser != null) {
             return "redirect:/";

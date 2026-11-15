@@ -59,11 +59,13 @@ public class GameService {
      * else.
      * Should only be called when the user links their library.
      * 
-     * @param steamID The game's Steam app id.
+     * @param steamID  The game's Steam app id.
+     * @param gameName The name of the game, used if title doesn't have a Steam ID
+     *                 on IGDB
      * @return The game, or empty if this steam app ID associates with nothing.
      */
-    public Optional<Game> getGameBySteamAppID(int steamID) {
-        Game fetchedGame = igdbService.getGameBySteamAppId(steamID);
+    public Optional<Game> getGameBySteamAppID(int steamID, String gameName) {
+        Game fetchedGame = igdbService.getGameBySteamAppId(steamID, gameName);
         if (fetchedGame == null) {
             return Optional.empty();
         }
