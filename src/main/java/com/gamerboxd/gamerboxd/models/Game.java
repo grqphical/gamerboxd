@@ -84,11 +84,11 @@ public class Game {
         return releaseDate;
     }
 
-    public double getRatingIGDB() {
+    public Double getRatingIGDB() {
         return ratingIGDB;
     }
 
-    public double getRatingGamerboxd() {
+    public Double getRatingGamerboxd() {
         return ratingGamerboxd;
     }
 
