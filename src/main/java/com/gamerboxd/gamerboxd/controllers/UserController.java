@@ -38,6 +38,7 @@ public class UserController {
 
     @GetMapping("/users/{id}")
     public String getUserProfile(@PathVariable int id,
+            @RequestParam(required = false) String gameSearch,
             @AuthenticationPrincipal AuthenticatedUser currentUser,
             Model model) {
 
@@ -61,13 +62,26 @@ public class UserController {
             }
         }
 
-        boolean isOwnProfile = currentUser != null && currentUser.getId() == id;
+        final boolean isOwnProfile = currentUser != null && currentUser.getId() == id;
+
+        // contains ids of 0 meaning there are free slots
+        final boolean canAddFavourite = 
+        isOwnProfile && user.getFavouriteIgdbIDs().contains(User.NULL_FAVOURITE_GAME); 
+        
+        final int searchLimit = 10;
+        List<Game> gameSearchResults = 
+            (canAddFavourite && gameSearch != null && !gameSearch.isBlank())
+            ? gameService.getSearchResultsByName(gameSearch, searchLimit) // search doesnt cache results
+            : List.of();
 
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
         model.addAttribute("favouriteGames", favouriteGames);
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("isOwnProfile", isOwnProfile);
+        model.addAttribute("canAddFavourite", canAddFavourite);
+        model.addAttribute("gameSearch", gameSearch);
+        model.addAttribute("gameSearchResults", gameSearchResults);
 
         if (user.getRole() == UserRole.ADMIN) {
             // TODO: redirect to admin view
@@ -101,5 +115,47 @@ public class UserController {
             return "signup";
         }
         return "redirect:/login?registered";
+    }
+
+    /** Put a igbd game id in the users first available slot if any */
+    @PostMapping("/favourites/add")
+    public String addFavourite(@RequestParam int igbdID,
+        @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        User user = userService.getUserById(currentUser.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "User not found with ID: " + currentUser.getId()));
+
+        List<Integer> ids = user.getFavouriteIgdbIDs();
+        int emptySlot = ids.indexOf(User.NULL_FAVOURITE_GAME); // index of the first occurrence of 0
+
+        if (emptySlot != -1 && !ids.contains(igbdID) && gameService.getGameByID(igbdID).isPresent()) {
+            user.setFavouriteIgdbID(emptySlot, igbdID);
+            userService.save(user);
+        }
+
+        return "redirect:/users/" + user.getId();
+    }
+
+    /** Clear single igdb game id from users favourites list */
+    @PostMapping ("/favourites/remove")
+    public String removeFavourite(@RequestParam int igdbID,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        User user = userService.getUserById(currentUser.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "User not found with ID: " + currentUser.getId()));
+
+        int slot = user.getFavouriteIgdbIDs().indexOf(igdbID);
+        if (slot != -1) {
+            user.setFavouriteIgdbID(slot, User.NULL_FAVOURITE_GAME);
+            userService.save(user);
+        }
+
+        return "redirect:/users/" + user.getId();
     }
 }
