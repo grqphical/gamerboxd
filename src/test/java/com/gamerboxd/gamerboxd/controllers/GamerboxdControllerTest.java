@@ -1,12 +1,19 @@
 package com.gamerboxd.gamerboxd.controllers;
 
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,11 +30,13 @@ import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 
 public class GamerboxdControllerTest {
     private ReviewService reviewService;
     private GameService gameService;
+    private ReviewLikeService reviewLikeService;
     private MockMvc mockMvc;
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
@@ -37,7 +46,9 @@ public class GamerboxdControllerTest {
     void setUp() {
         reviewService = mock(ReviewService.class);
         gameService = mock(GameService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new GamerboxdController(reviewService, gameService))
+        reviewLikeService = mock(ReviewLikeService.class);
+
+        mockMvc = MockMvcBuilders.standaloneSetup(new GamerboxdController(reviewService, gameService, reviewLikeService))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 
@@ -62,5 +73,38 @@ public class GamerboxdControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"))
                 .andExpect(model().attribute("reviews", reviews));
+    }
+
+    private List<Review> twoReviews() {
+        Review r1 = new Review(john, "Hades", 5, "Great");
+        r1.setId(10);
+        Review r2 = new Review(olivia, "Celeste", 4, "Fun");
+        r2.setId(11);
+        return List.of(r1, r2);
+    }
+
+    @Test
+    void index_includesLikeCountsAndLikedIds() throws Exception {
+        when(reviewService.getAll()).thenReturn(twoReviews());
+        when(reviewLikeService.getLikeCounts(List.of(10, 11))).thenReturn(Map.of(10, 2L));
+        when(reviewLikeService.getLikedReviewIds(List.of(10, 11), 1)).thenReturn(Set.of(11));
+
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("index"))
+                .andExpect(model().attribute("likeCounts", Map.of(10, 2L)))
+                .andExpect(model().attribute("likedIds", Set.of(11)));
+    }
+
+    @Test
+    void index_loggedOut_hasNoLikedIdsAndSkipsLookup() throws Exception {
+        SecurityContextHolder.clearContext();
+        when(reviewService.getAll()).thenReturn(twoReviews());
+
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("likedIds", Set.of()));
+
+        verify(reviewLikeService, never()).getLikedReviewIds(anyCollection(), anyInt());
     }
 }

@@ -215,4 +215,31 @@ class ReviewControllerTest {
                                 .andExpect(view().name("reviews/edit"))
                                 .andExpect(model().attribute("from", "profile"));
         }
+
+        @Test
+        void like_redirectsToHome() throws Exception {
+        mockMvc.perform(post("/reviews/5/like"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
+
+        verify(reviewLikeService).toggleLike(5, 1);
+        }
+
+        @Test
+        void like_fromProfile_redirectsToThatProfile() throws Exception {
+        mockMvc.perform(post("/reviews/5/like").param("profileId", "2"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/2"));
+
+        verify(reviewLikeService).toggleLike(5, 1);
+        }
+
+        @Test
+        void like_missingReview_returnsNotFound() throws Exception {
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
+                .when(reviewLikeService).toggleLike(99, 1);
+
+        mockMvc.perform(post("/reviews/99/like"))
+                .andExpect(status().isNotFound());
+        }
 }

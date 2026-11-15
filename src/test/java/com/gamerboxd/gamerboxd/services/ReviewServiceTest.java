@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -192,6 +193,7 @@ class ReviewServiceTest {
                 () -> reviewService.delete(5, 2));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
         verify(reviewRepository, never()).delete(any(Review.class));
+        verify(reviewLikeRepository, never()).deleteByReviewId(anyInt());
     }
 
     @Test
