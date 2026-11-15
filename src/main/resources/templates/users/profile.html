@@ -71,7 +71,28 @@
 
         <p class="mb-4" th:if="${!#strings.isEmpty(user.description)}" th:text="${user.description}"></p>
 
-        <!-- Todo: Create top five section. After the description, and before the reviews. -->
+        <div th:unless="${user.isPrivateAccount and !isOwnProfile}" class="mb-4">
+            <h3>Favourite Games</h3>
+            <p class="text-muted" th:if="${#lists.isEmpty(favouriteGames)}">No favourites yet.</p>
+            <p class="text-muted" th:if="${!#lists.isEmpty(favouriteGames) and user.isPrivateAccount}">
+                Only you can see your favourites because your account is set to private
+            </p>
+            <ol class="list-group" th:unless="${#lists.isEmpty(favouriteGames)}">
+                <li class="list-group-item d-flex align-items-center gap-2" th:each="game, stat : ${favouriteGames}">
+
+                    <span class="fw-bold fs-5" style="width: 2rem;" th:text="|#${stat.count}|"></span>
+                    
+                    <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" th:alt="${game.name}"
+                        class="rounded" style="width: 65px; height: 90px; object-fit: cover;">
+
+                    <div th:if="${game.coverLink == null}" class="rounded bg-secondary-subtle"
+                        style="width: 65px; height: 90px;"></div>
+
+                    <span class="fw-semibold" th:text="${game.name}"></span>
+                    
+                </li>
+            </ol>
+        </div>
 
         <div th:unless="${user.isPrivateAccount and !isOwnProfile}">
             <h3>User Reviews:</h3>

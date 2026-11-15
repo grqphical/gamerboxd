@@ -23,11 +23,13 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.services.GameService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
 
 class UserControllerTest {
     private UserService userService;
+    private GameService gameService;
     private MockMvc mockMvc;
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
@@ -36,7 +38,7 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         userService = mock(UserService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new UserController(userService, mock(ReviewService.class)))
+        mockMvc = MockMvcBuilders.standaloneSetup(new UserController(userService, mock(ReviewService.class), gameService))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 
