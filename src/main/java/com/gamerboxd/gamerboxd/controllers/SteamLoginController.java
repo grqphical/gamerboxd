@@ -183,14 +183,22 @@ public class SteamLoginController {
             @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds,
             @RequestParam Map<String, String> params) {
 
-        for (int i = 0; i < selectedAppIds.size(); i++) {
-            String name = params.get("gameNames[" + selectedAppIds.get(i) + "]");
-            Optional<Game> game = gameService.getGameBySteamAppID(selectedAppIds.get(i), name);
+        // set the status on a single loaded user, then persist it — without an
+        // explicit save the changes are only flushed if a later game insert
+        // happens to trigger a flush, which silently drops some statuses
+        if (selectedAppIds != null) {
             User user = userService.getUserById(currentUser.getId()).get();
 
-            if (game.isPresent()) {
-                user.setGameStatus(game.get().getId(), GameStatus.PLAYED);
+            for (int appId : selectedAppIds) {
+                String name = params.get("gameNames[" + appId + "]");
+                Optional<Game> game = gameService.getGameBySteamAppID(appId, name);
+
+                if (game.isPresent()) {
+                    user.setGameStatus(game.get().getId(), GameStatus.PLAYED);
+                }
             }
+
+            userService.save(user);
         }
 
         if (currentUser != null) {
