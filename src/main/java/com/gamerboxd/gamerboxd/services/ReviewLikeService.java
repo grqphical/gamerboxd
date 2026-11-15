@@ -1,9 +1,12 @@
 package com.gamerboxd.gamerboxd.services;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -44,5 +47,16 @@ public class ReviewLikeService {
 
     public long getLikeCount(int reviewId) {
         return reviewLikeRepository.countByReviewId(reviewId);
+    }
+
+    public Map<Integer, Long> getLikeCounts(Collection<Integer> reviewIds) {
+    return reviewIds.stream().distinct()
+            .collect(Collectors.toMap(id -> id, reviewLikeRepository::countByReviewId));
+    }
+
+    public Set<Integer> getLikedReviewIds(Collection<Integer> reviewIds, int userId) {
+    return reviewIds.stream()
+            .filter(id -> reviewLikeRepository.existsByReviewIdAndUserId(id, userId))
+            .collect(Collectors.toSet());
     }
 }

@@ -1,6 +1,7 @@
 package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +18,7 @@ import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
 
@@ -24,10 +26,14 @@ import com.gamerboxd.gamerboxd.services.UserService;
 public class UserController {
     private final UserService userService;
     private final ReviewService reviewService;
+    private final ReviewLikeService reviewLikeService;
 
-    public UserController(UserService userService, ReviewService reviewService) {
+    public UserController(UserService userService,
+            ReviewService reviewService,
+            ReviewLikeService reviewLikeService) {
         this.userService = userService;
         this.reviewService = reviewService;
+        this.reviewLikeService = reviewLikeService;
     }
 
     @GetMapping("/users/{id}")
@@ -46,10 +52,16 @@ public class UserController {
 
         boolean isOwnProfile = currentUser != null && currentUser.getId() == id;
 
+        List<Integer> ids = userReviews.stream().map(Review::getId).toList();
+
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("isOwnProfile", isOwnProfile);
+        model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(ids));
+        model.addAttribute("likedIds", currentUser == null
+                ? Set.<Integer>of()
+                : reviewLikeService.getLikedReviewIds(ids, currentUser.getId()));
 
         if (user.getRole() == UserRole.ADMIN) {
             // TODO: redirect to admin view
