@@ -48,6 +48,29 @@ public class GameService {
     }
 
     /**
+     * Look up a {@code Game} by it's Steam app ID, fetches it from IGDB and caches
+     * it. If the game is already cached, return that cached copy and do nothing
+     * else.
+     * Should only be called when the user links their library.
+     * 
+     * @param steamID The game's Steam app id.
+     * @return The game, or empty if this steam app ID associates with nothing.
+     */
+    public Optional<Game> getGameBySteamAppID(int steamID) {
+        Game fetchedGame = igdbService.getGameBySteamAppId(steamID);
+        if (fetchedGame == null) {
+            return Optional.empty();
+        }
+
+        Optional<Game> cachedGame = gameRepository.findById(fetchedGame.getId());
+        if (cachedGame.isPresent()) {
+            return cachedGame;
+        }
+
+        return Optional.of(gameRepository.save(fetchedGame));
+    }
+
+    /**
      * - A wrapper function for the IGDBService function. <br>
      * - Use for searching the IGDB database for a game by name. <br>
      * - Skips the cache to make sure results are unified.

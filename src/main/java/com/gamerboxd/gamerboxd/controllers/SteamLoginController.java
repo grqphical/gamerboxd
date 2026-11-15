@@ -18,10 +18,9 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
-import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.models.SteamGame;
 import com.gamerboxd.gamerboxd.models.User;
-import com.gamerboxd.gamerboxd.services.IGDBService;
+import com.gamerboxd.gamerboxd.services.GameService;
 import com.gamerboxd.gamerboxd.services.SteamService;
 import com.gamerboxd.gamerboxd.services.UserService;
 import com.gamerboxd.gamerboxd.services.SteamService.SteamProfile;
@@ -33,15 +32,15 @@ public class SteamLoginController {
 
     private final SteamService steamService;
     private final UserService userService;
-    private final IGDBService igdbService;
+    private final GameService gameService;
 
     @Value("${app.base-url}")
     private String baseUrl;
 
-    public SteamLoginController(SteamService steamService, UserService userService, IGDBService igdbService) {
+    public SteamLoginController(SteamService steamService, UserService userService, GameService gameService) {
         this.steamService = steamService;
         this.userService = userService;
-        this.igdbService = igdbService;
+        this.gameService = gameService;
     }
 
     /*
@@ -122,12 +121,11 @@ public class SteamLoginController {
             HttpServletRequest request,
             Model model) {
 
-        User user;
         try {
             if (!password.equals(confirmPassword)) {
                 throw new IllegalArgumentException("Passwords do not match.");
             }
-            user = userService.registerWithSteam(username, email, password, steamID);
+            userService.registerWithSteam(username, email, password, steamID);
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("username", username);
@@ -185,7 +183,7 @@ public class SteamLoginController {
 
         // This is the code you would use to mark the selected games as played.
         // for (int i = 0; i < selectedAppIds.size(); i++) {
-        // Game game = igdbService.getGameBySteamAppId(selectedAppIds.get(i));
+        // Game game = gameService.getGameBySteamAppId(selectedAppIds.get(i));
         // User user = userService.getUserById(userID).get();
         // // TODO: mark game as "played" for the user
         // }
