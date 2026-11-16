@@ -344,8 +344,8 @@ button.poster { width: 100%; padding: 0; border: 0; }
         var(--gb-bg);
     border-bottom: 1px solid var(--gb-border);
 }
-.hero h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.1; max-width: 16em; margin: 0 auto 1rem; }
-.hero p { color: var(--gb-muted); font-size: 1.1rem; max-width: 34em; margin: 0 auto 1.75rem; }
+.hero h1 { font-size: clamp(1.7rem, 5vw, 3.1rem); line-height: 1.15; margin: 0 auto 1.75rem; }
+.hero h1 span { display: block; }
 
 /* ---------- Game page ---------- */
 .backdrop { position: relative; height: 360px; overflow: hidden; margin-bottom: -150px; }
