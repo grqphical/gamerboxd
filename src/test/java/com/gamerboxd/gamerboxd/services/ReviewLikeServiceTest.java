@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -105,18 +106,29 @@ class ReviewLikeServiceTest {
     }
 
     @Test
-    void getLikeCounts_returnsCountPerReview() {
-        when(reviewLikeRepository.countByReviewId(1)).thenReturn(3L);
-        when(reviewLikeRepository.countByReviewId(2)).thenReturn(0L);
+    void getLikeCounts_fillsZeroForUnlikedReviews() {
+        when(reviewLikeRepository.countByReviewIds(List.of(1, 2)))
+                .thenReturn(List.<Object[]>of(new Object[] { 1, 3L }));
 
         assertEquals(Map.of(1, 3L, 2, 0L), reviewLikeService.getLikeCounts(List.of(1, 2)));
     }
 
     @Test
+    void getLikeCounts_noReviews_skipsQuery() {
+        assertEquals(Map.of(), reviewLikeService.getLikeCounts(List.of()));
+        verify(reviewLikeRepository, never()).countByReviewIds(any());
+    }
+
+    @Test
     void getLikedReviewIds_returnsOnlyLikedOnes() {
-        when(reviewLikeRepository.existsByReviewIdAndUserId(1, 2)).thenReturn(true);
-        when(reviewLikeRepository.existsByReviewIdAndUserId(2, 2)).thenReturn(false);
+        when(reviewLikeRepository.findLikedReviewIds(List.of(1, 2), 2)).thenReturn(Set.of(1));
 
         assertEquals(Set.of(1), reviewLikeService.getLikedReviewIds(List.of(1, 2), 2));
+    }
+
+    @Test
+    void getLikedReviewIds_noReviews_skipsQuery() {
+        assertEquals(Set.of(), reviewLikeService.getLikedReviewIds(List.of(), 2));
+        verify(reviewLikeRepository, never()).findLikedReviewIds(any(), anyInt());
     }
 }

@@ -1,9 +1,9 @@
 package com.gamerboxd.gamerboxd.services;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -38,10 +38,17 @@ public class ReviewCommentService {
         return reviewCommentRepository.countByReviewId(reviewId);
     }
 
+    /** Comment count for every given review, including zeros, in a single query. */
     public Map<Integer, Long> getCommentCounts(Collection<Integer> reviewIds) {
-        return reviewIds.stream()
-            .distinct()
-            .collect(Collectors.toMap(id -> id, reviewCommentRepository::countByReviewId));
+        Map<Integer, Long> counts = new HashMap<>();
+        if (reviewIds.isEmpty()) {
+            return counts;
+        }
+        reviewIds.forEach(id -> counts.put(id, 0L));
+        for (Object[] row : reviewCommentRepository.countByReviewIds(reviewIds)) {
+            counts.put((Integer) row[0], (Long) row[1]);
+        }
+        return counts;
     }
 
     public ReviewComment add(int reviewId, int userId, String content) {
