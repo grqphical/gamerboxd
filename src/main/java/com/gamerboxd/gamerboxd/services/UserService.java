@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
@@ -262,6 +263,55 @@ public class UserService implements UserDetailsService {
     public void unlinkSteamAccount(int userId) {
         User user = userRepository.findById(userId).orElseThrow();
         user.setSteamID(null);
+        userRepository.save(user);
+    }
+
+    public Optional<User> getUserByGoogleId(String googleId) {
+        return userRepository.findByGoogleID(googleId);
+    }
+
+    public boolean isEmailRegistered(String email) {
+        return userRepository.existsByEmail(normalizeEmail(email));
+    }
+
+    /**
+     * Creates an account that signs in through Google. It gets a random password
+     * nobody knows, the user can set a real one in settings.
+     * Throws IllegalArgumentException if invalid.
+     */
+    public User registerWithGoogle(String username, String email, String googleId) {
+        String cleanUsername = username == null ? "" : username.trim();
+        String cleanEmail = normalizeEmail(email);
+        String randomPassword = UUID.randomUUID().toString();
+        validate(cleanUsername, cleanEmail, randomPassword);
+
+        try {
+            User newUser = new User(0, cleanUsername, cleanEmail, passwordEncoder.encode(randomPassword),
+                    UserRole.USER);
+            newUser.setGoogleID(googleId);
+            return userRepository.save(newUser);
+        } catch (DataIntegrityViolationException e) {
+            // Lost a race with another sign-up using the same username, email or Google account
+            throw new IllegalArgumentException("That username or email is already taken.");
+        }
+    }
+
+    /** Throws IllegalArgumentException if the Google account belongs to another user. */
+    @Transactional
+    public void linkGoogleAccount(String googleId, int userId) {
+        Optional<User> owner = userRepository.findByGoogleID(googleId);
+        if (owner.isPresent() && owner.get().getId() != userId) {
+            throw new IllegalArgumentException("That Google account is already linked to another user.");
+        }
+        User user = userRepository.findById(userId).orElseThrow();
+        user.setGoogleID(googleId);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void unlinkGoogleAccount(int userId) {
+        User user = userRepository.findById(userId).orElseThrow();
+        user.setGoogleID(null);
         userRepository.save(user);
     }
 

@@ -129,4 +129,75 @@ class UserServiceTest {
 
         assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername("nobody@example.com"));
     }
+
+    @Test
+    void registerWithGoogle_savesLinkedUserWithUnknownPassword() {
+        when(passwordEncoder.encode(any())).thenReturn("hashed");
+
+        userService.registerWithGoogle("  ada  ", " Ada@Gmail.COM ", "google-123");
+
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        User saved = captor.getValue();
+        assertEquals("ada", saved.getUsername());
+        assertEquals("ada@gmail.com", saved.getEmail());
+        assertEquals("google-123", saved.getGoogleID());
+        assertEquals("hashed", saved.getPassword());
+        assertEquals(UserRole.USER, saved.getRole());
+    }
+
+    @Test
+    void registerWithGoogle_invalidUsername_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.registerWithGoogle("a", "ada@gmail.com", "google-123"));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void registerWithGoogle_takenEmail_throws() {
+        when(userRepository.existsByEmail("ada@gmail.com")).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.registerWithGoogle("ada", "ada@gmail.com", "google-123"));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void linkGoogleAccount_setsGoogleId() {
+        User ada = new User(1, "ada", "ada@gmail.com", "pw", UserRole.USER);
+        when(userRepository.findByGoogleID("google-123")).thenReturn(Optional.empty());
+        when(userRepository.findById(1)).thenReturn(Optional.of(ada));
+
+        userService.linkGoogleAccount("google-123", 1);
+
+        assertEquals("google-123", ada.getGoogleID());
+    }
+
+    @Test
+    void linkGoogleAccount_ownedByAnotherUser_throws() {
+        User other = new User(2, "bob", "bob@gmail.com", "pw", UserRole.USER);
+        other.setGoogleID("google-123");
+        when(userRepository.findByGoogleID("google-123")).thenReturn(Optional.of(other));
+
+        assertThrows(IllegalArgumentException.class, () -> userService.linkGoogleAccount("google-123", 1));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void unlinkGoogleAccount_clearsGoogleId() {
+        User ada = new User(1, "ada", "ada@gmail.com", "pw", UserRole.USER);
+        ada.setGoogleID("google-123");
+        when(userRepository.findById(1)).thenReturn(Optional.of(ada));
+
+        userService.unlinkGoogleAccount(1);
+
+        assertEquals(null, ada.getGoogleID());
+    }
+
+    @Test
+    void isEmailRegistered_normalizesEmail() {
+        when(userRepository.existsByEmail("ada@gmail.com")).thenReturn(true);
+
+        assertEquals(true, userService.isEmailRegistered(" Ada@Gmail.com "));
+    }
 }

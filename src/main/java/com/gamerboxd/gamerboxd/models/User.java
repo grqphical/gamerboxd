@@ -45,6 +45,10 @@ public class User {
     @Column(nullable = true)
     private String steamID;
 
+    // Google's stable account id (the OpenID "sub" claim), null when not linked
+    @Column(unique = true)
+    private String googleID;
+
     @ElementCollection 
     @OrderColumn 
     private List<Integer> favouriteIgdbIDs = 
@@ -152,6 +156,14 @@ public class User {
 
     public void setSteamID(String steamID) {
         this.steamID = steamID;
+    }
+
+    public String getGoogleID() {
+        return googleID;
+    }
+
+    public void setGoogleID(String googleID) {
+        this.googleID = googleID;
     }
 
     /** 
