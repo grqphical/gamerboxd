@@ -43,6 +43,18 @@ public class IGDBService {
             // An error here means the token is no longer valid
             tokens.invalidate();
             return send(endpoint, body, type);
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            // we got rate limited :(
+            // wait and try again
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(ie);
+            }
+
+            return send(endpoint, body, type);
+
         }
     }
 
