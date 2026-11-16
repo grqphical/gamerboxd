@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <nav th:fragment="navbar" class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="/">Gamerboxd</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <a class="nav-link me-3" th:href="@{/playlists}">Playlists</a>
+                <form class="d-flex flex-grow-1 mx-lg-auto mt-3 mt-lg-0" style="max-width: 280px;" role="search"
+                    th:action="@{/search}" method="get">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Search games"
+                        aria-label="Search games" required>
+                    <button class="btn btn-outline-primary" type="submit">Search</button>
+                </form>
+
+                <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                    <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
+                    <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
+
+                    <div class="dropdown" th:if="${currentUser}">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            th:text="|Hello, ${currentUser.displayName}|">
+                            Hello, username
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" th:href="@{/users/{id}(id=${currentUser.id})}">Profile</a></li>
+                            <li>
+                                <a class="dropdown-item" th:href="@{/users/{id}/settings(id=${currentUser.id})}">
+                                    Account Settings
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</body>
+
+</html>
