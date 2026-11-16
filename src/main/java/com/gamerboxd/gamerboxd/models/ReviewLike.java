@@ -6,12 +6,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name="ReviewLikes",
+    // the unique constraint below already indexes review_id
+    indexes = @Index(name = "idx_review_likes_user", columnList = "user_id"),
     uniqueConstraints = @UniqueConstraint(columnNames = {"review_id", "user_id"}) // no duplicate reviewLikes
 )
 public class ReviewLike {
