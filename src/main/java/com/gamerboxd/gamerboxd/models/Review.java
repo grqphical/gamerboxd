@@ -7,11 +7,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Reviews")
+@Table(name = "Reviews", indexes = {
+        @Index(name = "idx_reviews_user", columnList = "user_id"),
+        @Index(name = "idx_reviews_game", columnList = "game_id")
+})
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

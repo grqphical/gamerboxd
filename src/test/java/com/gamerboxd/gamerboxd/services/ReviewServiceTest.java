@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -174,6 +175,7 @@ class ReviewServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> reviewService.update(5, 1, rating, "Good"));
         verify(reviewRepository, never()).save(any());
+        verify(gameService, never()).updateGameRating(anyInt(), anyInt(), anyBoolean());
     }
 
     @Test
@@ -183,6 +185,19 @@ class ReviewServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> reviewService.update(5, 1, 4, "   "));
         verify(reviewRepository, never()).save(any());
+        verify(gameService, never()).updateGameRating(anyInt(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    void update_swapsOldRatingForNewOnGame() {
+        Review review = new Review(john, 113112, 3, "Ok");
+        when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
+
+        reviewService.update(5, 1, 5, "Much better");
+
+        InOrder order = inOrder(gameService);
+        order.verify(gameService).updateGameRating(113112, 3, false);
+        order.verify(gameService).updateGameRating(113112, 5, true);
     }
 
     @Test

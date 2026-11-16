@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -121,5 +122,19 @@ class ReviewCommentServiceTest {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> reviewCommentService.delete(99, 1));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    void getCommentCounts_fillsZeroForUncommentedReviews() {
+        when(reviewCommentRepository.countByReviewIds(List.of(1, 2)))
+                .thenReturn(List.<Object[]>of(new Object[] { 2, 4L }));
+
+        assertEquals(Map.of(1, 0L, 2, 4L), reviewCommentService.getCommentCounts(List.of(1, 2)));
+    }
+
+    @Test
+    void getCommentCounts_noReviews_skipsQuery() {
+        assertEquals(Map.of(), reviewCommentService.getCommentCounts(List.of()));
+        verify(reviewCommentRepository, never()).countByReviewIds(any());
     }
 }

@@ -24,7 +24,8 @@ public class SearchController {
     public String search(@AuthenticationPrincipal AuthenticatedUser currentUser,
                         @RequestParam(defaultValue = "") String q, Model model) {
         String query = q.trim();
-        List<Game> results = gameService.getSearchResultsByName(query, 20);
+        // an empty search would still spend an IGDB request
+        List<Game> results = query.isEmpty() ? List.of() : gameService.getSearchResultsByName(query, 20);
 
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("query", query);
