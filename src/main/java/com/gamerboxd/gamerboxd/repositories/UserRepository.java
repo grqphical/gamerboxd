@@ -18,4 +18,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsBySteamID(String steamId);
 
     Optional<User> findBySteamID(String steamId);
+
+    Optional<User> findByGoogleID(String googleId);
 }
