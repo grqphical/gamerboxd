@@ -21,7 +21,8 @@ public class SecurityConfig {
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http, UserDetailsService userDetailsService,
-                        PersistentTokenRepository tokenRepository) throws Exception {
+                        PersistentTokenRepository tokenRepository,
+                        GoogleLoginSuccessHandler googleLoginSuccessHandler) throws Exception {
                 return http
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/error", "/signup").permitAll()
@@ -38,6 +39,10 @@ public class SecurityConfig {
                                                 .loginPage("/login")
                                                 .usernameParameter("email")
                                                 .permitAll())
+                                .oauth2Login(google -> google
+                                                .loginPage("/login")
+                                                .successHandler(googleLoginSuccessHandler)
+                                                .failureUrl("/login?googleError"))
                                 .rememberMe(rememberMe -> rememberMe
                                                 .tokenRepository(tokenRepository)
                                                 .userDetailsService(userDetailsService)
