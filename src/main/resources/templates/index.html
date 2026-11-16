@@ -94,6 +94,8 @@
                     <a th:if="${currentUser != null and currentUser.id == r.user.id}"
                     th:href="@{/reviews/{id}/edit(id=${r.id})}" class="btn btn-sm btn-outline-secondary">Edit</a>
 
+                    <a th:href="@{/reviews/{id}(id=${r.id})}" class="btn btn-sm btn-outline-secondary">Comments</a>
+
                     <form th:if="${currentUser != null and currentUser.id == r.user.id}"
                         th:action="@{/reviews/{id}/delete(id=${r.id})}" method="post" class="m-0"
                         onsubmit="return confirm('Delete this review?');">
