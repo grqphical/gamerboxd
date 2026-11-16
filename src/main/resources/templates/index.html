@@ -7,7 +7,13 @@
     <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
     <section class="hero" th:unless="${currentUser}">
-        <div class="container">
+        <!-- Decorative wall of covers, repeated until there are enough tiles to fill the hero -->
+        <div class="hero-collage" aria-hidden="true" th:unless="${#lists.isEmpty(collageGames)}">
+            <th:block th:each="i : ${#numbers.sequence(0, 72 / #lists.size(collageGames))}">
+                <img th:each="g : ${collageGames}" th:src="${g.coverLink}" alt="">
+            </th:block>
+        </div>
+        <div class="container position-relative">
             <img th:src="@{/images/logo.svg}" alt="" width="84" height="84" class="mb-3">
             <h1>
                 <span>Track games you’ve played.</span>

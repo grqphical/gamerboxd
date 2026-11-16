@@ -50,6 +50,9 @@ public class GamerboxdController {
         model.addAttribute("reviews", reviews);
         model.addAttribute("reviewGames", gameService.getGamesByIDs(gameIds)); // covers and names for the feed
         model.addAttribute("currentUser", currentUser);
+        if (currentUser == null) { // only the signed-out hero shows the collage
+            model.addAttribute("collageGames", gameService.getCollageGames());
+        }
         model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
         model.addAttribute("commentCounts", reviewCommentService.getCommentCounts(reviewIds));
         model.addAttribute("likedIds", currentUser == null

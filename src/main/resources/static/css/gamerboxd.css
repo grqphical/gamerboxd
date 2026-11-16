@@ -344,6 +344,28 @@ button.poster { width: 100%; padding: 0; border: 0; }
         var(--gb-bg);
     border-bottom: 1px solid var(--gb-border);
 }
+.hero { position: relative; overflow: hidden; }
+.hero-collage {
+    position: absolute;
+    inset: -30% -8%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 10px;
+    align-content: center;
+    transform: rotate(-7deg);
+    opacity: 0.38;
+}
+.hero-collage img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 6px; }
+/* Darken the middle so the headline stays readable, and fade the wall into the page */
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(55% 75% at 50% 50%, rgba(14, 17, 22, 0.94) 25%, rgba(14, 17, 22, 0.35) 100%),
+        linear-gradient(to bottom, transparent 55%, var(--gb-bg) 100%);
+}
+.hero .container { z-index: 1; }
 .hero h1 { font-size: clamp(1.7rem, 5vw, 3.1rem); line-height: 1.15; margin: 0 auto 1.75rem; }
 .hero h1 span { display: block; }
 
