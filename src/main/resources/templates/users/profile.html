@@ -1,324 +1,209 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" data-bs-theme="dark" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <meta charset="UTF-8">
-    <title th:text="|${user.username} - Gamerboxd|"></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+<head th:replace="~{fragments/layout :: head(${user.username})}"></head>
 
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
-        <div class="container">
-            <a class="navbar-brand fw-semibold" href="/">Gamerboxd</a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="mainNav">
-                <form class="d-flex flex-grow-1 mx-lg-auto mt-3 mt-lg-0" style="max-width: 280px;" role="search"
-                    th:action="@{/search}" method="get">
-                    <input class="form-control me-2" type="search" name="q" placeholder="Search games"
-                        aria-label="Search games" required>
-                    <button class="btn btn-outline-primary" type="submit">Search</button>
-                </form>
-
-                <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
-                    <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
-                    <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
-
-                    <div class="dropdown" th:if="${currentUser}">
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false"
-                            th:text="|Hello, ${currentUser.displayName}|">
-                            Hello, username
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" th:href="@{/users/{id}(id=${currentUser.id})}">
-                                    Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" th:href="@{/users/{id}/settings(id=${currentUser.id})}">
-                                    Account Settings
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <form th:action="@{/logout}" method="post" class="m-0">
-                                    <button type="submit" class="dropdown-item">Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <main class="container pt-4" style="max-width: 860px;"
+        th:with="hidden=${user.isPrivateAccount and !isOwnProfile}">
+        <header class="d-flex align-items-center flex-wrap gap-3">
+            <span class="avatar lg" th:text="${#strings.substring(user.username, 0, 1)}">u</span>
+            <div class="flex-grow-1" style="min-width: 0;">
+                <h1 class="mb-0">
+                    <span th:text="${user.username}">username</span>
+                    <small class="text-muted fs-6 fw-normal" th:if="${!#strings.isEmpty(user.pronouns)}"
+                        th:text="${user.pronouns}"></small>
+                    <span class="badge text-bg-secondary fs-6 align-middle" th:if="${user.isPrivateAccount}">Private</span>
+                </h1>
+                <p class="text-muted mb-0" th:if="${!#strings.isEmpty(user.description)}"
+                    th:text="${user.description}"></p>
+            </div>
+            <div class="d-flex gap-4" th:unless="${hidden}">
+                <div class="stat">
+                    <div class="value" th:text="${#lists.size(reviews)}">0</div>
+                    <div class="label">Reviews</div>
+                </div>
+                <div class="stat">
+                    <div class="value" th:text="${#lists.size(gamesByStatus.get(gameStatuses[0]))}">0</div>
+                    <div class="label">Played</div>
+                </div>
+                <div class="stat">
+                    <div class="value" th:text="${#lists.size(playlists)}">0</div>
+                    <div class="label">Playlists</div>
                 </div>
             </div>
-        </div>
-    </nav>
-    <div class="container py-5" style="max-width: 700px;">
-        <div class="d-flex justify-content-between align-items-start mb-3">
-            <h1 class="mb-0">
-                <span th:text="${user.username}"></span>
-                <small class="text-muted fs-6" th:if="${user.isPrivateAccount}">(Private)</small>
-                <small class="text-muted fs-6" th:if="${!#strings.isEmpty(user.pronouns)}"
-                    th:text="${user.pronouns}"></small>
-            </h1>
-            <div class="d-flex flex-row gap-2">
-                <a th:if="${isOwnProfile}" th:href="@{/users/{id}/settings(id=${user.id})}"
-                    class="btn btn-outline-secondary">Settings</a>
-                <a th:if="${currentUser != null and currentUser.authorities.![authority].contains('ROLE_ADMIN')}"
-                    th:href="@{/admin}" class="btn btn-outline-danger">Admin Panel</a>
-            </div>
-        </div>
+            <a th:if="${isOwnProfile}" th:href="@{/users/{id}/settings(id=${user.id})}"
+                class="btn btn-outline-secondary btn-sm">Edit profile</a>
+        </header>
 
-        <p class="mb-4" th:if="${!#strings.isEmpty(user.description)}" th:text="${user.description}"></p>
+        <p class="text-muted text-center py-5" th:if="${hidden}">This account is private.</p>
 
-        <div th:unless="${user.isPrivateAccount and !isOwnProfile}" class="mb-4">
-            <h3>Favourite Games</h3>
-            <p class="text-muted" th:if="${favouriteGames.isEmpty()}">No favourites yet.</p>
-            <p class="text-muted" th:if="${!favouriteGames.isEmpty() and user.isPrivateAccount}">
-                Only you can see your favourites because your account is set to private
+        <th:block th:unless="${hidden}">
+            <p class="text-muted small mt-3 mb-0" th:if="${isOwnProfile and user.isPrivateAccount}">
+                Your account is private, so only you can see your favourites, games, playlists and reviews.
             </p>
-            <ol class="list-group" th:if="${!favouriteGames.isEmpty() or canAddFavourite}">
-                <li class="list-group-item d-flex align-items-center gap-2" th:each="game, stat : ${favouriteGames}">
-                    <div th:if="${isOwnProfile}" class="d-flex flex-column gap-1">
+
+            <!-- Favourites: up to four covers, ordered by the owner -->
+            <div class="section-title">
+                <h2>Favourite games</h2>
+            </div>
+            <p class="text-muted" th:if="${favouriteGames.isEmpty() and !canAddFavourite}">No favourites yet.</p>
+            <div class="row row-cols-2 row-cols-sm-4 g-3">
+                <div class="col" th:each="game, stat : ${favouriteGames}">
+                    <a class="poster" th:href="@{/games/{id}(id=${game.id})}" th:title="${game.name}">
+                        <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" th:alt="${game.name}">
+                        <span class="poster-fallback" th:unless="${game.coverLink != null}"
+                            th:text="${game.name}"></span>
+                        <span class="poster-rank" th:text="${stat.count}">1</span>
+                    </a>
+                    <div class="poster-tools" th:if="${isOwnProfile}">
                         <form th:action="@{/favourites/move}" method="post">
                             <input type="hidden" name="igdbID" th:value="${game.id}">
                             <input type="hidden" name="direction" value="up">
-                            <button type="submit" class="btn btn-sm btn-outline-secondary" th:disabled="${stat.first}">↑</button>
+                            <button type="submit" class="btn btn-ghost" th:disabled="${stat.first}"
+                                aria-label="Move earlier">←</button>
+                        </form>
+                        <form th:action="@{/favourites/remove}" method="post">
+                            <input type="hidden" name="igdbID" th:value="${game.id}">
+                            <button type="submit" class="btn btn-ghost danger" aria-label="Remove">✕</button>
                         </form>
                         <form th:action="@{/favourites/move}" method="post">
                             <input type="hidden" name="igdbID" th:value="${game.id}">
                             <input type="hidden" name="direction" value="down">
-                            <button type="submit" class="btn btn-sm btn-outline-secondary" th:disabled="${stat.last}">↓</button>
+                            <button type="submit" class="btn btn-ghost" th:disabled="${stat.last}"
+                                aria-label="Move later">→</button>
                         </form>
                     </div>
-                    
-                    <span class="fw-bold fs-5" style="width: 2rem;" th:text="|#${stat.count}|"></span>
-                    <!-- IGDB covers are 264 x 352 which is 3:4 ratio 
-                         so im making these 90x120 to avoid cropping -->
-                    <a th:href="@{/games/{id}(id=${game.id})}" 
-                        class="d-flex align-items-center gap-2 text-reset text-decoration-none">
+                </div>
+                <div class="col" th:if="${canAddFavourite}">
+                    <a href="#favouriteSearch" data-bs-toggle="collapse" class="poster poster-empty"
+                        aria-label="Add a favourite game">+</a>
+                </div>
+            </div>
 
-                        <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="rounded" 
-                            style="width: 90px; height: 120px; object-fit: cover;">
-
-                        <div th:if="${game.coverLink == null}" class="rounded bg-secondary-subtle"
-                            style="width: 90px; height: 120px;"></div>
-
-                        <span class="fw-semibold" th:text="${game.name}"></span>
-                    </a>
-
-                    <form th:if="${isOwnProfile}" th:action="@{/favourites/remove}" method="post"
-                        class="position-absolute top-0 end-0 m-2">
-                        <input type="hidden" name="igdbID" th:value="${game.id}">
-                        <button type="submit" class="btn-close" aria-label="Remove"></button>
-                    </form>
-
-                </li>
-
-                <li th:if="${canAddFavourite}" class="list-group-item list-group-item-action position-relative text-center">
-                    <a href="#favouriteSearch" data-bs-toggle="collapse"
-                        class="stretched-link text-decoration-none text-muted fs-1" style="line-height: 90px;">+</a>
-                </li>
-            </ol>
-
-            <div th:if="${canAddFavourite}" id="favouriteSearch" class="collapse mt-2"
+            <div th:if="${canAddFavourite}" id="favouriteSearch" class="collapse mt-3"
                 th:classappend="${gameSearch != null ? 'show' : ''}">
-                <form th:action="@{/users/{id}(id=${user.id})}" method="get" class="d-flex gap-2 mb-2">
-                    <input type="text" name="gameSearch" class="form-control" placeholder="Search for a game"
+                <form th:action="@{/users/{id}(id=${user.id})}" method="get" class="d-flex gap-2 mb-3">
+                    <input type="search" name="gameSearch" class="form-control" placeholder="Search for a favourite"
                         th:value="${gameSearch}" required>
-                    <button type="submit" class="btn btn-primary">Search</button>
+                    <button type="submit" class="btn btn-outline-primary">Search</button>
                 </form>
-
-                <p class="text-muted" th:if="${gameSearch != null and gameSearchResults.isEmpty()}">No games found</p>
-
-                <div class="row row-cols-5 g-2" th:unless="${gameSearchResults.isEmpty()}">
-                    <div class="col" th:each="game : ${gameSearchResults}">
-
-                        <form th:action="@{/favourites/add}" method="post" class="h-100">
-                            <input type="hidden" name="igdbID" th:value="${game.id}">
-
-                            <button type="submit" class="card h-100 w-100 p-0 text-start shadow-sm overflow-hidden">
-                                <!-- Covers are 3:4 ratio -->
-                                <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" class="w-100" 
-                                    style="aspect-ratio: 3 / 4;">
-
-                                <div th:if="${game.coverLink == null}" class="w-100 bg-secondary-subtle"
-                                    style="aspect-ratio: 3 / 4;">
-                                </div>
-
-                                <div class="p-1 w-100">
-                                    <div class="small fw-semibold text-truncate" th:text="${game.name}"></div>
-                                </div>
-                            </button>
-
-                        </form>
-
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-
-        <div th:unless="${user.isPrivateAccount and !isOwnProfile}">
-            <section class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h3 class="mb-0">Game Status</h3>
-                    <button th:if="${isOwnProfile}" class="btn btn-outline-primary" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#statusGameSearch" aria-expanded="false"
-                        aria-controls="statusGameSearch">Add a game</button>
-                </div>
-                <p class="text-muted" th:if="${!isOwnProfile and user.getGameStatuses().isEmpty()}">
-                    No games marked yet.
-                </p>
-
-                <div th:if="${isOwnProfile}" id="statusGameSearch"  class="collapse mb-3"
-                    th:classappend="${statusGameSearch != null ? 'show' : ''}">
-                    <form th:action="@{/users/{id}(id=${user.id})}" method="get" class="d-flex gap-2 mb-2">
-                        <input type="text" name="statusGameSearch" class="form-control"
-                            placeholder="Search for a game to mark" th:value="${statusGameSearch}" required>
-                        <button type="submit" class="btn btn-primary">Search</button>
+                <p class="text-muted" th:if="${gameSearch != null and gameSearchResults.isEmpty()}">No games found.</p>
+                <div class="poster-grid compact">
+                    <form th:each="game : ${gameSearchResults}" th:action="@{/favourites/add}" method="post">
+                        <input type="hidden" name="igdbID" th:value="${game.id}">
+                        <button type="submit" class="poster" th:title="|Add ${game.name}|">
+                            <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" th:alt="${game.name}">
+                            <span class="poster-fallback" th:unless="${game.coverLink != null}"
+                                th:text="${game.name}"></span>
+                        </button>
+                        <div class="poster-caption"><span class="name" th:text="${game.name}"></span></div>
                     </form>
-                    <p class="text-muted" th:if="${statusGameSearch != null and statusGameSearchResults.isEmpty()}">
-                        No games found.
-                    </p>
-                    <ul class="list-group" th:unless="${statusGameSearchResults.isEmpty()}">
-                        <li class="list-group-item d-flex align-items-center gap-3"
-                            th:each="game : ${statusGameSearchResults}">
-                            <img th:if="${game.coverLink != null}" th:src="${game.coverLink}"
-                                class="rounded" style="width: 48px; height: 64px; object-fit: cover;">
-                            <span class="fw-semibold flex-grow-1" th:text="${game.name}"></span>
-                            <form th:action="@{/users/{id}/games/status(id=${user.id})}" method="post"
-                                class="d-flex gap-2">
-                                <input type="hidden" name="igdbID" th:value="${game.id}">
-                                <select class="form-select" name="status" aria-label="Game status">
-                                    <option value="WANT_TO_PLAY" selected>Want to play</option>
-                                    <option value="PLAYED">Played</option>
-                                    <option value="DROPPED">Dropped</option>
-                                </select>
-                                <button type="submit" class="btn btn-primary text-nowrap">Save</button>
-                            </form>
-                        </li>
-                    </ul>
                 </div>
+            </div>
 
-                <div class="row g-3">
-                    <div class="col-12" th:each="status : ${gameStatuses}">
-                        <h5 th:text="${status == T(com.gamerboxd.gamerboxd.models.GameStatus).PLAYED ? 'Played' :
-                            (status == T(com.gamerboxd.gamerboxd.models.GameStatus).WANT_TO_PLAY ? 'Want to play' : 'Dropped')}">
-                            Played
-                        </h5>
-                        <p class="small text-muted mb-2" th:if="${gamesByStatus.get(status).isEmpty()}">No games yet.</p>
-                        <ul class="list-group overflow-auto" style="max-height: 360px;">
-                            <li class="list-group-item p-2" th:each="game : ${gamesByStatus.get(status)}">
-                                <div class="d-flex align-items-center gap-2">
-                                    <a th:href="@{/games/{id}(id=${game.id})}" 
-                                        class="d-flex align-items-center gap-2 flex-grow-1 text-reset text-decoration-none">
-                                        <img th:if="${game.coverLink != null}" th:src="${game.coverLink}"
-                                            class="rounded" style="width: 42px; height: 56px; object-fit: cover;">
-                                        <span class="small fw-semibold" th:text="${game.name}"></span>
-                                    </a>
-                                    <form th:if="${isOwnProfile}"
-                                        th:action="@{/users/{id}/games/status(id=${user.id})}" method="post"
-                                        class="d-flex gap-1">
-                                        <input type="hidden" name="igdbID" th:value="${game.id}">
-                                        <select class="form-select form-select-sm" name="status"
-                                            aria-label="Change game status">
-                                            <option th:each="option : ${gameStatuses}" th:value="${option}"
-                                                th:selected="${option == status}"
-                                                th:text="${option == T(com.gamerboxd.gamerboxd.models.GameStatus).PLAYED ? 'Played' :
-                                                    (option == T(com.gamerboxd.gamerboxd.models.GameStatus).WANT_TO_PLAY ? 'Want to play' : 'Dropped')}">
-                                            </option>
-                                        </select>
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
-                                    </form>
-                                    <form th:if="${isOwnProfile}"
-                                        th:action="@{/users/{id}/games/remove(id=${user.id})}" method="post">
-                                        <input type="hidden" name="igdbID" th:value="${game.id}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"
-                                            aria-label="Remove game status">×</button>
-                                    </form>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
+            <!-- Library: games grouped by status, one tab each -->
+            <div class="section-title">
+                <h2>Library</h2>
+                <button th:if="${isOwnProfile}" class="btn btn-sm btn-outline-primary" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#statusGameSearch" aria-expanded="false"
+                    aria-controls="statusGameSearch">+ Add a game</button>
+            </div>
 
-            <section class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h3 class="mb-0">Playlists</h3>
-                    <a th:if="${isOwnProfile}" th:href="@{/playlists}" class="btn btn-outline-primary">New Playlist</a>
-                </div>
-                <p class="text-muted" th:if="${#lists.isEmpty(playlists)}">No playlists yet.</p>
-                <div class="list-group">
-                    <a class="list-group-item list-group-item-action d-flex justify-content-between"
-                        th:each="p : ${playlists}" th:href="@{/playlists/{id}(id=${p.id})}">
-                        <span class="fw-semibold" th:text="${p.title}">Title</span>
-                        <small class="text-muted"
-                            th:text="|${p.gameCount} ${p.gameCount == 1 ? 'game' : 'games'} · ♥ ${p.likeCount}|"></small>
-                    </a>
-                </div>
-            </section>
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0">User Reviews:</h3>
-                <a th:if="${currentUser}" th:href="@{/reviews/new}" class="btn btn-primary">Write a
-                    Review</a>
-             </div>
-            <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
-            <p class="text-muted" th:if="${!#lists.isEmpty(reviews) and user.isPrivateAccount}">
-                Only you can see your reviews because your account is set to private
-            </p>
-            <div class="card shadow-sm mb-3" th:each="r : ${reviews}">
-                <div class="card-body">
-                    <h5 class="card-title">
-                    <a th:href="@{/games/{id}(id=${r.gameId})}" class="text-reset text-decoration-none"
-                    th:text="${reviewGameNames[r.gameId] ?: 'Unknown game'}">Game</a>
-                    </h5>
-                    <div class="text-warning mb-2" th:text="${#strings.repeat('★', r.rating)}">★★★</div>
-                    <p class="card-text" th:text="${r.description}">Description</p>
-                    <small class="text-muted">
-                        <time th:attr="datetime=${r.createdAt}" th:text="${r.createdAt}"></time>
-                        <span th:if="${r.updatedAt != null}" class="fst-italic">· edited
-                            <time th:attr="datetime=${r.updatedAt}" th:text="${r.updatedAt}"></time></span>
-                    </small>
-                    <div class="mt-2 d-flex align-items-center gap-2">
-                        <form th:if="${currentUser}"
-                            th:action="@{/reviews/{id}/like(id=${r.id}, profileId=${user.id})}" method="post"
-                            class="m-0">
-                            <button type="submit" class="btn btn-sm"
-                                th:classappend="${likedIds.contains(r.id)} ? 'btn-danger' : 'btn-outline-danger'"
-                                th:text="${likedIds.contains(r.id)} ? '♥ Liked' : '♡ Like'">♡ Like</button>
+            <div th:if="${isOwnProfile}" id="statusGameSearch" class="collapse mb-3"
+                th:classappend="${statusGameSearch != null ? 'show' : ''}">
+                <form th:action="@{/users/{id}(id=${user.id})}" method="get" class="d-flex gap-2 mb-2">
+                    <input type="search" name="statusGameSearch" class="form-control"
+                        placeholder="Search for a game to add" th:value="${statusGameSearch}" required>
+                    <button type="submit" class="btn btn-outline-primary">Search</button>
+                </form>
+                <p class="text-muted" th:if="${statusGameSearch != null and statusGameSearchResults.isEmpty()}">
+                    No games found.
+                </p>
+                <ul class="list-group" th:unless="${statusGameSearchResults.isEmpty()}">
+                    <li class="list-group-item d-flex align-items-center gap-3"
+                        th:each="game : ${statusGameSearchResults}">
+                        <span style="width: 36px;" class="poster flex-shrink-0">
+                            <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" alt="">
+                        </span>
+                        <span class="fw-medium flex-grow-1" th:text="${game.name}"></span>
+                        <form th:action="@{/users/{id}/games/status(id=${user.id})}" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="igdbID" th:value="${game.id}">
+                            <select class="form-select form-select-sm" name="status" aria-label="Game status">
+                                <option th:each="option : ${gameStatuses}" th:value="${option}"
+                                    th:selected="${option.name() == 'WANT_TO_PLAY'}"
+                                    th:text="${option.label}"></option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary text-nowrap">Add</button>
                         </form>
-                        <span class="text-muted small" th:text="${'♥ ' + (likeCounts[r.id] ?: 0)}">♥ 0</span>
+                    </li>
+                </ul>
+            </div>
 
-                        <a th:href="@{/reviews/{id}(id=${r.id})}" class="btn btn-sm btn-outline-secondary"
-                            th:text="${'Comments (' + (commentCounts[r.id] ?: 0) + ')'}">Comments</a>
-
-                        <a th:if="${currentUser != null and currentUser.id == r.user.id}"
-                            th:href="@{/reviews/{id}/edit(id=${r.id}, from='profile')}"
-                            class="btn btn-sm btn-outline-secondary">Edit</a>
-
-                        <form th:if="${currentUser != null and currentUser.id == r.user.id}"
-                            th:action="@{/reviews/{id}/delete(id=${r.id}, from='profile')}" method="post"
-                            class="m-0" onsubmit="return confirm('Delete this review?');">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+            <ul class="nav nav-pills mb-3" role="tablist">
+                <li class="nav-item" role="presentation" th:each="status, stat : ${gameStatuses}">
+                    <button class="nav-link" th:classappend="${stat.first} ? 'active'" data-bs-toggle="pill"
+                        th:attr="data-bs-target=|#status-${status}|" type="button" role="tab">
+                        <span th:text="${status.label}">Played</span>
+                        <span class="text-muted" th:text="${#lists.size(gamesByStatus.get(status))}">0</span>
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade" th:each="status, stat : ${gameStatuses}" th:id="|status-${status}|"
+                    th:classappend="${stat.first} ? 'show active'" role="tabpanel">
+                    <p class="text-muted" th:if="${gamesByStatus.get(status).isEmpty()}">Nothing here yet.</p>
+                    <div class="poster-grid">
+                        <div th:each="game : ${gamesByStatus.get(status)}">
+                            <a th:replace="~{fragments/components :: poster(${game})}"></a>
+                            <th:block th:if="${isOwnProfile}">
+                                <form th:action="@{/users/{id}/games/status(id=${user.id})}" method="post" class="mt-1">
+                                    <input type="hidden" name="igdbID" th:value="${game.id}">
+                                    <select class="form-select form-select-sm" name="status" data-autosubmit
+                                        aria-label="Change game status">
+                                        <option th:each="option : ${gameStatuses}" th:value="${option}"
+                                            th:selected="${option == status}"
+                                            th:text="${option.label}"></option>
+                                    </select>
+                                </form>
+                                <form th:action="@{/users/{id}/games/remove(id=${user.id})}" method="post">
+                                    <input type="hidden" name="igdbID" th:value="${game.id}">
+                                    <button type="submit" class="btn btn-sm btn-ghost danger w-100">Remove</button>
+                                </form>
+                            </th:block>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:src="@{/js/local-dates.js}"></script>
+
+            <div class="section-title">
+                <h2>Playlists</h2>
+                <a th:if="${isOwnProfile}" th:href="@{/playlists}" class="btn btn-sm btn-outline-primary">+ New
+                    playlist</a>
+            </div>
+            <p class="text-muted" th:if="${#lists.isEmpty(playlists)}">No playlists yet.</p>
+            <div class="list-group">
+                <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                    th:each="p : ${playlists}" th:href="@{/playlists/{id}(id=${p.id})}">
+                    <span class="fw-medium" th:text="${p.title}">Title</span>
+                    <small class="text-muted text-nowrap"
+                        th:text="|${p.gameCount} ${p.gameCount == 1 ? 'game' : 'games'} · ♥ ${p.likeCount}|"></small>
+                </a>
+            </div>
+
+            <div class="section-title">
+                <h2>Reviews</h2>
+                <a th:if="${isOwnProfile}" th:href="@{/reviews/new}" class="btn btn-sm btn-outline-primary">+ Write a
+                    review</a>
+            </div>
+            <p class="text-muted" th:if="${#lists.isEmpty(reviews)}">No reviews yet.</p>
+            <th:block th:each="r : ${reviews}">
+                <article th:replace="~{fragments/components :: review(${r}, ${reviewGames[r.gameId]}, 'profile')}"></article>
+            </th:block>
+        </th:block>
+    </main>
+    <th:block th:replace="~{fragments/layout :: footer}"></th:block>
 </body>
 
 </html>

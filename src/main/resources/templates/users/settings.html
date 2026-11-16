@@ -1,197 +1,98 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" data-bs-theme="dark" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Account Settings</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+<head th:replace="~{fragments/layout :: head('Settings')}"></head>
 
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
-        <div class="container">
-            <a class="navbar-brand fw-semibold" href="/">Gamerboxd</a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="mainNav">
-                <form class="d-flex flex-grow-1 mx-lg-auto mt-3 mt-lg-0" style="max-width: 280px;" role="search"
-                    th:action="@{/search}" method="get">
-                    <input class="form-control me-2" type="search" name="q" placeholder="Search games"
-                        aria-label="Search games" required>
-                    <button class="btn btn-outline-primary" type="submit">Search</button>
-                </form>
-
-                <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
-                    <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
-                    <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
-
-                    <div class="dropdown" th:if="${currentUser}">
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false"
-                            th:text="|Hello, ${currentUser.displayName}|">
-                            Hello, username
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" th:href="@{/users/{id}(id=${currentUser.id})}">
-                                    Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" th:href="@{/users/{id}/settings(id=${currentUser.id})}">
-                                    Account Settings
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <form th:action="@{/logout}" method="post" class="m-0">
-                                    <button type="submit" class="dropdown-item">Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-    <div class="container py-5" style="max-width: 400px;">
-        <h1 class="mb-4">Settings</h1>
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <main class="container pt-4" style="max-width: 620px;">
+        <h1 class="mb-3">Settings</h1>
 
         <div class="alert alert-danger" th:if="${error}" th:text="${error}" style="white-space: pre-line"></div>
+        <div class="alert alert-danger" th:if="${param.googleTaken}">That Google account is already linked to another user.</div>
 
         <form th:action="@{/users/{id}/settings(id=${user.id})}" method="post"
             onsubmit="return document.getElementById('password').value === '' || confirm('Are you sure you want to change your password?');">
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" id="email" name="email" class="form-control" th:value="${user.email}">
+            <div class="section-title">
+                <h2>Profile</h2>
             </div>
-
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" id="username" name="username" class="form-control" th:value="${user.username}">
             </div>
-
             <div class="mb-3">
-                <label for="password" class="form-label">New Password</label>
-                <input type="password" id="password" name="password" class="form-control"
-                    placeholder="Leave blank to keep current password" autocomplete="new-password">
-            </div>
-
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <input type="text" id="description" name="description" class="form-control"
+                <label for="description" class="form-label">Bio</label>
+                <input type="text" id="description" name="description" class="form-control" maxlength="250"
                     th:value="${user.description}">
             </div>
-
             <div class="mb-3">
                 <label for="pronouns" class="form-label">Pronouns</label>
                 <input type="text" id="pronouns" name="pronouns" class="form-control" th:value="${user.pronouns}">
             </div>
-
-            <div class="mb-4 form-check form-switch">
+            <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch" id="privacy" name="privacy"
-                    value="private" th:checked="${#strings.equalsIgnoreCase(user.privacy.name(), 'private')}"
-                    onchange="this.nextElementSibling.textContent = this.checked ? 'Privacy: Private' : 'Privacy: Public'">
-                <label class="form-check-label" for="privacy"
-                    th:text="${#strings.equalsIgnoreCase(user.privacy.name(), 'private')} ? 'Privacy: Private' : 'Privacy: Public'">Privacy:
-                    Public</label>
-            </div>
-            <div class="card mb-4" th:if="${user.steamID == null}">
-                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <img th:src="@{/images/steam.svg}" alt="Steam logo" width="32" height="32">
-                        <div>
-                            <div class="fw-semibold">Steam account</div>
-                            <small class="text-muted">
-                                <i class="bi bi-x-circle"></i> Not connected
-                            </small>
-                        </div>
-                    </div>
-            
-                    <a th:href="@{/auth/steam}"
-                       class="btn btn-dark btn-sm d-inline-flex align-items-center gap-2"
-                       style="background-color: #171a21; border-color: #171a21;">
-                        Link Steam Account
-                    </a>
-                </div>
-            </div>
-            <div class="card mb-4" th:if="${user.steamID != null}">
-                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <img th:src="@{/images/steam.svg}" alt="Steam logo" width="32" height="32">
-                        <div>
-                            <div class="fw-semibold">Steam account</div>
-                            <small class="text-success">
-                                <i class="bi bi-check-circle-fill"></i> Connected
-                            </small>
-                        </div>
-                    </div>
-            
-                    <div class="d-flex gap-2">
-                        <a th:href="@{/auth/steam/sync-library}" class="btn btn-secondary btn-sm">
-                            Sync Library
-                        </a>
-                        <a th:href="@{/auth/steam/unlink}"
-                           class="btn btn-outline-danger btn-sm"
-                           onclick="return confirm('Are you sure you wish to unlink your Steam account?')">
-                            <i class="bi bi-link-45deg"></i> Unlink
-                        </a>
-                    </div>
-                </div>
+                    value="private" th:checked="${#strings.equalsIgnoreCase(user.privacy.name(), 'private')}">
+                <label class="form-check-label" for="privacy">Private account</label>
+                <div class="form-text">Only you can see your reviews, library and playlists.</div>
             </div>
 
-            <div class="alert alert-danger" th:if="${param.googleTaken}">That Google account is already linked to another user.</div>
-            <div class="card mb-4" th:if="${googleSignInEnabled and user.googleID == null}">
-                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <img th:src="@{/images/google.svg}" alt="Google logo" width="32" height="32">
-                        <div>
-                            <div class="fw-semibold">Google account</div>
-                            <small class="text-muted">
-                                <i class="bi bi-x-circle"></i> Not connected
-                            </small>
-                        </div>
-                    </div>
-
-                    <a th:href="@{/auth/google/link}" class="btn btn-light border btn-sm">
-                        Link Google Account
-                    </a>
-                </div>
+            <div class="section-title">
+                <h2>Account</h2>
             </div>
-            <div class="card mb-4" th:if="${user.googleID != null}">
-                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <img th:src="@{/images/google.svg}" alt="Google logo" width="32" height="32">
-                        <div>
-                            <div class="fw-semibold">Google account</div>
-                            <small class="text-success">
-                                <i class="bi bi-check-circle-fill"></i> Connected
-                            </small>
-                        </div>
-                    </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="email" class="form-control" th:value="${user.email}">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">New password</label>
+                <input type="password" id="password" name="password" class="form-control"
+                    placeholder="Leave blank to keep your current password" autocomplete="new-password">
+            </div>
 
+            <div class="section-title">
+                <h2>Connected accounts</h2>
+            </div>
+            <div class="list-group mb-4">
+                <div class="list-group-item d-flex flex-wrap align-items-center gap-3 py-3">
+                    <img th:src="@{/images/steam.svg}" alt="" width="28" height="28" class="icon-invert">
+                    <div class="flex-grow-1">
+                        <div class="fw-medium">Steam</div>
+                        <small th:class="${user.steamID != null} ? 'text-success' : 'text-muted'"
+                            th:text="${user.steamID != null} ? 'Connected' : 'Not connected'">Not connected</small>
+                    </div>
+                    <a th:if="${user.steamID == null}" th:href="@{/auth/steam}"
+                        class="btn btn-sm btn-outline-secondary">Connect</a>
+                    <th:block th:if="${user.steamID != null}">
+                        <a th:href="@{/auth/steam/sync-library}" class="btn btn-sm btn-outline-secondary">Sync
+                            library</a>
+                        <a th:href="@{/auth/steam/unlink}" class="btn btn-sm btn-ghost danger"
+                            onclick="return confirm('Are you sure you wish to unlink your Steam account?')">Unlink</a>
+                    </th:block>
+                </div>
+                <div class="list-group-item d-flex flex-wrap align-items-center gap-3 py-3"
+                    th:if="${googleSignInEnabled or user.googleID != null}">
+                    <img th:src="@{/images/google.svg}" alt="" width="28" height="28">
+                    <div class="flex-grow-1">
+                        <div class="fw-medium">Google</div>
+                        <small th:class="${user.googleID != null} ? 'text-success' : 'text-muted'"
+                            th:text="${user.googleID != null} ? 'Connected' : 'Not connected'">Not connected</small>
+                    </div>
+                    <a th:if="${user.googleID == null}" th:href="@{/auth/google/link}"
+                        class="btn btn-sm btn-outline-secondary">Connect</a>
                     <!-- Posts the surrounding form (and its CSRF token) to the unlink endpoint instead -->
-                    <button type="submit" th:formaction="@{/auth/google/unlink}" formmethod="post" formnovalidate
-                        class="btn btn-outline-danger btn-sm"
-                        onclick="return confirm('Unlink your Google account? Make sure you have set a password first, or you will not be able to sign back in.')">
-                        <i class="bi bi-link-45deg"></i> Unlink
-                    </button>
+                    <button th:if="${user.googleID != null}" type="submit" th:formaction="@{/auth/google/unlink}"
+                        formmethod="post" formnovalidate class="btn btn-sm btn-ghost danger"
+                        onclick="return confirm('Unlink your Google account? Make sure you have set a password first, or you will not be able to sign back in.')">Unlink</button>
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between">
-                <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-outline-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Apply</button>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">Save changes</button>
+                <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-ghost">Cancel</a>
             </div>
         </form>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </main>
+    <th:block th:replace="~{fragments/layout :: footer}"></th:block>
 </body>
 
 </html>
