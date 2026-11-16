@@ -146,6 +146,45 @@
                 </div>
             </div>
 
+            <div class="alert alert-danger" th:if="${param.googleTaken}">That Google account is already linked to another user.</div>
+            <div class="card mb-4" th:if="${googleSignInEnabled and user.googleID == null}">
+                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <img th:src="@{/images/google.svg}" alt="Google logo" width="32" height="32">
+                        <div>
+                            <div class="fw-semibold">Google account</div>
+                            <small class="text-muted">
+                                <i class="bi bi-x-circle"></i> Not connected
+                            </small>
+                        </div>
+                    </div>
+
+                    <a th:href="@{/auth/google/link}" class="btn btn-light border btn-sm">
+                        Link Google Account
+                    </a>
+                </div>
+            </div>
+            <div class="card mb-4" th:if="${user.googleID != null}">
+                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <img th:src="@{/images/google.svg}" alt="Google logo" width="32" height="32">
+                        <div>
+                            <div class="fw-semibold">Google account</div>
+                            <small class="text-success">
+                                <i class="bi bi-check-circle-fill"></i> Connected
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Posts the surrounding form (and its CSRF token) to the unlink endpoint instead -->
+                    <button type="submit" th:formaction="@{/auth/google/unlink}" formmethod="post" formnovalidate
+                        class="btn btn-outline-danger btn-sm"
+                        onclick="return confirm('Unlink your Google account? Make sure you have set a password first, or you will not be able to sign back in.')">
+                        <i class="bi bi-link-45deg"></i> Unlink
+                    </button>
+                </div>
+            </div>
+
             <div class="d-flex justify-content-between">
                 <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-outline-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">Apply</button>

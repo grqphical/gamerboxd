@@ -66,6 +66,9 @@
         <div class="alert alert-danger" th:if="${param.error}">Incorrect email or password.</div>
         <div class="alert alert-success" th:if="${param.logout}">You have been signed out.</div>
         <div class="alert alert-success" th:if="${param.registered}">Account created. Sign in to continue.</div>
+        <div class="alert alert-danger" th:if="${param.googleError}">Google sign-in was cancelled or failed. Please try again.</div>
+        <div class="alert alert-danger" th:if="${param.googleUnverified}">Your Google account's email isn't verified, so it can't be used to sign in.</div>
+        <div class="alert alert-warning" th:if="${param.googleEmailTaken}">An account with that email already exists. Sign in with your password, then link Google from your settings.</div>
 
         <form th:action="@{/login}" method="post" class="card card-body shadow-sm">
             <div class="mb-3">
@@ -91,6 +94,13 @@
                 <img src="/images/steam.svg" alt="Steam logo" width="24" height="24"
                     style="filter: brightness(0) invert(1);">
                 <span class="fw-semibold text-white">Sign in through Steam</span>
+            </a>
+        </div>
+        <div class="text-center mt-2" th:if="${googleSignInEnabled}">
+            <a th:href="@{/oauth2/authorization/google}"
+                class="btn btn-light border d-inline-flex align-items-center gap-2 px-3 py-2 text-decoration-none shadow-sm">
+                <img th:src="@{/images/google.svg}" alt="Google logo" width="24" height="24">
+                <span class="fw-semibold">Sign in with Google</span>
             </a>
         </div>
 
