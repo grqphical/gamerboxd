@@ -10,6 +10,8 @@ import com.gamerboxd.gamerboxd.models.ReviewComment;
 public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Integer> {
     List<ReviewComment> findByReviewIdOrderByCreatedAtAsc(int reviewId);
 
+    long countByReviewId(int reviewId);
+
     @Transactional
     void deleteByReviewId(int reviewId);
 }

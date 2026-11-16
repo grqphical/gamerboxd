@@ -1,6 +1,9 @@
 package com.gamerboxd.gamerboxd.services;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,16 @@ public class ReviewCommentService {
 
     public List<ReviewComment> getComments(int reviewId) {
         return reviewCommentRepository.findByReviewIdOrderByCreatedAtAsc(reviewId);
+    }
+
+    public long getCommentCount(int reviewId) {
+        return reviewCommentRepository.countByReviewId(reviewId);
+    }
+
+    public Map<Integer, Long> getCommentCounts(Collection<Integer> reviewIds) {
+        return reviewIds.stream()
+            .distinct()
+            .collect(Collectors.toMap(id -> id, reviewCommentRepository::countByReviewId));
     }
 
     public ReviewComment add(int reviewId, int userId, String content) {
