@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,11 +30,12 @@ import org.springframework.web.server.ResponseStatusException;
 import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.repositories.ReviewCommentRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
-import com.gamerboxd.gamerboxd.services.GameService;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewServiceTest {
@@ -44,6 +47,9 @@ class ReviewServiceTest {
 
     @Mock
     private ReviewLikeRepository reviewLikeRepository;
+
+    @Mock
+    private ReviewCommentRepository reviewCommentRepository;
 
     @Mock
     private GameService gameService;
@@ -208,5 +214,53 @@ class ReviewServiceTest {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> reviewService.delete(99, 1));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    void delete_owner_deletesLikesAndCommentsThenReview() {
+        Review review = new Review(john, 113112, 3, "Ok");
+        when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
+
+        reviewService.delete(5, 1);
+
+        InOrder order = inOrder(reviewLikeRepository, reviewCommentRepository, reviewRepository);
+        order.verify(reviewLikeRepository).deleteByReviewId(5);
+        order.verify(reviewCommentRepository).deleteByReviewId(5);
+        order.verify(reviewRepository).delete(review);
+    }
+
+    @Test
+    void getVisibleReview_public_returnsReviewToAnyone() {
+        Review review = new Review(john, 113112, 3, "Ok");
+        when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
+
+        assertSame(review, reviewService.getVisibleReview(5, null));
+    }
+
+    @Test
+    void getVisibleReview_privateAuthor_returnsReview() {
+        john.setPrivacy(UserPrivacy.PRIVATE);
+        Review review = new Review(john, 113112, 3, "Ok");
+        when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
+
+        assertSame(review, reviewService.getVisibleReview(5, 1));
+    }
+
+    @Test
+    void getVisibleReview_privateOtherViewer_throwsNotFound() {
+        john.setPrivacy(UserPrivacy.PRIVATE);
+        Review review = new Review(john, 113112, 3, "Ok");
+        when(reviewRepository.findById(5)).thenReturn(Optional.of(review));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> reviewService.getVisibleReview(5, 2));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    void getVisibleReview_missing_throwsNotFound() {
+        when(reviewRepository.findById(99)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> reviewService.getVisibleReview(99, 1));
     }
 }

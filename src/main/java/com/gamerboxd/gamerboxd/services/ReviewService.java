@@ -11,10 +11,13 @@ import org.springframework.web.server.ResponseStatusException;
 import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.repositories.ReviewCommentRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
 import com.gamerboxd.gamerboxd.services.GameService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class ReviewService {
@@ -22,16 +25,19 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final ReviewLikeRepository reviewLikeRepository;
     private final GameService gameService;
+    private final ReviewCommentRepository reviewCommentRepository;
 
     public ReviewService(
         ReviewRepository reviewRepository, 
         UserRepository userRepository, 
         ReviewLikeRepository reviewLikeRepository,
-        GameService gameService) {
+        GameService gameService,
+        ReviewCommentRepository reviewCommentRepository) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.reviewLikeRepository = reviewLikeRepository;
         this.gameService = gameService;
+        this.reviewCommentRepository = reviewCommentRepository;
     }
 
     public List<Review> getAll() {
@@ -91,10 +97,22 @@ public class ReviewService {
         return reviewRepository.save(review);
     }
 
+    public Review getVisibleReview(int reviewId, Integer viewerId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found."));
+        User author = review.getUser();
+        if (author.isPrivateAccount() && (viewerId == null || viewerId != author.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found.");
+        }
+        return review;
+    }
+
+    @Transactional
     public void delete(int reviewId, int userId) {
         Review review = getOwnedReview(reviewId, userId);
         gameService.updateGameRating(review.getGameId(), review.getRating(), false);
         reviewLikeRepository.deleteByReviewId(reviewId);
+        reviewCommentRepository.deleteByReviewId(reviewId);
         reviewRepository.delete(review);
     }
 }

@@ -14,6 +14,7 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.ReviewCommentService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.models.Review;
@@ -24,13 +25,16 @@ public class GamerboxdController {
     private final ReviewService reviewService;
     private final GameService gameService;
     private final ReviewLikeService reviewLikeService;
+    private final ReviewCommentService reviewCommentService;
 
     public GamerboxdController(ReviewService reviewService,
         GameService gameService,
-        ReviewLikeService reviewLikeService) {
+        ReviewLikeService reviewLikeService,
+        ReviewCommentService reviewCommentService) {
         this.reviewService = reviewService;
         this.gameService = gameService;
         this.reviewLikeService = reviewLikeService;
+        this.reviewCommentService = reviewCommentService;
     }
 
     @GetMapping("/")
@@ -47,6 +51,7 @@ public class GamerboxdController {
         model.addAttribute("reviewGameNames", gameService.getGameNames(gameIds));
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
+        model.addAttribute("commentCounts", reviewCommentService.getCommentCounts(reviewIds));
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
                 : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));

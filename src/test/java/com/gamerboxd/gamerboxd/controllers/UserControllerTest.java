@@ -35,6 +35,7 @@ import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.ReviewCommentService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
@@ -44,6 +45,7 @@ class UserControllerTest {
     private GameService gameService;
     private ReviewService reviewService;
     private ReviewLikeService reviewLikeService;
+    private ReviewCommentService reviewCommentService;
     private MockMvc mockMvc;
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
@@ -55,7 +57,9 @@ class UserControllerTest {
         reviewService = mock(ReviewService.class);
         gameService = mock(GameService.class);
         reviewLikeService = mock(ReviewLikeService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new UserController(userService, reviewService, gameService, reviewLikeService))
+        reviewCommentService = mock(ReviewCommentService.class);
+        mockMvc = MockMvcBuilders.standaloneSetup(
+                new UserController(userService, reviewService, gameService, reviewLikeService, reviewCommentService))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 
@@ -109,19 +113,21 @@ class UserControllerTest {
     }
 
     @Test
-    void profile_includesLikeCountsAndLikedIds() throws Exception {
+    void profile_includesLikeCountsCommentCountsAndLikedIds() throws Exception {
         signInAs(john);
         Review review = new Review(olivia, 26226, 4, "Fun");
         review.setId(11);
         when(userService.getUserById(2)).thenReturn(Optional.of(olivia));
         when(reviewService.getAllByUserId(2)).thenReturn(List.of(review));
         when(reviewLikeService.getLikeCounts(List.of(11))).thenReturn(Map.of(11, 4L));
+        when(reviewCommentService.getCommentCounts(List.of(11))).thenReturn(Map.of(11, 2L));
         when(reviewLikeService.getLikedReviewIds(List.of(11), 1)).thenReturn(Set.of(11));
 
         mockMvc.perform(get("/users/2"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("users/profile"))
                 .andExpect(model().attribute("likeCounts", Map.of(11, 4L)))
+                .andExpect(model().attribute("commentCounts", Map.of(11, 2L)))
                 .andExpect(model().attribute("likedIds", Set.of(11)));
     }
 

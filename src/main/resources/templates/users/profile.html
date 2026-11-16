@@ -284,6 +284,9 @@
                         </form>
                         <span class="text-muted small" th:text="${'♥ ' + (likeCounts[r.id] ?: 0)}">♥ 0</span>
 
+                        <a th:href="@{/reviews/{id}(id=${r.id})}" class="btn btn-sm btn-outline-secondary"
+                            th:text="${'Comments (' + (commentCounts[r.id] ?: 0) + ')'}">Comments</a>
+
                         <a th:if="${currentUser != null and currentUser.id == r.user.id}"
                             th:href="@{/reviews/{id}/edit(id=${r.id}, from='profile')}"
                             class="btn btn-sm btn-outline-secondary">Edit</a>

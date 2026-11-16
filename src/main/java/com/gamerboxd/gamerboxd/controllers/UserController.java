@@ -24,8 +24,8 @@ import com.gamerboxd.gamerboxd.models.GameStatus;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
-import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.ReviewCommentService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
@@ -36,12 +36,15 @@ public class UserController {
     private final ReviewService reviewService;
     private final GameService gameService;
     private final ReviewLikeService reviewLikeService;
+    private final ReviewCommentService reviewCommentService;
 
-    public UserController(UserService userService, ReviewService reviewService, GameService gameService, ReviewLikeService reviewLikeService) {
+    public UserController(UserService userService, ReviewService reviewService, GameService gameService,
+            ReviewLikeService reviewLikeService, ReviewCommentService reviewCommentService) {
         this.userService = userService;
         this.reviewService = reviewService;
         this.gameService = gameService;
         this.reviewLikeService = reviewLikeService;
+        this.reviewCommentService = reviewCommentService;
     }
 
     @GetMapping("/users/{id}")
@@ -109,6 +112,7 @@ public class UserController {
         model.addAttribute("gamesByStatus", gamesByStatus);
         model.addAttribute("gameStatuses", GameStatus.values());
         model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
+        model.addAttribute("commentCounts", reviewCommentService.getCommentCounts(reviewIds));
         model.addAttribute("reviewGameNames", gameService.getGameNames(gameIds));
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
