@@ -48,7 +48,7 @@ public class GamerboxdController {
         List<Integer> gameIds = reviews.stream().map(Review::getGameId).toList();
 
         model.addAttribute("reviews", reviews);
-        model.addAttribute("reviewGameNames", gameService.getGameNames(gameIds));
+        model.addAttribute("reviewGames", gameService.getGamesByIDs(gameIds)); // covers and names for the feed
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
         model.addAttribute("commentCounts", reviewCommentService.getCommentCounts(reviewIds));
