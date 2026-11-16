@@ -15,7 +15,6 @@ import com.gamerboxd.gamerboxd.repositories.ReviewCommentRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
-import com.gamerboxd.gamerboxd.services.GameService;
 
 import jakarta.transaction.Transactional;
 
@@ -88,8 +87,8 @@ public class ReviewService {
 
     public Review update(int reviewId, int userId, int rating, String description) {
         Review review = getOwnedReview(reviewId, userId);
-        gameService.updateGameRating(review.getGameId(), review.getRating(), false);
         validateContent(rating, description);
+        gameService.updateGameRating(review.getGameId(), review.getRating(), false);
         review.setRating(rating);
         review.setDescription(description.trim());
         review.setUpdatedAt(Instant.now());
