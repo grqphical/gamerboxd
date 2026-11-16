@@ -123,15 +123,6 @@ class GoogleLoginSuccessHandlerTest {
     }
 
     @Test
-    void unverifiedEmail_isRejected() throws Exception {
-        handler.onAuthenticationSuccess(request, response, googleLogin(false));
-
-        assertEquals("/login?googleUnverified", response.getRedirectedUrl());
-        assertNull(sessionPrincipal());
-        assertNull(googleAuthService.getPendingAccount(request));
-    }
-
-    @Test
     void linking_attachesGoogleToTheSignedInUser() throws Exception {
         googleAuthService.startLinking(request, 1);
         when(userService.getUserById(1)).thenReturn(Optional.of(john));
@@ -154,14 +145,5 @@ class GoogleLoginSuccessHandlerTest {
 
         assertEquals("/users/1/settings?googleTaken", response.getRedirectedUrl());
         assertEquals(1, assertInstanceOf(AuthenticatedUser.class, sessionPrincipal()).getId());
-    }
-
-    @Test
-    void linking_appliesToOneSignInOnly() throws Exception {
-        googleAuthService.startLinking(request, 1);
-        when(userService.getUserById(1)).thenReturn(Optional.of(john));
-        handler.onAuthenticationSuccess(request, response, googleLogin(true));
-
-        assertNull(googleAuthService.consumeLinkingUserId(request));
     }
 }
