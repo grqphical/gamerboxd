@@ -86,7 +86,7 @@ public class SteamLoginController {
             Model model, @RequestParam("steamid") String steamId) {
         SteamProfile profile = this.steamService.fetchProfile(steamId);
 
-        if (profile.name() == "") {
+        if (profile.name() == null || profile.name().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to retrieve profile");
         }
 
@@ -141,7 +141,7 @@ public class SteamLoginController {
         userService.loginWithSteam(steamID, request);
 
         if (importLibrary) {
-            if (steamID == "") {
+            if (steamID.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "failed to retrieve steam ID");
             }
 
@@ -169,7 +169,7 @@ public class SteamLoginController {
 
         User user = userService.getUserById(currentUser.getId()).get();
 
-        if (user.getSteamID() == "") {
+        if (user.getSteamID() == null || user.getSteamID().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No Steam account linked");
         }
 
@@ -185,14 +185,14 @@ public class SteamLoginController {
             @RequestParam(name = "selectedAppIds", required = false) List<Integer> selectedAppIds,
             @RequestParam Map<String, String> params) {
 
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
         if (selectedAppIds != null) {
             steamLibraryLinkJobService.linkUserSteamLibrary(currentUser.getId(), selectedAppIds, params);
         }
 
-        if (currentUser != null) {
-            return "redirect:/";
-        }
-
-        return "redirect:/login?registered";
+        return "redirect:/";
     }
 }

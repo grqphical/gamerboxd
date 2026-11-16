@@ -3,9 +3,10 @@ package com.gamerboxd.gamerboxd.controllers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.http.HttpStatus;
@@ -62,29 +63,40 @@ public class UserController {
         }
 
         List<Review> userReviews = reviewService.getAllByUserId(id);
+        List<Integer> reviewIds = userReviews.stream().map(Review::getId).toList();
+        List<Integer> gameIds = userReviews.stream().map(Review::getGameId).toList();
+
+        // Collect every game id this page needs (favourites, tracked games and
+        // reviewed games) so they can be loaded with one batched lookup instead
+        // of one DB query / IGDB request per game.
+        Set<Integer> allGameIds = new HashSet<>(user.getFavouriteIgdbIDs());
+        allGameIds.remove(User.NULL_FAVOURITE_GAME);
+        allGameIds.addAll(user.getGameStatuses().keySet());
+        allGameIds.addAll(gameIds);
+
+        Map<Integer, Game> gamesById = gameService.getGamesByIDs(allGameIds);
+
         List<Game> favouriteGames = new ArrayList<>();
         for (int igdbID : user.getFavouriteIgdbIDs()) {
             if (igdbID == User.NULL_FAVOURITE_GAME) {
                 continue;
             }
 
-            Optional<Game> gameOpt = gameService.getGameByID(igdbID);
-            if (gameOpt.isPresent()) {
-                favouriteGames.add(gameOpt.get());
+            Game game = gamesById.get(igdbID);
+            if (game != null) {
+                favouriteGames.add(game);
             }
         }
 
         final boolean isOwnProfile = currentUser != null && currentUser.getId() == id;
 
         // contains ids of 0 meaning there are free slots
-        final boolean canAddFavourite = 
-        isOwnProfile && user.getFavouriteIgdbIDs().contains(User.NULL_FAVOURITE_GAME); 
-        
+        final boolean canAddFavourite = isOwnProfile && user.getFavouriteIgdbIDs().contains(User.NULL_FAVOURITE_GAME);
+
         final int searchLimit = 10;
-        List<Game> gameSearchResults = 
-            (canAddFavourite && gameSearch != null && !gameSearch.isBlank())
-            ? gameService.getSearchResultsByName(gameSearch, searchLimit) // search doesnt cache results
-            : List.of();
+        List<Game> gameSearchResults = (canAddFavourite && gameSearch != null && !gameSearch.isBlank())
+                ? gameService.getSearchResultsByName(gameSearch, searchLimit) // search doesnt cache results
+                : List.of();
         List<Game> statusGameSearchResults = isOwnProfile && statusGameSearch != null && !statusGameSearch.isBlank()
                 ? gameService.getSearchResultsByName(statusGameSearch, searchLimit)
                 : List.of();
@@ -93,11 +105,20 @@ public class UserController {
         for (GameStatus status : GameStatus.values()) {
             gamesByStatus.put(status, new ArrayList<>());
         }
-        user.getGameStatuses().forEach((igdbID, status) -> gameService.getGameByID(igdbID)
-                .ifPresent(game -> gamesByStatus.get(status).add(game)));
+        user.getGameStatuses().forEach((igdbID, status) -> {
+            Game game = gamesById.get(igdbID);
+            if (game != null) {
+                gamesByStatus.get(status).add(game);
+            }
+        });
 
-        List<Integer> reviewIds = userReviews.stream().map(Review::getId).toList();
-        List<Integer> gameIds = userReviews.stream().map(Review::getGameId).toList();
+        Map<Integer, String> reviewGameNames = new HashMap<>();
+        for (int gameId : gameIds) {
+            Game game = gamesById.get(gameId);
+            if (game != null && game.getName() != null) {
+                reviewGameNames.put(gameId, game.getName());
+            }
+        }
 
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
@@ -113,7 +134,7 @@ public class UserController {
         model.addAttribute("gameStatuses", GameStatus.values());
         model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
         model.addAttribute("commentCounts", reviewCommentService.getCommentCounts(reviewIds));
-        model.addAttribute("reviewGameNames", gameService.getGameNames(gameIds));
+        model.addAttribute("reviewGameNames", reviewGameNames);
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
                 : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));
@@ -187,13 +208,14 @@ public class UserController {
     /** Put a igdb game id in the users first available slot if any */
     @PostMapping("/favourites/add")
     public String addFavourite(@RequestParam int igdbID,
-        @AuthenticationPrincipal AuthenticatedUser currentUser) {
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
         if (currentUser == null) {
             return "redirect:/login";
         }
 
-        User user = userService.getUserById(currentUser.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "User not found with ID: " + currentUser.getId()));
+        User user = userService.getUserById(currentUser.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User not found with ID: " + currentUser.getId()));
 
         List<Integer> ids = user.getFavouriteIgdbIDs();
         int emptySlot = ids.indexOf(User.NULL_FAVOURITE_GAME); // index of the first occurrence of 0
@@ -207,15 +229,16 @@ public class UserController {
     }
 
     /** Clear single igdb game id from users favourites list */
-    @PostMapping ("/favourites/remove")
+    @PostMapping("/favourites/remove")
     public String removeFavourite(@RequestParam int igdbID,
             @AuthenticationPrincipal AuthenticatedUser currentUser) {
         if (currentUser == null) {
             return "redirect:/login";
         }
 
-        User user = userService.getUserById(currentUser.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "User not found with ID: " + currentUser.getId()));
+        User user = userService.getUserById(currentUser.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User not found with ID: " + currentUser.getId()));
 
         int slot = user.getFavouriteIgdbIDs().indexOf(igdbID);
         if (slot != -1) {
@@ -234,8 +257,9 @@ public class UserController {
             return "redirect:/login";
         }
 
-        User user = userService.getUserById(currentUser.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "User not found with ID: " + currentUser.getId()));
+        User user = userService.getUserById(currentUser.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User not found with ID: " + currentUser.getId()));
 
         List<Integer> ids = new ArrayList<>(user.getFavouriteIgdbIDs());
         int fromIndex = ids.indexOf(igdbID);

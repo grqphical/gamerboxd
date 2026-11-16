@@ -3,7 +3,9 @@ package com.gamerboxd.gamerboxd.services;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,6 +26,7 @@ import com.gamerboxd.gamerboxd.models.Game;
 public class IGDBService {
 
     private static final String FIELDS = "fields name,summary,rating,first_release_date,genres.name,artworks.image_id,platforms.name,cover.image_id;";
+    private static final int IGDB_MAX_LIMIT = 500;
 
     private final RestClient rest;
     private final TwitchTokenService tokens;
@@ -43,6 +46,18 @@ public class IGDBService {
             // An error here means the token is no longer valid
             tokens.invalidate();
             return send(endpoint, body, type);
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            // we got rate limited :(
+            // wait and try again
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(ie);
+            }
+
+            return send(endpoint, body, type);
+
         }
     }
 
@@ -68,6 +83,23 @@ public class IGDBService {
         String query = FIELDS + " where id = " + id + ";";
         List<Game> result = fetchGames(query);
         return result.isEmpty() ? null : result.get(0);
+    }
+
+    /**
+     * Fetch many games in as few IGDB requests as possible. Unknown ids are
+     * silently omitted.
+     */
+    public List<Game> getGames(Collection<Integer> ids) {
+        List<Integer> distinct = ids.stream().distinct().toList();
+        List<Game> result = new ArrayList<>();
+
+        for (int i = 0; i < distinct.size(); i += IGDB_MAX_LIMIT) {
+            List<Integer> chunk = distinct.subList(i, Math.min(i + IGDB_MAX_LIMIT, distinct.size()));
+            String idList = chunk.stream().map(String::valueOf).collect(Collectors.joining(","));
+            String query = FIELDS + " where id = (" + idList + "); limit " + chunk.size() + ";";
+            result.addAll(fetchGames(query));
+        }
+        return result;
     }
 
     public Game getGameBySteamAppId(int appId, String gameName) {

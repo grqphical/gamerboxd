@@ -78,6 +78,7 @@ public class SettingsController {
 
         final User user = userOpt.get();
         model.addAttribute("user", user);
+        model.addAttribute("currentUser", currentUser); // keeps the navbar signed in when re-rendering with errors
 
         final String username = request.get("username"); // form warns between 3-30 chars
         final String email = request.get("email");

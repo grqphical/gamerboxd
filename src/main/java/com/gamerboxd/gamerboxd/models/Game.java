@@ -114,6 +114,9 @@ public class Game {
 
     /** Dont use this, use the one in GameService */
     public void updateRatingGamerboxd(int x) {
+        if (this.ratingGamerboxd == null) {
+            this.ratingGamerboxd = 0.0; // games fetched from IGDB start unrated
+        }
         ++this.numRatingsGamerboxd;
         this.ratingGamerboxd += (x - this.ratingGamerboxd) / (this.numRatingsGamerboxd);
     }

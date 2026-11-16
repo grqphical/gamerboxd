@@ -8,10 +8,8 @@ import org.springframework.ui.Model;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
-import com.gamerboxd.gamerboxd.repositories.UserRepository;
 import com.gamerboxd.gamerboxd.services.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 

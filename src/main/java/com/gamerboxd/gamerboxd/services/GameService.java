@@ -137,6 +137,21 @@ public class GameService {
         gameRepository.save(game);
     }
 
+    public Map<Integer, Game> getGamesByIDs(Collection<Integer> igdbIDs) {
+        List<Integer> ids = igdbIDs.stream().distinct().toList();
+
+        Map<Integer, Game> games = gameRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Game::getId, Function.identity()));
+
+        List<Integer> missing = ids.stream().filter(id -> !games.containsKey(id)).toList();
+        if (!missing.isEmpty()) {
+            // ideally ONE IGDB request: where id = (1,2,3,...)
+            List<Game> fetched = igdbService.getGames(missing); // new method
+            gameRepository.saveAll(fetched).forEach(g -> games.put(g.getId(), g));
+        }
+        return games;
+    }
+
     public Map<Integer, String> getGameNames(Collection<Integer> gameIds) {
         List<Integer> ids = gameIds.stream().distinct().toList();
 

@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +27,7 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.repositories.ReviewCommentRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
@@ -44,9 +47,12 @@ public class UserService implements UserDetailsService {
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
     private final ReviewLikeRepository reviewLikeRepository;
+    private final ReviewCommentRepository reviewCommentRepository;
 
     public UserService(UserRepository userRepository, ReviewRepository reviewRepository,
-            PasswordEncoder passwordEncoder, ReviewLikeRepository reviewLikeRepository) {
+            PasswordEncoder passwordEncoder, ReviewLikeRepository reviewLikeRepository,
+            ReviewCommentRepository reviewCommentRepository) {
+        this.reviewCommentRepository = reviewCommentRepository;
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.passwordEncoder = passwordEncoder;
@@ -63,19 +69,28 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void deleteUser(int id) { // Used in admin panel and later self account deletion
-        reviewRepository.deleteAll(reviewRepository.findAllByUserIdOrderByCreatedAtDesc(id));
+        // Likes and comments reference both reviews and users, so they go first
+        reviewLikeRepository.deleteByReviewUserId(id);
+        reviewCommentRepository.deleteByReviewUserId(id);
         reviewLikeRepository.deleteByUserId(id);
+        reviewCommentRepository.deleteByUserId(id);
+        reviewRepository.deleteAll(reviewRepository.findAllByUserIdOrderByCreatedAtDesc(id));
         userRepository.deleteById(id);
     }
 
+    private User getExistingUser(int id) {
+        return getUserById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "User not found with ID: " + id));
+    }
+
     public void toggleRole(int id) { // Used in admin panel exclusively
-        final User user = getUserById(id).get();
+        final User user = getExistingUser(id);
         user.setRole(user.getRole() == UserRole.ADMIN ? UserRole.USER : UserRole.ADMIN);
         userRepository.save(user);
     }
 
     public void editDescription(int id, String description) {
-        final User user = getUserById(id).get();
+        final User user = getExistingUser(id);
         user.setDescription(description);
         userRepository.save(user);
     }
