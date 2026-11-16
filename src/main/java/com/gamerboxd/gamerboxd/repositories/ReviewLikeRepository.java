@@ -31,4 +31,7 @@ public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Integer>
     void deleteByReviewId(int reviewId);
 
     void deleteByUserId(int userId);
+
+    // Likes left by anyone on this user's reviews
+    void deleteByReviewUserId(int userId);
 }

@@ -21,4 +21,9 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, In
 
     @Transactional
     void deleteByReviewId(int reviewId);
+
+    void deleteByUserId(int userId);
+
+    // Comments left by anyone on this user's reviews
+    void deleteByReviewUserId(int userId);
 }

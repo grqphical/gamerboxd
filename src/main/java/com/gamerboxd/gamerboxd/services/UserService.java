@@ -24,6 +24,7 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.repositories.ReviewCommentRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewLikeRepository;
 import com.gamerboxd.gamerboxd.repositories.ReviewRepository;
 import com.gamerboxd.gamerboxd.repositories.UserRepository;
@@ -43,9 +44,12 @@ public class UserService implements UserDetailsService {
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
     private final ReviewLikeRepository reviewLikeRepository;
+    private final ReviewCommentRepository reviewCommentRepository;
 
     public UserService(UserRepository userRepository, ReviewRepository reviewRepository,
-            PasswordEncoder passwordEncoder, ReviewLikeRepository reviewLikeRepository) {
+            PasswordEncoder passwordEncoder, ReviewLikeRepository reviewLikeRepository,
+            ReviewCommentRepository reviewCommentRepository) {
+        this.reviewCommentRepository = reviewCommentRepository;
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.passwordEncoder = passwordEncoder;
@@ -62,8 +66,12 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void deleteUser(int id) { // Used in admin panel and later self account deletion
-        reviewRepository.deleteAll(reviewRepository.findAllByUserIdOrderByCreatedAtDesc(id));
+        // Likes and comments reference both reviews and users, so they go first
+        reviewLikeRepository.deleteByReviewUserId(id);
+        reviewCommentRepository.deleteByReviewUserId(id);
         reviewLikeRepository.deleteByUserId(id);
+        reviewCommentRepository.deleteByUserId(id);
+        reviewRepository.deleteAll(reviewRepository.findAllByUserIdOrderByCreatedAtDesc(id));
         userRepository.deleteById(id);
     }
 
