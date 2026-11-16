@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -75,14 +77,19 @@ public class UserService implements UserDetailsService {
         userRepository.deleteById(id);
     }
 
+    private User getExistingUser(int id) {
+        return getUserById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "User not found with ID: " + id));
+    }
+
     public void toggleRole(int id) { // Used in admin panel exclusively
-        final User user = getUserById(id).get();
+        final User user = getExistingUser(id);
         user.setRole(user.getRole() == UserRole.ADMIN ? UserRole.USER : UserRole.ADMIN);
         userRepository.save(user);
     }
 
     public void editDescription(int id, String description) {
-        final User user = getUserById(id).get();
+        final User user = getExistingUser(id);
         user.setDescription(description);
         userRepository.save(user);
     }
