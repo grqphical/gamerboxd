@@ -36,6 +36,7 @@ import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.PlaylistService;
 import com.gamerboxd.gamerboxd.services.ReviewCommentService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
@@ -60,7 +61,8 @@ class UserControllerTest {
         reviewLikeService = mock(ReviewLikeService.class);
         reviewCommentService = mock(ReviewCommentService.class);
         mockMvc = MockMvcBuilders.standaloneSetup(
-                new UserController(userService, reviewService, gameService, reviewLikeService, reviewCommentService))
+                new UserController(userService, reviewService, gameService, reviewLikeService, reviewCommentService,
+                        mock(PlaylistService.class)))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 

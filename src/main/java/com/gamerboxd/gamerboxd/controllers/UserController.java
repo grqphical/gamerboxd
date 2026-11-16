@@ -26,6 +26,7 @@ import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.PlaylistService;
 import com.gamerboxd.gamerboxd.services.ReviewCommentService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
@@ -38,9 +39,12 @@ public class UserController {
     private final GameService gameService;
     private final ReviewLikeService reviewLikeService;
     private final ReviewCommentService reviewCommentService;
+    private final PlaylistService playlistService;
 
     public UserController(UserService userService, ReviewService reviewService, GameService gameService,
-            ReviewLikeService reviewLikeService, ReviewCommentService reviewCommentService) {
+            ReviewLikeService reviewLikeService, ReviewCommentService reviewCommentService,
+            PlaylistService playlistService) {
+        this.playlistService = playlistService;
         this.userService = userService;
         this.reviewService = reviewService;
         this.gameService = gameService;
@@ -122,6 +126,7 @@ public class UserController {
 
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
+        model.addAttribute("playlists", playlistService.getAllByUserId(id));
         model.addAttribute("favouriteGames", favouriteGames);
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("isOwnProfile", isOwnProfile);

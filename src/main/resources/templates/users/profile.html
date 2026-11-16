@@ -252,6 +252,22 @@
                 </div>
             </section>
 
+            <section class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h3 class="mb-0">Playlists</h3>
+                    <a th:if="${isOwnProfile}" th:href="@{/playlists}" class="btn btn-outline-primary">New Playlist</a>
+                </div>
+                <p class="text-muted" th:if="${#lists.isEmpty(playlists)}">No playlists yet.</p>
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action d-flex justify-content-between"
+                        th:each="p : ${playlists}" th:href="@{/playlists/{id}(id=${p.id})}">
+                        <span class="fw-semibold" th:text="${p.title}">Title</span>
+                        <small class="text-muted"
+                            th:text="|${p.gameCount} ${p.gameCount == 1 ? 'game' : 'games'} · ♥ ${p.likeCount}|"></small>
+                    </a>
+                </div>
+            </section>
+
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3 class="mb-0">User Reviews:</h3>
                 <a th:if="${currentUser}" th:href="@{/reviews/new}" class="btn btn-primary">Write a

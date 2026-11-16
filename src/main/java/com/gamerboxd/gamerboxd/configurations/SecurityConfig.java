@@ -30,7 +30,7 @@ public class SecurityConfig {
                                                                 "/favicon.*", "/*.ico")
                                                 .permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/", "/login", "/reviews", "/users/*",
-                                                                "/auth/**")
+                                                                "/auth/**", "/playlists", "/playlists/*")
                                                 .permitAll()
                                                 .requestMatchers(HttpMethod.POST, "/auth/**")
                                                 .permitAll()
