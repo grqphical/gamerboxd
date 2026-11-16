@@ -88,7 +88,6 @@ a:hover { text-decoration: underline; }
     font-weight: 700;
     font-size: 1.2rem;
 }
-.gb-nav .navbar-brand svg { color: var(--gb-accent); }
 .gb-nav .nav-link { color: var(--gb-muted); font-weight: 500; }
 .gb-nav .nav-link:hover { color: #fff; }
 .gb-search .form-control {
