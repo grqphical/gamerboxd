@@ -62,7 +62,7 @@ public class User {
     private Map<Integer, GameStatus> gameStatuses = new HashMap<>();
 
     public static final int MAX_DESCRIPTION_LENGTH = 250;
-    public static final int MAX_FAVOURITE_GAMES = 5; // safe to change, lowering will drop the lowest ranked favourites
+    public static final int MAX_FAVOURITE_GAMES = 4; // safe to change, lowering will drop the lowest ranked favourites
     public static final int NULL_FAVOURITE_GAME = 0;
 
     public User() {
