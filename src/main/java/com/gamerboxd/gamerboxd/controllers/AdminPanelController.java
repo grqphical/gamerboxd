@@ -31,6 +31,8 @@ public class AdminPanelController {
         if (!adminCheck(currentUser)) { return "redirect:/"; }
 
         model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("currentUserId", currentUser.getId()); // hides the delete button on your own row
         return "admin";
     }
 

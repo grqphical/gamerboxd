@@ -152,6 +152,11 @@ public class GameService {
         return games;
     }
 
+    /** Covers for the home page collage: games we already have cached, so no IGDB request. */
+    public List<Game> getCollageGames() {
+        return gameRepository.findTop36ByCoverLinkNotNullOrderByNumRatingsGamerboxdDescIdAsc();
+    }
+
     public Map<Integer, String> getGameNames(Collection<Integer> gameIds) {
         List<Integer> ids = gameIds.stream().distinct().toList();
 

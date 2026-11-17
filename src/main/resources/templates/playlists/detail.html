@@ -1,51 +1,51 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" data-bs-theme="dark" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="|${playlist.title} - Gamerboxd|">Playlist - Gamerboxd</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+<head th:replace="~{fragments/layout :: head(${playlist.title})}"></head>
 
-<body class="bg-light">
-    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-    <div class="container py-5" style="max-width: 700px;">
-        <h1 class="mb-1" th:text="${playlist.title}">Title</h1>
-        <p class="text-muted mb-2">
-            by <a th:href="@{/users/{id}(id=${playlist.user.id})}" th:text="${playlist.user.username}">username</a>
-            · <span th:text="|${itemCount} ${itemCount == 1 ? 'game' : 'games'}|">0 games</span>
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <main class="container pt-4" style="max-width: 860px;">
+        <div class="review-meta d-flex align-items-center gap-2 mb-1">
+            <span class="avatar" th:text="${#strings.substring(playlist.user.username, 0, 1)}">u</span>
+            Playlist by <a th:href="@{/users/{id}(id=${playlist.user.id})}"
+                th:text="${playlist.user.username}">username</a>
             · <time th:attr="datetime=${playlist.createdAt}" th:text="${playlist.createdAt}"></time>
-        </p>
-        <p th:if="${!#strings.isEmpty(playlist.description)}" th:text="${playlist.description}"></p>
+        </div>
+        <h1 class="mb-2" th:text="${playlist.title}">Title</h1>
+        <p th:if="${!#strings.isEmpty(playlist.description)}" th:text="${playlist.description}"
+            style="white-space: pre-line;"></p>
         <p class="text-muted small" th:if="${isOwner and playlist.user.isPrivateAccount}">
-            Only you can see this playlist because your account is set to private
+            Only you can see this playlist because your account is private.
         </p>
 
         <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
 
-        <div class="d-flex align-items-center gap-2 mb-4">
-            <form th:if="${currentUser}" th:action="@{/playlists/{id}/like(id=${playlist.id})}" method="post"
-                class="m-0">
-                <button type="submit" class="btn btn-sm"
-                    th:classappend="${liked} ? 'btn-danger' : 'btn-outline-danger'"
-                    th:text="${liked} ? '♥ Liked' : '♡ Like'">♡ Like</button>
+        <div class="review-actions">
+            <form th:if="${currentUser}" data-like th:action="@{/playlists/{id}/like(id=${playlist.id})}"
+                method="post" class="m-0">
+                <button type="submit" class="pill like" th:aria-pressed="${liked}" aria-label="Like this playlist">
+                    <span class="heart">♥</span> <span data-like-count th:text="${likeCount}">0</span>
+                </button>
             </form>
-            <span class="text-muted small" th:text="|♥ ${likeCount}|">♥ 0</span>
+            <a th:unless="${currentUser}" class="pill like" th:href="@{/login}" title="Sign in to like">
+                <span class="heart">♥</span> <span th:text="${likeCount}">0</span>
+            </a>
+            <span class="pill" th:text="|${itemCount} ${itemCount == 1 ? 'game' : 'games'}|">0 games</span>
 
             <th:block th:if="${isOwner}">
-                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#editPlaylist" aria-controls="editPlaylist">Edit</button>
+                <button class="btn btn-sm btn-ghost ms-auto" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#editPlaylist" aria-controls="editPlaylist">Edit details</button>
                 <form th:action="@{/playlists/{id}/delete(id=${playlist.id})}" method="post" class="m-0"
                     onsubmit="return confirm('Delete this playlist?');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    <button type="submit" class="btn btn-sm btn-ghost danger">Delete</button>
                 </form>
             </th:block>
         </div>
 
         <th:block th:if="${isOwner}">
             <form id="editPlaylist" th:action="@{/playlists/{id}(id=${playlist.id})}" method="post"
-                class="collapse card card-body shadow-sm mb-4">
+                class="collapse card card-body mt-3">
                 <div class="mb-3">
                     <label class="form-label" for="title">Title</label>
                     <input class="form-control" id="title" name="title" maxlength="100" required
@@ -65,77 +65,81 @@
                     th:value="${entry.key}"></option>
             </datalist>
 
-            <div class="card card-body shadow-sm mb-4">
-                <form th:action="@{/playlists/{id}(id=${playlist.id})}" method="get" class="d-flex gap-2">
-                    <input type="search" name="q" class="form-control" placeholder="Search for a game to add"
-                        th:value="${query}" required>
-                    <button type="submit" class="btn btn-primary">Search</button>
-                </form>
-                <p class="text-muted mt-2 mb-0" th:if="${!#strings.isEmpty(query) and #lists.isEmpty(gameResults)}">
-                    No games found.
-                </p>
-                <ul class="list-group mt-2" th:unless="${#lists.isEmpty(gameResults)}">
-                    <li class="list-group-item" th:each="game : ${gameResults}">
-                        <form th:action="@{/playlists/{id}/items(id=${playlist.id})}" method="post"
-                            class="d-flex align-items-center gap-2">
-                            <input type="hidden" name="gameId" th:value="${game.id}">
-                            <span class="small fw-semibold flex-grow-1" th:text="${game.name}">Game</span>
-                            <input class="form-control form-control-sm" style="max-width: 150px;" name="category"
-                                list="categories" maxlength="50" placeholder="Category" aria-label="Category">
-                            <select class="form-select form-select-sm w-auto" name="rating" aria-label="Rating">
-                                <option value="">No rating</option>
-                                <option th:each="n : ${#numbers.sequence(5, 1)}" th:value="${n}"
-                                    th:text="${#strings.repeat('★', n)}"></option>
-                            </select>
-                            <button type="submit" class="btn btn-sm btn-primary">Add</button>
-                        </form>
-                    </li>
-                </ul>
+            <div class="section-title">
+                <h2>Add games</h2>
             </div>
+            <form th:action="@{/playlists/{id}(id=${playlist.id})}" method="get" class="d-flex gap-2">
+                <input type="search" name="q" class="form-control" placeholder="Search for a game to add"
+                    th:value="${query}" required th:autofocus="${!#strings.isEmpty(query)}">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+            </form>
+            <p class="text-muted mt-2 mb-0" th:if="${!#strings.isEmpty(query) and #lists.isEmpty(gameResults)}">
+                No games found.
+            </p>
+            <ul class="list-group mt-2" th:unless="${#lists.isEmpty(gameResults)}">
+                <li class="list-group-item" th:each="game : ${gameResults}">
+                    <form th:action="@{/playlists/{id}/items(id=${playlist.id})}" method="post"
+                        class="d-flex align-items-center flex-wrap gap-2">
+                        <input type="hidden" name="gameId" th:value="${game.id}">
+                        <span style="width: 36px;" class="poster flex-shrink-0">
+                            <img th:if="${game.coverLink != null}" th:src="${game.coverLink}" alt="">
+                        </span>
+                        <span class="fw-medium flex-grow-1">
+                            <span th:text="${game.name}">Game</span>
+                            <span class="text-muted small" th:text="${game.releaseDate}"></span>
+                        </span>
+                        <input class="form-control form-control-sm" style="max-width: 150px;" name="category"
+                            list="categories" maxlength="50" placeholder="Category" aria-label="Category">
+                        <select class="form-select form-select-sm w-auto" name="rating" aria-label="Rating">
+                            <option value="">No rating</option>
+                            <option th:each="n : ${#numbers.sequence(5, 1)}" th:value="${n}"
+                                th:text="${#strings.repeat('★', n)}"></option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Add</button>
+                    </form>
+                </li>
+            </ul>
         </th:block>
 
-        <p class="text-muted" th:if="${itemCount == 0}">No games in this playlist yet.</p>
+        <p class="text-muted mt-4" th:if="${itemCount == 0}">No games in this playlist yet.</p>
 
-        <section class="mb-4" th:each="entry : ${itemsByCategory}">
-            <h5 th:text="${#strings.isEmpty(entry.key)} ? 'Uncategorised' : ${entry.key}"
-                th:unless="${#strings.isEmpty(entry.key) and itemsByCategory.size() == 1}">Category</h5>
-            <ul class="list-group">
-                <li class="list-group-item p-2 d-flex align-items-center gap-2" th:each="item : ${entry.value}"
-                    th:with="game=${games[item.gameId]}">
-                    <a th:href="@{/games/{id}(id=${item.gameId})}"
-                        class="d-flex align-items-center gap-2 flex-grow-1 text-reset text-decoration-none">
-                        <img th:if="${game != null and game.coverLink != null}" th:src="${game.coverLink}"
-                            class="rounded" style="width: 42px; height: 56px; object-fit: cover;" alt="">
-                        <span class="small fw-semibold" th:text="${game != null ? game.name : 'Unknown game'}"></span>
-                    </a>
-                    <span class="text-warning" th:if="${!isOwner and item.rating != null}"
-                        th:text="${#strings.repeat('★', item.rating)}">★★★</span>
+        <section th:each="entry : ${itemsByCategory}">
+            <div class="section-title">
+                <h2 th:text="${#strings.isEmpty(entry.key)} ? (${itemsByCategory.size() == 1} ? 'Games' : 'Uncategorised') : ${entry.key}">Category</h2>
+                <span class="small text-muted" th:text="${#lists.size(entry.value)}">0</span>
+            </div>
+            <div class="poster-grid">
+                <div th:each="item : ${entry.value}" th:with="game=${games[item.gameId]}">
+                    <a th:replace="~{fragments/components :: poster(${game})}"></a>
+                    <div class="poster-caption">
+                        <span class="name" th:text="${game != null ? game.name : 'Unknown game'}">Game</span>
+                        <span class="stars" th:if="${!isOwner and item.rating != null}"
+                            th:text="${#strings.repeat('★', item.rating)}">★★★</span>
+                    </div>
 
                     <th:block th:if="${isOwner}">
                         <form th:action="@{/playlists/{id}/items/{itemId}(id=${playlist.id}, itemId=${item.id})}"
-                            method="post" class="d-flex gap-1">
-                            <input class="form-control form-control-sm" style="max-width: 150px;" name="category"
-                                list="categories" maxlength="50" placeholder="Category" aria-label="Category"
-                                th:value="${item.category}">
-                            <select class="form-select form-select-sm w-auto" name="rating" aria-label="Rating">
+                            method="post" class="mt-1 d-grid gap-1">
+                            <select class="form-select form-select-sm" name="rating" aria-label="Rating"
+                                data-autosubmit>
                                 <option value="">No rating</option>
                                 <option th:each="n : ${#numbers.sequence(5, 1)}" th:value="${n}"
                                     th:selected="${n == item.rating}" th:text="${#strings.repeat('★', n)}"></option>
                             </select>
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                            <input class="form-control form-control-sm" name="category" list="categories"
+                                maxlength="50" placeholder="Category" aria-label="Category"
+                                th:value="${item.category}" onchange="this.form.submit()">
                         </form>
-                        <form method="post"
+                        <form method="post" class="mt-1"
                             th:action="@{/playlists/{id}/items/{itemId}/delete(id=${playlist.id}, itemId=${item.id})}">
-                            <button type="submit" class="btn btn-sm btn-outline-danger"
-                                aria-label="Remove game">×</button>
+                            <button type="submit" class="btn btn-sm btn-ghost danger w-100">Remove</button>
                         </form>
                     </th:block>
-                </li>
-            </ul>
+                </div>
+            </div>
         </section>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:src="@{/js/local-dates.js}"></script>
+    </main>
+    <th:block th:replace="~{fragments/layout :: footer}"></th:block>
 </body>
 
 </html>

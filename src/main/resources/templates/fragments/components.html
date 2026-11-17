@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<!-- Reusable pieces: game covers, star ratings, the star picker and review cards. -->
+<body>
+    <!-- A game cover that links to the game. `game` may be null if IGDB no longer has it. -->
+    <a th:fragment="poster(game)" class="poster" th:href="${game != null} ? @{/games/{id}(id=${game.id})} : '#'"
+        th:title="${game?.name}">
+        <img th:if="${game?.coverLink != null}" th:src="${game.coverLink}" th:alt="${game.name}" loading="lazy">
+        <span class="poster-fallback" th:unless="${game?.coverLink != null}"
+            th:text="${game?.name ?: 'Unknown game'}">Game</span>
+    </a>
+
+    <span th:fragment="stars(rating)" class="stars" th:aria-label="|${rating} out of 5 stars|"
+        th:utext="${#strings.repeat('★', rating)} + '<span class=&quot;off&quot;>' + ${#strings.repeat('★', 5 - rating)} + '</span>'">★★★</span>
+
+    <!-- Clickable 1-5 star picker that submits as `rating` -->
+    <div th:fragment="starInput(value)" class="star-input" role="radiogroup" aria-label="Rating">
+        <th:block th:each="n : ${#numbers.sequence(5, 1)}">
+            <input type="radio" name="rating" th:id="|star${n}|" th:value="${n}" th:checked="${n == value}" required>
+            <label th:for="|star${n}|" th:title="|${n} out of 5|">★</label>
+        </th:block>
+    </div>
+
+    <!--
+        One review. `context` is where it is shown: 'feed' (game and author), 'profile' (game only)
+        or 'game' (author only). `game` is the reviewed game and is unused on the game page.
+    -->
+    <article th:fragment="review(r, game, context)" class="review"
+        th:with="own=${currentUser != null and currentUser.id == r.user.id}">
+        <th:block th:if="${context != 'game'}"><a th:replace="~{:: poster(${game})}"></a></th:block>
+        <div class="review-body">
+            <a th:if="${context != 'game'}" class="review-title" th:href="@{/games/{id}(id=${r.gameId})}"
+                th:text="${game?.name ?: 'Unknown game'}">Game</a>
+            <div class="review-meta d-flex align-items-center flex-wrap gap-2">
+                <span th:replace="~{:: stars(${r.rating})}"></span>
+                <span th:if="${context != 'profile'}" class="d-inline-flex align-items-center gap-1">
+                    <span class="avatar" th:text="${#strings.substring(r.user.username, 0, 1)}">u</span>
+                    <a th:href="@{/users/{id}(id=${r.user.id})}" th:text="${r.user.username}">username</a>
+                </span>
+                <time th:attr="datetime=${r.createdAt}" th:text="${r.createdAt}"></time>
+                <span th:if="${r.updatedAt != null}" class="fst-italic">edited</span>
+            </div>
+            <p class="review-text" th:text="${r.description}">Review text</p>
+            <div class="review-actions">
+                <form th:if="${currentUser}" data-like method="post" class="m-0"
+                    th:action="${context == 'profile'} ? @{/reviews/{id}/like(id=${r.id}, profileId=${r.user.id})} : @{/reviews/{id}/like(id=${r.id})}">
+                    <button type="submit" class="pill like" th:aria-pressed="${likedIds.contains(r.id)}"
+                        aria-label="Like this review">
+                        <span class="heart">♥</span> <span data-like-count th:text="${likeCounts[r.id] ?: 0}">0</span>
+                    </button>
+                </form>
+                <a th:unless="${currentUser}" class="pill like" th:href="@{/login}" title="Sign in to like">
+                    <span class="heart">♥</span> <span th:text="${likeCounts[r.id] ?: 0}">0</span>
+                </a>
+                <a class="pill" th:href="@{/reviews/{id}(id=${r.id})}">
+                    💬 <span th:text="${commentCounts != null} ? (${commentCounts[r.id]} ?: 0) : 'Comments'">0</span>
+                </a>
+                <th:block th:if="${own}">
+                    <a class="btn btn-sm btn-ghost ms-auto"
+                        th:href="@{/reviews/{id}/edit(id=${r.id}, from=${context})}">Edit</a>
+                    <form th:action="@{/reviews/{id}/delete(id=${r.id}, from=${context})}" method="post" class="m-0"
+                        onsubmit="return confirm('Delete this review?');">
+                        <button type="submit" class="btn btn-sm btn-ghost danger">Delete</button>
+                    </form>
+                </th:block>
+            </div>
+        </div>
+    </article>
+</body>
+
+</html>

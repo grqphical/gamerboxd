@@ -19,7 +19,7 @@ class UserTest {
         assertFalse(user.isPrivateAccount());
         assertEquals("", user.getDescription());
         assertEquals("", user.getPronouns());
-        assertEquals(List.of(0, 0, 0, 0, 0), user.getFavouriteIgdbIDs());
+        assertEquals(List.of(0, 0, 0, 0), user.getFavouriteIgdbIDs());
         assertEquals(Map.of(), user.getGameStatuses());
     }
 
@@ -27,14 +27,14 @@ class UserTest {
     void setFavourites_padsShortListsWithEmptySlots() {
         user.setFavouriteIgdbIDs(List.of(7, 9));
 
-        assertEquals(List.of(7, 9, 0, 0, 0), user.getFavouriteIgdbIDs());
+        assertEquals(List.of(7, 9, 0, 0), user.getFavouriteIgdbIDs());
     }
 
     @Test
     void setFavourites_movesEmptySlotsToTheEnd() {
         user.setFavouriteIgdbIDs(List.of(0, 7, 0, 9));
 
-        assertEquals(List.of(7, 9, 0, 0, 0), user.getFavouriteIgdbIDs());
+        assertEquals(List.of(7, 9, 0, 0), user.getFavouriteIgdbIDs());
     }
 
     @Test
@@ -48,7 +48,7 @@ class UserTest {
         user.setFavouriteIgdbIDs(List.of(7));
 
         assertThrows(IllegalArgumentException.class, () -> user.setFavouriteIgdbIDs(List.of(3, 3)));
-        assertEquals(List.of(7, 0, 0, 0, 0), user.getFavouriteIgdbIDs());
+        assertEquals(List.of(7, 0, 0, 0), user.getFavouriteIgdbIDs());
     }
 
     @Test
@@ -57,7 +57,7 @@ class UserTest {
 
         user.setFavouriteIgdbID(1, 11);
 
-        assertEquals(List.of(7, 11, 0, 0, 0), user.getFavouriteIgdbIDs());
+        assertEquals(List.of(7, 11, 0, 0), user.getFavouriteIgdbIDs());
     }
 
     @Test
@@ -66,7 +66,7 @@ class UserTest {
 
         user.setFavouriteIgdbID(0, User.NULL_FAVOURITE_GAME);
 
-        assertEquals(List.of(9, 11, 0, 0, 0), user.getFavouriteIgdbIDs());
+        assertEquals(List.of(9, 11, 0, 0), user.getFavouriteIgdbIDs());
     }
 
     @Test

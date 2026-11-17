@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <clipPath id="top"><circle cx="512" cy="256" r="205"/></clipPath>
+    <clipPath id="bottom"><circle cx="512" cy="768" r="205"/></clipPath>
+  </defs>
+  <circle cx="512" cy="256" r="205" fill="#2c68f6"/>
+  <circle cx="256" cy="512" r="205" fill="#36f62c"/>
+  <circle cx="768" cy="512" r="205" fill="#f62c3a"/>
+  <circle cx="512" cy="768" r="205" fill="#f6e52c"/>
+  <!-- Where two buttons overlap, the overlap is white -->
+  <g fill="#fff">
+    <circle cx="256" cy="512" r="205" clip-path="url(#top)"/>
+    <circle cx="768" cy="512" r="205" clip-path="url(#top)"/>
+    <circle cx="256" cy="512" r="205" clip-path="url(#bottom)"/>
+    <circle cx="768" cy="512" r="205" clip-path="url(#bottom)"/>
+  </g>
+</svg>

@@ -3,7 +3,6 @@ package com.gamerboxd.gamerboxd.controllers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -116,14 +115,6 @@ public class UserController {
             }
         });
 
-        Map<Integer, String> reviewGameNames = new HashMap<>();
-        for (int gameId : gameIds) {
-            Game game = gamesById.get(gameId);
-            if (game != null && game.getName() != null) {
-                reviewGameNames.put(gameId, game.getName());
-            }
-        }
-
         model.addAttribute("user", user);
         model.addAttribute("reviews", userReviews);
         model.addAttribute("playlists", playlistService.getAllByUserId(id));
@@ -139,7 +130,7 @@ public class UserController {
         model.addAttribute("gameStatuses", GameStatus.values());
         model.addAttribute("likeCounts", reviewLikeService.getLikeCounts(reviewIds));
         model.addAttribute("commentCounts", reviewCommentService.getCommentCounts(reviewIds));
-        model.addAttribute("reviewGameNames", reviewGameNames);
+        model.addAttribute("reviewGames", gamesById);
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
                 : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));

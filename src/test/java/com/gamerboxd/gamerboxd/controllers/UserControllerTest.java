@@ -214,7 +214,7 @@ class UserControllerTest {
         mockMvc.perform(post("/favourites/add").param("igdbID", "9"))
                 .andExpect(redirectedUrl("/users/1"));
 
-        assertEquals(List.of(7, 9, 0, 0, 0), john.getFavouriteIgdbIDs());
+        assertEquals(List.of(7, 9, 0, 0), john.getFavouriteIgdbIDs());
         verify(userService).save(john);
     }
 
@@ -232,12 +232,12 @@ class UserControllerTest {
     @Test
     void addFavourite_noFreeSlot_changesNothing() throws Exception {
         signInAs(john);
-        john.setFavouriteIgdbIDs(List.of(1, 2, 3, 4, 5));
+        john.setFavouriteIgdbIDs(List.of(1, 2, 3, 4));
 
         mockMvc.perform(post("/favourites/add").param("igdbID", "9"))
                 .andExpect(redirectedUrl("/users/1"));
 
-        assertEquals(List.of(1, 2, 3, 4, 5), john.getFavouriteIgdbIDs());
+        assertEquals(List.of(1, 2, 3, 4), john.getFavouriteIgdbIDs());
         verify(userService, never()).save(john);
     }
 
@@ -266,7 +266,7 @@ class UserControllerTest {
         mockMvc.perform(post("/favourites/remove").param("igdbID", "9"))
                 .andExpect(redirectedUrl("/users/1"));
 
-        assertEquals(List.of(7, 11, 0, 0, 0), john.getFavouriteIgdbIDs());
+        assertEquals(List.of(7, 11, 0, 0), john.getFavouriteIgdbIDs());
         verify(userService).save(john);
     }
 
@@ -288,11 +288,11 @@ class UserControllerTest {
 
         mockMvc.perform(post("/favourites/move").param("igdbID", "9").param("direction", "up"))
                 .andExpect(redirectedUrl("/users/1"));
-        assertEquals(List.of(9, 7, 11, 0, 0), john.getFavouriteIgdbIDs());
+        assertEquals(List.of(9, 7, 11, 0), john.getFavouriteIgdbIDs());
 
         mockMvc.perform(post("/favourites/move").param("igdbID", "9").param("direction", "down"))
                 .andExpect(redirectedUrl("/users/1"));
-        assertEquals(List.of(7, 9, 11, 0, 0), john.getFavouriteIgdbIDs());
+        assertEquals(List.of(7, 9, 11, 0), john.getFavouriteIgdbIDs());
     }
 
     @Test
@@ -303,7 +303,7 @@ class UserControllerTest {
         mockMvc.perform(post("/favourites/move").param("igdbID", "7").param("direction", "up"))
                 .andExpect(redirectedUrl("/users/1"));
 
-        assertEquals(List.of(7, 9, 0, 0, 0), john.getFavouriteIgdbIDs());
+        assertEquals(List.of(7, 9, 0, 0), john.getFavouriteIgdbIDs());
         verify(userService, never()).save(john);
     }
 
@@ -315,7 +315,7 @@ class UserControllerTest {
         mockMvc.perform(post("/favourites/move").param("igdbID", "9").param("direction", "down"))
                 .andExpect(redirectedUrl("/users/1"));
 
-        assertEquals(List.of(7, 9, 0, 0, 0), john.getFavouriteIgdbIDs());
+        assertEquals(List.of(7, 9, 0, 0), john.getFavouriteIgdbIDs());
     }
 
     @Test

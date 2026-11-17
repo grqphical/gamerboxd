@@ -1,111 +1,63 @@
-
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
- 
-<head>
-    <meta charset="UTF-8">
-    <title>Write a Review - GamerBoxd</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
- 
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
-        <div class="container">
-            <a class="navbar-brand fw-semibold" href="/">Gamerboxd</a>
- 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
- 
-            <div class="collapse navbar-collapse" id="mainNav">
-                <div class="ms-auto d-flex align-items-center gap-2 mt-3 mt-lg-0">
-                    <a class="btn btn-outline-secondary" th:unless="${currentUser}" th:href="@{/login}">Sign In</a>
-                    <a class="btn btn-primary" th:unless="${currentUser}" th:href="@{/signup}">Sign Up</a>
- 
-                    <div class="dropdown" th:if="${currentUser}">
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false"
-                            th:text="|Hello, ${currentUser.displayName}|">
-                            Hello, username
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" th:href="@{/users/{id}(id=${currentUser.id})}">
-                                    Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" th:href="@{/users/{id}/settings(id=${currentUser.id})}">
-                                    Account Settings
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <form th:action="@{/logout}" method="post" class="m-0">
-                                    <button type="submit" class="dropdown-item">Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-    <div class="container py-5" style="max-width: 600px;">
-        <h1 class="mb-4">Write a Review</h1>
- 
-        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+<html lang="en" data-bs-theme="dark" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Write a review')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container pt-4" style="max-width: 680px;">
+        <h1 class="mb-1">Write a review</h1>
         <p class="text-muted" th:if="${isPrivateAccount}">
-            This review cannot be seen publicly because your account is private
+            Your account is private, so only you will see this review.
         </p>
 
-        <form id="gameSearchForm" th:action="@{/reviews/new}" method="get"></form>
- 
-        <form th:action="@{/reviews}" method="post" class="card card-body shadow-sm">
-            <div class="mb-3">
-                <label class="form-label" for="gameSearch">Game</label>
-                <div class="input-group">
-                    <input type="search" class="form-control" id="gameSearch" name="q" th:value="${query}"
-                        form="gameSearchForm" placeholder="Search by name">
-                    <button type="submit" class="btn btn-outline-primary" form="gameSearchForm">Search</button>
-                </div>
-                <p class="text-muted small mt-2 mb-2"
-                    th:if="${!#strings.isEmpty(query) and (gameResults == null or #lists.isEmpty(gameResults))}">
-                    No games found for “<span th:text="${query}">query</span>”. Try a different name.
-                </p>
-                <select class="form-select mt-2" id="gameId" name="gameId" aria-label="Choose a game" required
-                    th:disabled="${gameResults == null or #lists.isEmpty(gameResults)}">
-                    <option value="" selected disabled
-                        th:text="${gameResults == null or #lists.isEmpty(gameResults)} ? 'Search for a game first' : 'Choose a game…'">
-                        Search for a game first</option>
-                    <option th:each="g : ${gameResults}" th:value="${g.id}"
-                        th:text="${g.releaseDate != null} ? ${g.name} + ' (' + ${g.releaseDate} + ')' : ${g.name}">
-                        Game name</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label" for="rating">Rating</label>
-                <select class="form-select" id="rating" name="rating" required>
-                    <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5)</option>
-                    <option value="4">&#9733;&#9733;&#9733;&#9733; (4)</option>
-                    <option value="3">&#9733;&#9733;&#9733; (3)</option>
-                    <option value="2">&#9733;&#9733; (2)</option>
-                    <option value="1">&#9733; (1)</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label" for="description">Review</label>
-                <textarea class="form-control" id="description" name="description" rows="5" maxlength="2000"
-                    required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary"
-                th:disabled="${gameResults == null or #lists.isEmpty(gameResults)}">Post Review</button>
+        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+        <div class="section-title">
+            <h2>1 · Pick a game</h2>
+        </div>
+        <form th:action="@{/reviews/new}" method="get" class="d-flex gap-2 mb-3">
+            <input type="search" class="form-control" name="q" th:value="${query}" placeholder="Search by name"
+                aria-label="Search for a game" required th:autofocus="${#lists.isEmpty(gameResults)}">
+            <button type="submit" class="btn btn-outline-primary">Search</button>
         </form>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <p class="text-muted small"
+            th:if="${!#strings.isEmpty(query) and (gameResults == null or #lists.isEmpty(gameResults))}">
+            No games found for “<span th:text="${query}">query</span>”. Try a different name.
+        </p>
+
+        <form th:action="@{/reviews}" method="post" th:unless="${gameResults == null or #lists.isEmpty(gameResults)}">
+            <div class="poster-grid compact">
+                <label class="game-choice" th:each="g : ${gameResults}">
+                    <input type="radio" name="gameId" th:value="${g.id}" required
+                        th:checked="${g.id == selectedGameId or #lists.size(gameResults) == 1}">
+                    <span class="poster">
+                        <img th:if="${g.coverLink != null}" th:src="${g.coverLink}" th:alt="${g.name}">
+                        <span class="poster-fallback" th:unless="${g.coverLink != null}" th:text="${g.name}"></span>
+                    </span>
+                    <span class="poster-caption d-block">
+                        <span class="name" th:text="${g.name}">Game</span>
+                        <span class="meta" th:text="${g.releaseDate}">2020</span>
+                    </span>
+                </label>
+            </div>
+
+            <div class="section-title">
+                <h2>2 · Rate it</h2>
+            </div>
+            <div th:replace="~{fragments/components :: starInput(${null})}"></div>
+
+            <div class="section-title">
+                <h2>3 · Say why</h2>
+            </div>
+            <textarea class="form-control mb-3" id="description" name="description" rows="6" maxlength="2000"
+                placeholder="What did you think?" aria-label="Review" required></textarea>
+            <button type="submit" class="btn btn-primary px-4">Post review</button>
+            <a th:href="@{/}" class="btn btn-ghost">Cancel</a>
+        </form>
+    </main>
+    <th:block th:replace="~{fragments/layout :: footer}"></th:block>
 </body>
- 
+
 </html>

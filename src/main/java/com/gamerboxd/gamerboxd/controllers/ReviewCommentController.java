@@ -65,6 +65,7 @@ public class ReviewCommentController {
         Review review = reviewService.getVisibleReview(reviewId, viewerId);
         model.addAttribute("review", review);
         model.addAttribute("gameName", gameService.getGameNames(List.of(review.getGameId())).get(review.getGameId()));
+        model.addAttribute("game", gameService.getGameByID(review.getGameId()).orElse(null));
         model.addAttribute("comments", reviewCommentService.getComments(reviewId));
         model.addAttribute("currentUser", currentUser);
     }
