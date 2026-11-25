@@ -65,7 +65,7 @@ class UserControllerTest {
         notificationService = mock(NotificationService.class);
         mockMvc = MockMvcBuilders.standaloneSetup(
                 new UserController(userService, reviewService, gameService, reviewLikeService, reviewCommentService,
-                        notificationService, mock(PlaylistService.class)))
+                        mock(PlaylistService.class), notificationService))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 

@@ -35,6 +35,7 @@ import com.gamerboxd.gamerboxd.services.UserService;
 class SettingsControllerTest {
     private UserService userService;
     private NotificationService notificationService;
+    private ReviewService reviewService;
     private MockMvc mockMvc;
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
@@ -44,7 +45,9 @@ class SettingsControllerTest {
     void setUp() {
         userService = mock(UserService.class);
         notificationService = mock(NotificationService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new SettingsController(userService, notificationService, mock(ReviewService.class)))
+        reviewService = mock(ReviewService.class);
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(new SettingsController(userService, reviewService, notificationService))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 

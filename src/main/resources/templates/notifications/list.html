@@ -46,7 +46,7 @@
                     </div>
                     <p class="mb-1" th:text="${n.description}">Notification description goes here.</p>
                     <time class="small text-muted" th:datetime="${n.timestamp}"
-                        th:text="${#temporals.format(n.timestamp, 'MMM d, yyyy h:mm a')}">
+                        th:text="${#temporals.format(n.timestamp.atZone(T(java.time.ZoneId).systemDefault()), 'MMM d yyyy h:mm a')}">
                         Jan 1, 2025 12:00 PM
                     </time>
                 </div>

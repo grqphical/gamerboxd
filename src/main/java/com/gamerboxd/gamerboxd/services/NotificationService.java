@@ -53,7 +53,7 @@ public class NotificationService {
     }
 
     public int getUserNotificationUnreadCount(int userId) {
-        return this.notificationRepository.findAllByUser_IdAndReadFalse(userId).size();
+        return this.notificationRepository.findAllByUser_IdAndReadFalseOrderByTimestamp(userId).size();
     }
 
     public void setNotificationRead(Long notificationId) {
