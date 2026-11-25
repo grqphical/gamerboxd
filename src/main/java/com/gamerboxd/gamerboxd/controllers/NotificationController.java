@@ -51,7 +51,7 @@ public class NotificationController {
         return "OK";
     }
 
-    @GetMapping("/notifications/{notificationId}/read")
+    @PostMapping("/notifications/{notificationId}/read")
     public String readNotification(@AuthenticationPrincipal AuthenticatedUser currentUser,
             @PathVariable Long notificationId) {
         if (currentUser == null)

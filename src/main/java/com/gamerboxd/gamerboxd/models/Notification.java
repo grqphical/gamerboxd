@@ -5,6 +5,7 @@ import java.time.Instant;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,7 +28,8 @@ public class Notification {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
-    private Boolean read;
+    @Column(nullable = false)
+    private Boolean read = false;
 
     public Notification(Long id, Instant timestamp, String title, String description, User user) {
         this.id = id;
