@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gamerboxd.gamerboxd.models.Notification;
 import com.gamerboxd.gamerboxd.models.User;
@@ -42,12 +43,14 @@ public class NotificationService {
         this.notificationRepository.save(notification);
     }
 
+    @Transactional
     public void clearNotification(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
         this.notificationRepository.delete(notification);
     }
 
+    @Transactional
     public void clearNotificationsForUser(int userId) {
         this.notificationRepository.deleteAllByUser_Id(userId);
     }
@@ -60,5 +63,18 @@ public class NotificationService {
         Notification notification = this.notificationRepository.findById(notificationId).orElseThrow();
         notification.setRead(true);
         this.notificationRepository.save(notification);
+    }
+
+    public void setAllUserNotificationsRead(int userId) {
+        List<Notification> notifications = this.getUserNotifications(userId);
+
+        for (int i = 0; i < notifications.size(); i++) {
+            Notification notification = notifications.get(i);
+            notification.setRead(true);
+
+            notifications.set(i, notification);
+        }
+
+        this.notificationRepository.saveAll(notifications);
     }
 }

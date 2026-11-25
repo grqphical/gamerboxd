@@ -68,4 +68,41 @@ public class NotificationController {
         this.notificationService.setNotificationRead(notificationId);
         return "redirect:/notifications";
     }
+
+    @PostMapping("/notifications/read-all")
+    public String readAllUserNotifications(@AuthenticationPrincipal AuthenticatedUser currentUser) {
+        if (currentUser == null)
+            return "redirect:/login";
+
+        this.notificationService.setAllUserNotificationsRead(currentUser.getId());
+
+        return "redirect:/notifications";
+    }
+
+    @PostMapping("/notifications/{notificationId}/delete")
+    public String deleteNotification(@AuthenticationPrincipal AuthenticatedUser currentUser,
+            @PathVariable Long notificationId) {
+        if (currentUser == null)
+            return "redirect:/login";
+
+        Optional<Notification> notification = this.notificationService.getNotificationById(notificationId);
+
+        if (notification.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "notification with given ID not found");
+
+        if (notification.get().getUser().getId() != currentUser.getId())
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
+
+        this.notificationService.clearNotification(notificationId);
+        return "redirect:/notifications";
+    }
+
+    @PostMapping("/notifications/clear")
+    public String deleteAllUserNotifications(@AuthenticationPrincipal AuthenticatedUser currentUser) {
+        if (currentUser == null)
+            return "redirect:/login";
+
+        this.notificationService.clearNotificationsForUser(currentUser.getId());
+        return "redirect:/notifications";
+    }
 }

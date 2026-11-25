@@ -54,7 +54,8 @@
                     <form th:action="@{/notifications/{id}/read(id=${n.id})}" method="post" th:if="${n.read != true}">
                         <button type="submit" class="btn btn-outline-secondary btn-sm">Mark as read</button>
                     </form>
-                    <form th:action="@{/notifications/{id}/delete(id=${n.id})}" method="post">
+                    <form th:action="@{/notifications/{id}/delete(id=${n.id})}" method="post"
+                        onsubmit="return confirm('Delete this notification?');">
                         <button type="submit" class="btn btn-outline-danger btn-sm"
                             th:aria-label="'Delete notification: ' + ${n.title}">Delete</button>
                     </form>
