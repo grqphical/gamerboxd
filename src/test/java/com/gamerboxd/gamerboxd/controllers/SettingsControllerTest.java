@@ -28,11 +28,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
 
 class SettingsControllerTest {
     private UserService userService;
+    private NotificationService notificationService;
     private MockMvc mockMvc;
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
@@ -41,7 +43,8 @@ class SettingsControllerTest {
     @BeforeEach
     void setUp() {
         userService = mock(UserService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new SettingsController(userService, mock(ReviewService.class)))
+        notificationService = mock(NotificationService.class);
+        mockMvc = MockMvcBuilders.standaloneSetup(new SettingsController(userService, notificationService, mock(ReviewService.class)))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Notifications')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container" style="max-width: 860px;"
+        th:with="unreadCount=${#lists.size(notifications.?[read != true])}">
+
+        <div class="section-title">
+            <h2>
+                Notifications
+                <span class="badge text-bg-primary align-middle fs-6" th:if="${unreadCount > 0}"
+                    th:text="${unreadCount} + ' unread'">3 unread</span>
+            </h2>
+            <div class="d-flex gap-2" th:unless="${#lists.isEmpty(notifications)}">
+                <form th:action="@{/notifications/read-all}" method="post">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm" th:disabled="${unreadCount == 0}">
+                        Mark all as read
+                    </button>
+                </form>
+                <form th:action="@{/notifications/clear}" method="post"
+                    onsubmit="return confirm('Delete all notifications? This can’t be undone.');">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Clear all</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="text-center py-5" th:if="${#lists.isEmpty(notifications)}">
+            <p class="text-muted mb-3">You’re all caught up. New notifications will show up here.</p>
+            <a class="btn btn-primary" th:href="@{/}">Back to home</a>
+        </div>
+
+        <div class="list-group mb-5" th:unless="${#lists.isEmpty(notifications)}">
+            <article class="list-group-item d-flex justify-content-between align-items-start gap-3 py-3"
+                th:each="n : ${notifications}"
+                th:classappend="${n.read != true} ? 'border-start border-primary border-3' : 'text-muted'">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <h3 class="h6 mb-0" th:classappend="${n.read != true} ? 'fw-bold'" th:text="${n.title}">
+                            Notification title
+                        </h3>
+                        <span class="badge text-bg-primary" th:if="${n.read != true}">New</span>
+                    </div>
+                    <p class="mb-1" th:text="${n.description}">Notification description goes here.</p>
+                    <time class="small text-muted" th:datetime="${n.timestamp}"
+                        th:text="${#temporals.format(n.timestamp, 'MMM d, yyyy h:mm a')}">
+                        Jan 1, 2025 12:00 PM
+                    </time>
+                </div>
+                <div class="d-flex gap-2 flex-shrink-0">
+                    <form th:action="@{/notifications/{id}/read(id=${n.id})}" method="post" th:if="${n.read != true}">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Mark as read</button>
+                    </form>
+                    <form th:action="@{/notifications/{id}/delete(id=${n.id})}" method="post">
+                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                            th:aria-label="'Delete notification: ' + ${n.title}">Delete</button>
+                    </form>
+                </div>
+            </article>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/layout :: footer}"></th:block>
+</body>
+
+</html>

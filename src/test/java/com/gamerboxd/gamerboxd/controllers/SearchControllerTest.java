@@ -21,15 +21,18 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 
 class SearchControllerTest {
     private GameService gameService;
+    private NotificationService notificationService;
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         gameService = mock(GameService.class);
-        mockMvc = MockMvcBuilders.standaloneSetup(new SearchController(gameService))
+        notificationService = mock(NotificationService.class);
+        mockMvc = MockMvcBuilders.standaloneSetup(new SearchController(gameService, notificationService))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 // the "search" view shares its name with the /search URL, which the default resolver rejects
                 .setViewResolvers(new InternalResourceViewResolver("/templates/", ".html"))
