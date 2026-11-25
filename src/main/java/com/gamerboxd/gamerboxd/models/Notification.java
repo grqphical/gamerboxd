@@ -24,12 +24,15 @@ public class Notification {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
+    private Boolean read;
+
     public Notification(Long id, Instant timestamp, String title, String description, User user) {
         this.id = id;
         this.timestamp = timestamp;
         this.title = title;
         this.description = description;
         this.user = user;
+        this.read = false;
     }
 
     public Notification() {
@@ -73,5 +76,13 @@ public class Notification {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Boolean getRead() {
+        return read;
+    }
+
+    public void setRead(Boolean read) {
+        this.read = read;
     }
 }

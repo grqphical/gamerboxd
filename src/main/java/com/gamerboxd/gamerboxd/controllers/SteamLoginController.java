@@ -180,7 +180,8 @@ public class SteamLoginController {
         model.addAttribute("games", games);
         model.addAttribute("currentUser", currentUser);
         if (currentUser != null)
-            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
 
         return "steam/linkLibrary";
     }

@@ -47,7 +47,13 @@ public class NotificationService {
         this.notificationRepository.deleteAllByUser_Id(userId);
     }
 
-    public int getUserNotificationCount(int userId) {
-        return this.getUserNotifications(userId).size();
+    public int getUserNotificationUnreadCount(int userId) {
+        return this.notificationRepository.findAllByUser_IdAndReadFalse(userId).size();
+    }
+
+    public void setNotificationRead(Long notificationId) {
+        Notification notification = this.notificationRepository.findById(notificationId).orElseThrow();
+        notification.setRead(true);
+        this.notificationRepository.save(notification);
     }
 }

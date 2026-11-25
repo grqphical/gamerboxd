@@ -63,7 +63,8 @@ public class GamerboxdController {
                 ? Set.<Integer>of()
                 : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));
         if (currentUser != null)
-            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
 
         return "index";
     }

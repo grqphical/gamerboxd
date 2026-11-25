@@ -17,7 +17,6 @@ import com.gamerboxd.gamerboxd.services.GameService;
 import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.models.Game;
-import com.gamerboxd.gamerboxd.models.Notification;
 import com.gamerboxd.gamerboxd.models.Review;
 
 import org.springframework.web.server.ResponseStatusException;
@@ -58,7 +57,7 @@ public class GameViewController {
                 model.addAttribute("game", game);
                 if (currentUser != null)
                         model.addAttribute("notificationCount",
-                                        notificationService.getUserNotificationCount(currentUser.getId()));
+                                        notificationService.getUserNotificationUnreadCount(currentUser.getId()));
                 return "games";
         }
 }

@@ -48,7 +48,8 @@ public class SettingsController {
         model.addAttribute("user", user);
         model.addAttribute("currentUser", currentUser);
         if (currentUser != null)
-            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
 
         return "users/settings";
     }

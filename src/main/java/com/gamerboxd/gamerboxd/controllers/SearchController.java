@@ -34,7 +34,8 @@ public class SearchController {
         model.addAttribute("query", query);
         model.addAttribute("results", results);
         if (currentUser != null)
-            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         return "search";
     }
 }

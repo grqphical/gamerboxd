@@ -39,7 +39,8 @@ public class PlaylistController {
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("playlists", playlistService.getPublic());
         if (currentUser != null)
-            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         return "playlists/index";
     }
 
@@ -91,7 +92,8 @@ public class PlaylistController {
                 ? gameService.getSearchResultsByName(query, 10)
                 : List.of());
         if (currentUser != null)
-            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         return "playlists/detail";
     }
 

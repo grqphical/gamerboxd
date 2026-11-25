@@ -80,7 +80,8 @@ public class ReviewController {
         model.addAttribute("from", from);
         model.addAttribute("currentUser", currentUser);
         if (currentUser != null)
-            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         return "reviews/edit";
     }
 
@@ -138,7 +139,8 @@ public class ReviewController {
         model.addAttribute("gameResults", results);
         model.addAttribute("selectedGameId", selectedGameId);
         if (currentUser != null)
-            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         return "reviews/form";
     }
 

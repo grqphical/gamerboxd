@@ -38,7 +38,8 @@ public class ReviewCommentController {
             Model model) {
         populate(model, id, currentUser);
         if (currentUser != null)
-            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         return "reviews/detail";
     }
 
