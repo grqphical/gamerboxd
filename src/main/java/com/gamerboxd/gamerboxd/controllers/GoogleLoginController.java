@@ -69,7 +69,10 @@ public class GoogleLoginController {
         return "redirect:/";
     }
 
-    /** Sends a signed-in user to Google, the success handler links the account when they come back. */
+    /**
+     * Sends a signed-in user to Google, the success handler links the account when
+     * they come back.
+     */
     @GetMapping("/auth/google/link")
     public String link(@AuthenticationPrincipal AuthenticatedUser currentUser, HttpServletRequest request) {
         if (currentUser == null) {

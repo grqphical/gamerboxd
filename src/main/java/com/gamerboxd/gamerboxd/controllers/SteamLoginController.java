@@ -24,6 +24,7 @@ import com.gamerboxd.gamerboxd.models.GameStatus;
 import com.gamerboxd.gamerboxd.models.SteamGame;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.SteamLibraryLinkJobService;
 import com.gamerboxd.gamerboxd.services.SteamService;
 import com.gamerboxd.gamerboxd.services.UserService;
@@ -37,15 +38,17 @@ public class SteamLoginController {
     private final SteamService steamService;
     private final UserService userService;
     private final SteamLibraryLinkJobService steamLibraryLinkJobService;
+    private final NotificationService notificationService;
 
     @Value("${app.base-url}")
     private String baseUrl;
 
     public SteamLoginController(SteamService steamService, UserService userService,
-            SteamLibraryLinkJobService steamLibraryLinkJobService) {
+            SteamLibraryLinkJobService steamLibraryLinkJobService, NotificationService notificationService) {
         this.steamService = steamService;
         this.userService = userService;
         this.steamLibraryLinkJobService = steamLibraryLinkJobService;
+        this.notificationService = notificationService;
     }
 
     /*
@@ -176,6 +179,8 @@ public class SteamLoginController {
         List<SteamGame> games = steamService.getUserSteamLibrary(user.getSteamID());
         model.addAttribute("games", games);
         model.addAttribute("currentUser", currentUser);
+        if (currentUser != null)
+            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
 
         return "steam/linkLibrary";
     }

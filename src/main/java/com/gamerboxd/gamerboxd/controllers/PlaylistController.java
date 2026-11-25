@@ -18,22 +18,28 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Playlist;
 import com.gamerboxd.gamerboxd.models.PlaylistItem;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.PlaylistService;
 
 @Controller
 public class PlaylistController {
     private final PlaylistService playlistService;
     private final GameService gameService;
+    private final NotificationService notificationService;
 
-    public PlaylistController(PlaylistService playlistService, GameService gameService) {
+    public PlaylistController(PlaylistService playlistService, GameService gameService,
+            NotificationService notificationService) {
         this.playlistService = playlistService;
         this.gameService = gameService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/playlists")
     public String browse(@AuthenticationPrincipal AuthenticatedUser currentUser, Model model) {
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("playlists", playlistService.getPublic());
+        if (currentUser != null)
+            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
         return "playlists/index";
     }
 
@@ -84,6 +90,8 @@ public class PlaylistController {
         model.addAttribute("gameResults", isOwner && !query.isEmpty()
                 ? gameService.getSearchResultsByName(query, 10)
                 : List.of());
+        if (currentUser != null)
+            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
         return "playlists/detail";
     }
 
@@ -139,7 +147,10 @@ public class PlaylistController {
         return "redirect:/playlists/" + id;
     }
 
-    /** Runs an edit and returns to the playlist, showing the message if the input was invalid. */
+    /**
+     * Runs an edit and returns to the playlist, showing the message if the input
+     * was invalid.
+     */
     private String backToPlaylist(int id, RedirectAttributes redirect, Runnable edit) {
         try {
             edit.run();

@@ -46,4 +46,8 @@ public class NotificationService {
     public void clearNotificationsForUser(int userId) {
         this.notificationRepository.deleteAllByUser_Id(userId);
     }
+
+    public int getUserNotificationCount(int userId) {
+        return this.getUserNotifications(userId).size();
+    }
 }

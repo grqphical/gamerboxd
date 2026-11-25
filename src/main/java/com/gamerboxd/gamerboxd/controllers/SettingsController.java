@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.gamerboxd.gamerboxd.models.User;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.services.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,9 +23,12 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 @Controller
 public class SettingsController {
     private final UserService userService;
+    private final NotificationService notificationService;
 
-    public SettingsController(UserService userService, ReviewService reviewService) {
+    public SettingsController(UserService userService, ReviewService reviewService,
+            NotificationService notificationService) {
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/users/{id}/settings")
@@ -43,6 +47,8 @@ public class SettingsController {
 
         model.addAttribute("user", user);
         model.addAttribute("currentUser", currentUser);
+        if (currentUser != null)
+            model.addAttribute("notificationCount", notificationService.getUserNotificationCount(currentUser.getId()));
 
         return "users/settings";
     }
