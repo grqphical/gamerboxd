@@ -2,6 +2,7 @@ package com.gamerboxd.gamerboxd.services;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,10 @@ public class NotificationService {
             UserService userService) {
         this.notificationRepository = notificationRepository;
         this.userService = userService;
+    }
+
+    public Optional<Notification> getNotificationById(Long notificationId) {
+        return this.notificationRepository.findById(notificationId);
     }
 
     public List<Notification> getUserNotifications(int userId) {

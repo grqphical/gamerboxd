@@ -1,11 +1,17 @@
 package com.gamerboxd.gamerboxd.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Notification;
@@ -43,5 +49,23 @@ public class NotificationController {
         User user = this.userService.getUserById(currentUser.getId()).orElseThrow();
         this.notificationService.pushNotification("Test", "testing!", user);
         return "OK";
+    }
+
+    @GetMapping("/notifications/{notificationId}/read")
+    public String readNotification(@AuthenticationPrincipal AuthenticatedUser currentUser,
+            @PathVariable Long notificationId) {
+        if (currentUser == null)
+            return "redirect:/login";
+
+        Optional<Notification> notification = this.notificationService.getNotificationById(notificationId);
+
+        if (notification.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "notification with given ID not found");
+
+        if (notification.get().getUser().getId() != currentUser.getId())
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
+
+        this.notificationService.setNotificationRead(notificationId);
+        return "redirect:/notifications";
     }
 }
