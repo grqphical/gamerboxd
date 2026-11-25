@@ -22,11 +22,9 @@ import com.gamerboxd.gamerboxd.services.UserService;
 @Controller
 public class NotificationController {
     private final NotificationService notificationService;
-    private final UserService userService;
 
-    public NotificationController(NotificationService notificationService, UserService userService) {
+    public NotificationController(NotificationService notificationService) {
         this.notificationService = notificationService;
-        this.userService = userService;
     }
 
     @GetMapping("/notifications")
@@ -41,14 +39,6 @@ public class NotificationController {
                 this.notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         model.addAttribute("notifications", notifications);
         return "notifications/list";
-    }
-
-    // FOR TESTING ONLY
-    @GetMapping("/notifications/push")
-    public String pushNotification(@AuthenticationPrincipal AuthenticatedUser currentUser) {
-        User user = this.userService.getUserById(currentUser.getId()).orElseThrow();
-        this.notificationService.pushNotification("Test", "testing!", user);
-        return "OK";
     }
 
     @PostMapping("/notifications/{notificationId}/read")
