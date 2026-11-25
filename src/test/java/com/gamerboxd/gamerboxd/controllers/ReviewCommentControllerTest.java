@@ -31,6 +31,7 @@ import com.gamerboxd.gamerboxd.models.ReviewComment;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.ReviewCommentService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 
@@ -38,6 +39,7 @@ class ReviewCommentControllerTest {
     private ReviewService reviewService;
     private ReviewCommentService reviewCommentService;
     private GameService gameService;
+    private NotificationService notificationService;
     private MockMvc mockMvc;
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
@@ -49,9 +51,10 @@ class ReviewCommentControllerTest {
         reviewService = mock(ReviewService.class);
         reviewCommentService = mock(ReviewCommentService.class);
         gameService = mock(GameService.class);
+        notificationService = mock(NotificationService.class);
         when(gameService.getGameNames(List.of(5))).thenReturn(Map.of(5, "Hades"));
         mockMvc = MockMvcBuilders.standaloneSetup(
-                        new ReviewCommentController(reviewService, reviewCommentService, gameService))
+                        new ReviewCommentController(reviewService, reviewCommentService, gameService, notificationService))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
 

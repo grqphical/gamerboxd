@@ -35,6 +35,7 @@ import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserRole;
 import com.gamerboxd.gamerboxd.services.SteamLibraryLinkJobService;
 import com.gamerboxd.gamerboxd.services.SteamService;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.UserService;
 
 class SteamLoginControllerTest {
@@ -43,6 +44,7 @@ class SteamLoginControllerTest {
     private SteamService steamService;
     private UserService userService;
     private SteamLibraryLinkJobService linkJobService;
+    private NotificationService notificationService;
     private MockMvc mockMvc;
 
     private final User john = new User(1, "john", "john@gmail.com", "pw", UserRole.USER);
@@ -52,8 +54,9 @@ class SteamLoginControllerTest {
         steamService = mock(SteamService.class);
         userService = mock(UserService.class);
         linkJobService = mock(SteamLibraryLinkJobService.class);
+        notificationService = mock(NotificationService.class);
 
-        SteamLoginController controller = new SteamLoginController(steamService, userService, linkJobService);
+        SteamLoginController controller = new SteamLoginController(steamService, userService, linkJobService, notificationService);
         ReflectionTestUtils.setField(controller, "baseUrl", "http://localhost:8080/");
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())

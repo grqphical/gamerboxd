@@ -5,7 +5,9 @@
   var fmt = new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "short",
-    day: "numeric"
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
   });
   document.querySelectorAll("time[datetime]").forEach(function (el) {
     var d = new Date(el.getAttribute("datetime"));

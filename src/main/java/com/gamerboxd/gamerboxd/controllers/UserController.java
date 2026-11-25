@@ -25,6 +25,7 @@ import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.models.UserPrivacy;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.PlaylistService;
 import com.gamerboxd.gamerboxd.services.ReviewCommentService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
@@ -39,16 +40,18 @@ public class UserController {
     private final ReviewLikeService reviewLikeService;
     private final ReviewCommentService reviewCommentService;
     private final PlaylistService playlistService;
+    private final NotificationService notificationService;
 
     public UserController(UserService userService, ReviewService reviewService, GameService gameService,
             ReviewLikeService reviewLikeService, ReviewCommentService reviewCommentService,
-            PlaylistService playlistService) {
+            PlaylistService playlistService, NotificationService notificationService) {
         this.playlistService = playlistService;
         this.userService = userService;
         this.reviewService = reviewService;
         this.gameService = gameService;
         this.reviewLikeService = reviewLikeService;
         this.reviewCommentService = reviewCommentService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/users/{id}")
@@ -134,6 +137,9 @@ public class UserController {
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
                 : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));
+        if (currentUser != null)
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
 
         return "users/profile";
     }

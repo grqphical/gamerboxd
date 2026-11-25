@@ -14,11 +14,11 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.ReviewCommentService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.models.Review;
-
 
 @Controller
 public class GamerboxdController {
@@ -26,24 +26,28 @@ public class GamerboxdController {
     private final GameService gameService;
     private final ReviewLikeService reviewLikeService;
     private final ReviewCommentService reviewCommentService;
+    private final NotificationService notificationService;
 
     public GamerboxdController(ReviewService reviewService,
-        GameService gameService,
-        ReviewLikeService reviewLikeService,
-        ReviewCommentService reviewCommentService) {
+            GameService gameService,
+            ReviewLikeService reviewLikeService,
+            ReviewCommentService reviewCommentService,
+            NotificationService notificationService) {
         this.reviewService = reviewService;
         this.gameService = gameService;
         this.reviewLikeService = reviewLikeService;
         this.reviewCommentService = reviewCommentService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/")
     public String index(@AuthenticationPrincipal AuthenticatedUser currentUser, Model model) {
         // dont show private reviews on the index
-        // temporary solution until later iterations which will need to consider following/followers
+        // temporary solution until later iterations which will need to consider
+        // following/followers
         List<Review> reviews = reviewService.getAll().stream()
-            .filter(r -> !r.getUser().isPrivateAccount())
-            .toList();
+                .filter(r -> !r.getUser().isPrivateAccount())
+                .toList();
         List<Integer> reviewIds = reviews.stream().map(Review::getId).toList();
         List<Integer> gameIds = reviews.stream().map(Review::getGameId).toList();
 
@@ -58,6 +62,10 @@ public class GamerboxdController {
         model.addAttribute("likedIds", currentUser == null
                 ? Set.<Integer>of()
                 : reviewLikeService.getLikedReviewIds(reviewIds, currentUser.getId()));
+        if (currentUser != null)
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
+
         return "index";
     }
 
@@ -66,7 +74,7 @@ public class GamerboxdController {
         return "login";
     }
 
-    /**Purely for manual game database/cache testing*/
+    /** Purely for manual game database/cache testing */
     @GetMapping("/IGDBtest/{id}")
     public String IGDBtest(@PathVariable int id) {
         Optional<Game> game = gameService.getGameByID(id);
@@ -75,5 +83,5 @@ public class GamerboxdController {
         }
         return "redirect:/";
     }
-    
+
 }

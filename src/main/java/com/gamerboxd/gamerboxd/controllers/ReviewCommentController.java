@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.ReviewCommentService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 
@@ -21,12 +22,14 @@ public class ReviewCommentController {
     private final ReviewService reviewService;
     private final ReviewCommentService reviewCommentService;
     private final GameService gameService;
+    private final NotificationService notificationService;
 
     public ReviewCommentController(ReviewService reviewService, ReviewCommentService reviewCommentService,
-            GameService gameService) {
+            GameService gameService, NotificationService notificationService) {
         this.reviewService = reviewService;
         this.reviewCommentService = reviewCommentService;
         this.gameService = gameService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/reviews/{id}")
@@ -34,6 +37,9 @@ public class ReviewCommentController {
             @AuthenticationPrincipal AuthenticatedUser currentUser,
             Model model) {
         populate(model, id, currentUser);
+        if (currentUser != null)
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         return "reviews/detail";
     }
 

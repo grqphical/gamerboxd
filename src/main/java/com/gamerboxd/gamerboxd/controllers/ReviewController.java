@@ -11,6 +11,7 @@ import com.gamerboxd.gamerboxd.models.AuthenticatedUser;
 import com.gamerboxd.gamerboxd.models.Game;
 import com.gamerboxd.gamerboxd.models.Review;
 import com.gamerboxd.gamerboxd.services.GameService;
+import com.gamerboxd.gamerboxd.services.NotificationService;
 import com.gamerboxd.gamerboxd.services.ReviewLikeService;
 import com.gamerboxd.gamerboxd.services.ReviewService;
 import com.gamerboxd.gamerboxd.models.User;
@@ -36,16 +37,19 @@ public class ReviewController {
     private final UserService userService;
     private final GameService gameService;
     private final ReviewLikeService reviewLikeService;
+    private final NotificationService notificationService;
 
     public ReviewController(
-        ReviewService reviewService, 
-        UserService userService, 
-        GameService gameService,
-        ReviewLikeService reviewLikeService) {
+            ReviewService reviewService,
+            UserService userService,
+            GameService gameService,
+            ReviewLikeService reviewLikeService,
+            NotificationService notificationService) {
         this.reviewService = reviewService;
         this.userService = userService;
         this.gameService = gameService;
         this.reviewLikeService = reviewLikeService;
+        this.notificationService = notificationService;
     }
 
     @PostMapping("/reviews/{id}/like")
@@ -55,7 +59,7 @@ public class ReviewController {
         reviewLikeService.toggleLike(id, currentUser.getId());
         return profileId != null ? "redirect:/users/" + profileId : "redirect:/";
     }
-    
+
     @PostMapping("/reviews/{id}/delete")
     public String delete(@PathVariable int id,
             @AuthenticationPrincipal AuthenticatedUser currentUser,
@@ -75,6 +79,9 @@ public class ReviewController {
         model.addAttribute("gameName", gameService.getGameNames(List.of(review.getGameId())).get(review.getGameId()));
         model.addAttribute("from", from);
         model.addAttribute("currentUser", currentUser);
+        if (currentUser != null)
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         return "reviews/edit";
     }
 
@@ -98,14 +105,15 @@ public class ReviewController {
     }
 
     private String redirectAfter(String from, AuthenticatedUser currentUser) {
-        return "profile".equals(from) ? "redirect:/users/" + currentUser.getId() : "redirect:/"; // /reviews -> homepage  /
+        return "profile".equals(from) ? "redirect:/users/" + currentUser.getId() : "redirect:/"; // /reviews -> homepage
+                                                                                                 // /
     }
 
     @GetMapping("/reviews/new")
     public String form(@AuthenticationPrincipal AuthenticatedUser currentUser,
-                    @RequestParam(defaultValue = "") String q,
-                    @RequestParam(required = false) Integer gameId,
-                    Model model) {
+            @RequestParam(defaultValue = "") String q,
+            @RequestParam(required = false) Integer gameId,
+            Model model) {
         model.addAttribute("currentUser", currentUser);
 
         final boolean isPrivate = userService.getUserById(currentUser.getId())
@@ -123,13 +131,16 @@ public class ReviewController {
             if (game.isPresent()) {
                 results = List.of(game.get());
                 selectedGameId = gameId;
-                query = game.get().getName(); 
+                query = game.get().getName();
             }
         }
 
         model.addAttribute("query", query);
         model.addAttribute("gameResults", results);
         model.addAttribute("selectedGameId", selectedGameId);
+        if (currentUser != null)
+            model.addAttribute("notificationCount",
+                    notificationService.getUserNotificationUnreadCount(currentUser.getId()));
         return "reviews/form";
     }
 
@@ -141,17 +152,16 @@ public class ReviewController {
             Model model) {
         try {
             reviewService.create(currentUser.getId(), gameId, rating, description);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("currentUser", currentUser);
 
             final boolean isPrivate = userService.getUserById(currentUser.getId())
-                .map(User::isPrivateAccount).orElse(false);
+                    .map(User::isPrivateAccount).orElse(false);
             model.addAttribute("isPrivateAccount", isPrivate);
 
             return "reviews/form";
         }
-        return "redirect:/"; // /reviews -> homepage  /
+        return "redirect:/"; // /reviews -> homepage /
     }
 }
