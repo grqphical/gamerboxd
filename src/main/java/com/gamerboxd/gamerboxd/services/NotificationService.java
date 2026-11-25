@@ -8,29 +8,28 @@ import org.springframework.stereotype.Service;
 import com.gamerboxd.gamerboxd.models.Notification;
 import com.gamerboxd.gamerboxd.models.User;
 import com.gamerboxd.gamerboxd.repositories.NotificationRepository;
-import com.gamerboxd.gamerboxd.repositories.UserRepository;
 
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     public NotificationService(NotificationRepository notificationRepository,
-                               UserRepository userRepository) {
+            UserService userService) {
         this.notificationRepository = notificationRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     public List<Notification> getUserNotifications(int userId) {
         return notificationRepository.findAllByUser_IdOrderByTimestamp(userId);
     }
 
-    public void pushNotification(String title, String description, int userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+    public void pushNotification(String title, String description, User recipient) {
+        if (userService.getUserById(recipient.getId()).isEmpty())
+            throw new IllegalArgumentException("User not found with ID: " + recipient.getId());
 
         Notification notification = new Notification();
-        notification.setUser(user);
+        notification.setUser(recipient);
         notification.setTimestamp(Instant.now());
         notification.setTitle(title);
         notification.setDescription(description);
@@ -38,7 +37,7 @@ public class NotificationService {
         this.notificationRepository.save(notification);
     }
 
-    public void clearNotification(int notificationId) {
+    public void clearNotification(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
         this.notificationRepository.delete(notification);
