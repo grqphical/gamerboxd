@@ -102,35 +102,55 @@ public class GameService {
             }
             return new Game(g.getId(), g.getName(), g.getSummary(), g.getReleaseDate(),
                     g.getRatingIGDB(), g.getNumRatingsIGDB(), c.getRatingGamerboxd(),
-                    g.getGenres(), g.getArtworkLinks(), g.getPlatforms(), g.getCoverLink());
+                    g.getGenres(), g.getArtworkLinks(), g.getPlatforms(), g.getCoverLink(), g.getThemes());
         }).toList();
     }
 
-    public List<Game> sortByPopularity(List<Game> games) {
+    /** 
+     * List of games by popularity (from number of igdb ratings). 
+     * @param games games to sort. 
+     * @param ascending least to most popular. */
+    public List<Game> sortByPopularity(List<Game> games, boolean ascending) {
+        Comparator<Game> comparator = Comparator.comparingInt(Game::getNumRatingsIGDB);
+        return games.stream().sorted(ascending ? comparator : comparator.reversed()).toList();
+    }
+
+    /** 
+     * List of games by release date.
+     * @param games to sort.
+     * @param ascending oldest -> newest */
+    public List<Game> sortByReleaseDate(List<Game> games, boolean ascending) {
+        Comparator<String> direction = ascending 
+                                     ? Comparator.naturalOrder() 
+                                     : Comparator.reverseOrder();
+
         return games.stream()
-                .sorted(Comparator.comparingInt(Game::getNumRatingsIGDB).reversed())
+                .sorted(Comparator.comparing(Game::getReleaseDate, Comparator.nullsLast(direction)))
                 .toList();
     }
 
-    /** Returns newest first, no date last */
-    public List<Game> sortByReleaseDate(List<Game> games) {
+    /**
+     *  List of games by rating, tie break with igdb rating 
+     * @param games games to sort.
+     * @param ascending sorted from lowest to highest */
+    public List<Game> sortByRating(List<Game> games, boolean ascending) {
+        Comparator<Double> dir = Comparator.nullsLast(ascending
+                               ? Comparator.<Double>naturalOrder()
+                               : Comparator.<Double>reverseOrder());
+
         return games.stream()
-                .sorted(Comparator.comparing(Game::getReleaseDate, 
-                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .sorted(Comparator.comparing(Game::getRatingGamerboxd, dir)
+                        .thenComparing(Game::getRatingIGDB, dir))
                 .toList();
     }
 
-    /** Sort by highest Gamerboxd rating first, tie break with igdb rating */
-    public List<Game> sortByRating(List<Game> games) {
-        Comparator<Double> highestFirst = Comparator.nullsLast(Comparator.<Double>reverseOrder());
-
+    public List<Game> removeMatureGames(List<Game> games) {
         return games.stream()
-                .sorted(Comparator
-                        .comparing(Game::getRatingGamerboxd, highestFirst)
-                        .thenComparing(Game::getRatingIGDB, highestFirst))
+                .filter(g -> g.getThemes() == null
+                        || g.getThemes().stream().noneMatch("Erotic"::equalsIgnoreCase))
                 .toList();
     }
-
+    
     /**
      * Iteratively update the id's associated `Game`'s ratingGamerboxd using:
      * 

@@ -25,7 +25,7 @@ import com.gamerboxd.gamerboxd.models.Game;
 @Service
 public class IGDBService {
 
-    private static final String FIELDS = "fields name,summary,rating,rating_count,first_release_date,genres.name,artworks.image_id,platforms.name,cover.image_id;";
+    private static final String FIELDS = "fields name,summary,rating,rating_count,first_release_date,genres.name,artworks.image_id,platforms.name,cover.image_id,themes.name;";
     private static final int IGDB_MAX_LIMIT = 500; // 500 is the max size. does not mean we get 500 results
 
     private final RestClient rest;
@@ -168,7 +168,14 @@ public class IGDBService {
                 ? "https://images.igdb.com/igdb/image/upload/t_cover_big/" + n.get("cover").get("image_id").asString()
                         + ".webp"
                 : null;
+        
+        List<String> themes = new ArrayList<>();
+        if (n.hasNonNull("themes")) {
+            for (JsonNode g : n.get("themes")) {
+                themes.add(g.get("name").asString());
+            }
+        }
 
-        return new Game(id, name, summary, releaseDate, rating, numRatings, null, genres, artworks, platforms, cover);
+        return new Game(id, name, summary, releaseDate, rating, numRatings, null, genres, artworks, platforms, cover, themes);
     }
 }

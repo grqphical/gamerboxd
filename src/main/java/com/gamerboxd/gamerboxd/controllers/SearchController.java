@@ -25,11 +25,11 @@ public class SearchController {
                         @RequestParam(defaultValue = "") String q, Model model) {
         String query = q.trim();
 
-        final int searchLimit = 21; // search page shows a maximum of 7x3 games
+        final int searchLimit = 500; // search page shows a maximum of 7x3 games
         // an empty search would still spend an IGDB request
         List<Game> results = query.isEmpty() 
                            ? List.of() : gameService.getSearchResultsByName(query, searchLimit);
-        List<Game> sortedResults = gameService.sortByRating(results);
+        List<Game> sortedResults = gameService.sortByReleaseDate(results, false);
 
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("query", query);

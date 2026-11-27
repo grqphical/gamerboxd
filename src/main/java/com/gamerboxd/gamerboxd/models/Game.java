@@ -53,11 +53,12 @@ public class Game {
     private List<String> artworkLinks;
     private List<String> platforms;
     private String coverLink;
+    private List<String> themes;
 
     public Game() {}
 
     public Game(int id, String name, String summary, String releaseDate, Double ratingIGDB, int numRatingsIGDB, Double ratingGamerboxd,
-            List<String> genres, List<String> artworkLinks, List<String> platforms, String coverLink) {
+            List<String> genres, List<String> artworkLinks, List<String> platforms, String coverLink, List<String> themes) {
         this.id = id;
         this.name = name;
         this.summary = summary;
@@ -69,8 +70,9 @@ public class Game {
         this.artworkLinks = artworkLinks;
         this.platforms = platforms;
         this.coverLink = coverLink;
+        this.themes = themes;
     }
- 
+
     public int getId() {
         return id;
     }
@@ -117,6 +119,10 @@ public class Game {
 
     public String getCoverLink() {
         return coverLink;
+    }
+     
+    public List<String> getThemes() {
+        return themes;
     }
 
     /** Dont use this, use the one in GameService */

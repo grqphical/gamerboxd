@@ -39,7 +39,7 @@ class GameServiceTest {
     private GameService gameService;
 
     private Game game(int id, String name) {
-        return new Game(id, name, null, null, 80.0, 0, null, List.of(), List.of(), List.of(), null);
+        return new Game(id, name, null, null, 80.0, 0, null, List.of(), List.of(), List.of(), null, null);
     }
 
     @Test
