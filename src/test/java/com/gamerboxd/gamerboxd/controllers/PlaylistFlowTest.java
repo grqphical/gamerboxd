@@ -76,7 +76,7 @@ class PlaylistFlowTest {
         john = userRepository.save(new User(0, "john", "john@example.com", "pw", UserRole.USER));
         olivia = userRepository.save(new User(0, "olivia", "olivia@example.com", "pw", UserRole.USER));
 
-        Game hades = new Game(GAME_ID, "Hades", null, null, null, null, List.of(), List.of(), List.of(), null);
+        Game hades = new Game(GAME_ID, "Hades", null, null, null, 0, null, List.of(), List.of(), List.of(), null);
         when(gameService.getGameByID(GAME_ID)).thenReturn(Optional.of(hades));
         when(gameService.getGamesByIDs(any())).thenReturn(Map.of(GAME_ID, hades));
 

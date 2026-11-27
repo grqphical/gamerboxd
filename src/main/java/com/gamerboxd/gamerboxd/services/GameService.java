@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.Comparator;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -84,9 +85,9 @@ public class GameService {
      * - Skips the cache to make sure results are unified. <br>
      * - Merges in the cached Gamerboxd ratings, as IGDB knows nothing about them.
      * 
-     * @param name  the name of the game you want to search
-     * @param limit maximum number of search results you want back
-     */
+     * @param name  the name of the game you want to search.
+     * @param limit maximum number of search results you want back.
+     * @param offset number of games to skip before returning results */
     public List<Game> getSearchResultsByName(String name, int limit) {
         List<Game> results = igdbService.getSearchResults(name, limit);
 
@@ -100,9 +101,34 @@ public class GameService {
                 return g;
             }
             return new Game(g.getId(), g.getName(), g.getSummary(), g.getReleaseDate(),
-                    g.getRatingIGDB(), c.getRatingGamerboxd(),
+                    g.getRatingIGDB(), g.getNumRatingsIGDB(), c.getRatingGamerboxd(),
                     g.getGenres(), g.getArtworkLinks(), g.getPlatforms(), g.getCoverLink());
         }).toList();
+    }
+
+    public List<Game> sortByPopularity(List<Game> games) {
+        return games.stream()
+                .sorted(Comparator.comparingInt(Game::getNumRatingsIGDB).reversed())
+                .toList();
+    }
+
+    /** Returns newest first, no date last */
+    public List<Game> sortByReleaseDate(List<Game> games) {
+        return games.stream()
+                .sorted(Comparator.comparing(Game::getReleaseDate, 
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+    }
+
+    /** Sort by highest Gamerboxd rating first, tie break with igdb rating */
+    public List<Game> sortByRating(List<Game> games) {
+        Comparator<Double> highestFirst = Comparator.nullsLast(Comparator.<Double>reverseOrder());
+
+        return games.stream()
+                .sorted(Comparator
+                        .comparing(Game::getRatingGamerboxd, highestFirst)
+                        .thenComparing(Game::getRatingIGDB, highestFirst))
+                .toList();
     }
 
     /**
@@ -116,8 +142,7 @@ public class GameService {
      * @param rating The star rating in [0, 5] (star rating).
      * @param adding Choice whether to add rating to total or remove it
      * @exception IllegalArgumentException for `rating` not in desired range.
-     * @exception IllegalArgumentException for bad `igdbId`.
-     */
+     * @exception IllegalArgumentException for bad `igdbId`. */
     public void updateGameRating(int igdbID, int rating, boolean adding) {
         if (rating < 0 || rating > 5) {
             throw new IllegalArgumentException(

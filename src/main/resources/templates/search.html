@@ -18,16 +18,16 @@
         <th:block th:unless="${#strings.isEmpty(query)}">
             <div class="section-title">
                 <h2>
-                    <span th:text="${#lists.size(results)}">0</span>
-                    <span th:text="${#lists.size(results) == 1} ? 'result' : 'results'">results</span>
+                    <span th:text="${#lists.size(sortedResults)}">0</span>
+                    <span th:text="${#lists.size(sortedResults) == 1} ? 'result' : 'results'">results</span>
                     for “<span th:text="${query}">query</span>”
                 </h2>
             </div>
-            <p class="text-muted" th:if="${#lists.isEmpty(results)}">
+            <p class="text-muted" th:if="${#lists.isEmpty(sortedResults)}">
                 No games found. Try a different name or check the spelling.
             </p>
             <div class="poster-grid">
-                <div th:each="g : ${results}">
+                <div th:each="g : ${sortedResults}">
                     <a th:replace="~{fragments/components :: poster(${g})}"></a>
                     <div class="poster-caption">
                         <a class="name" th:href="@{/games/{id}(id=${g.id})}" th:text="${g.name}">Game name</a>

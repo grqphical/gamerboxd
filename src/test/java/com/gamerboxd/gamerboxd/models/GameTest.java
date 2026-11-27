@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class GameTest {
     // IGDB knows nothing about our ratings, so fetched games start with null
     private Game unratedGame() {
-        return new Game(1, "Game", null, null, null, null, List.of(), List.of(), List.of(), null);
+        return new Game(1, "Game", null, null, null, 0, null, List.of(), List.of(), List.of(), null);
     }
 
     @Test

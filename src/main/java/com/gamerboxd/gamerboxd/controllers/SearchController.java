@@ -18,18 +18,22 @@ public class SearchController {
 
     public SearchController(GameService gameService) {
         this.gameService = gameService;
-    }
+    }   
 
     @GetMapping("/search")
     public String search(@AuthenticationPrincipal AuthenticatedUser currentUser,
                         @RequestParam(defaultValue = "") String q, Model model) {
         String query = q.trim();
+
+        final int searchLimit = 21; // search page shows a maximum of 7x3 games
         // an empty search would still spend an IGDB request
-        List<Game> results = query.isEmpty() ? List.of() : gameService.getSearchResultsByName(query, 20);
+        List<Game> results = query.isEmpty() 
+                           ? List.of() : gameService.getSearchResultsByName(query, searchLimit);
+        List<Game> sortedResults = gameService.sortByRating(results);
 
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("query", query);
-        model.addAttribute("results", results);
+        model.addAttribute("sortedResults", sortedResults);
         return "search";
     }
 }

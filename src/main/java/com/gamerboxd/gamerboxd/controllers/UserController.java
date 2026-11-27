@@ -96,12 +96,14 @@ public class UserController {
         // contains ids of 0 meaning there are free slots
         final boolean canAddFavourite = isOwnProfile && user.getFavouriteIgdbIDs().contains(User.NULL_FAVOURITE_GAME);
 
-        final int searchLimit = 10;
+        final int favouritesSearchLimit = 14; // Users page shows 2 rows and 7 columns
         List<Game> gameSearchResults = (canAddFavourite && gameSearch != null && !gameSearch.isBlank())
-                ? gameService.getSearchResultsByName(gameSearch, searchLimit) // search doesnt cache results
+                ? gameService.getSearchResultsByName(gameSearch, favouritesSearchLimit) // search doesnt cache results
                 : List.of();
+
+        final int statusSearchLimit = 10;
         List<Game> statusGameSearchResults = isOwnProfile && statusGameSearch != null && !statusGameSearch.isBlank()
-                ? gameService.getSearchResultsByName(statusGameSearch, searchLimit)
+                ? gameService.getSearchResultsByName(statusGameSearch, statusSearchLimit)
                 : List.of();
 
         Map<GameStatus, List<Game>> gamesByStatus = new EnumMap<>(GameStatus.class);

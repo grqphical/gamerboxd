@@ -25,6 +25,7 @@ import jakarta.persistence.Table;
  *      "summary": ...,
  *      "first_release_date": ...,
  *      "rating": ...,
+ *      "rating_count": ...,
  *      "genres": [...],
  *      "artworks": [...],
  *      "cover": ...
@@ -45,22 +46,24 @@ public class Game {
     private String summary;
     private String releaseDate;
     private Double ratingIGDB;
+    private int numRatingsIGDB; // total ratings count from IGDB, an acceptable measure of how popular a game is.
     private Double ratingGamerboxd;
     private int numRatingsGamerboxd; // the number of ratings done with the gamerboxd review system.
-    private List<String> genres;        // api returns strings so will have to call a different api to translate them
+    private List<String> genres;        // api returns strings so will have to call a different api to translate them.
     private List<String> artworkLinks;
     private List<String> platforms;
     private String coverLink;
 
     public Game() {}
 
-    public Game(int id, String name, String summary, String releaseDate, Double ratingIGDB, Double ratingGamerboxd,
+    public Game(int id, String name, String summary, String releaseDate, Double ratingIGDB, int numRatingsIGDB, Double ratingGamerboxd,
             List<String> genres, List<String> artworkLinks, List<String> platforms, String coverLink) {
         this.id = id;
         this.name = name;
         this.summary = summary;
         this.releaseDate = releaseDate;
         this.ratingIGDB = ratingIGDB;
+        this.numRatingsIGDB = numRatingsIGDB;
         this.ratingGamerboxd = ratingGamerboxd;
         this.genres = genres;
         this.artworkLinks = artworkLinks;
@@ -86,6 +89,10 @@ public class Game {
 
     public Double getRatingIGDB() {
         return ratingIGDB;
+    }
+
+    public int getNumRatingsIGDB() {
+        return numRatingsIGDB;
     }
 
     public Double getRatingGamerboxd() {

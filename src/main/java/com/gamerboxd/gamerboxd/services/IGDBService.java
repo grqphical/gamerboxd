@@ -25,8 +25,8 @@ import com.gamerboxd.gamerboxd.models.Game;
 @Service
 public class IGDBService {
 
-    private static final String FIELDS = "fields name,summary,rating,first_release_date,genres.name,artworks.image_id,platforms.name,cover.image_id;";
-    private static final int IGDB_MAX_LIMIT = 500;
+    private static final String FIELDS = "fields name,summary,rating,rating_count,first_release_date,genres.name,artworks.image_id,platforms.name,cover.image_id;";
+    private static final int IGDB_MAX_LIMIT = 500; // 500 is the max size. does not mean we get 500 results
 
     private final RestClient rest;
     private final TwitchTokenService tokens;
@@ -72,9 +72,13 @@ public class IGDBService {
                 .body(type);
     }
 
+    /**
+     * @param name name of the game to search for.
+     * @param limit number of games to search for.
+     * @param offset number of games to skip. */
     public List<Game> getSearchResults(String name, int limit) {
         String safe = name.replace("\\", "\\\\").replace("\"", "\\\"");
-        String query = "search \"" + safe + "\"; " + FIELDS + " limit " + limit + ";";
+        String query = "search \"" + safe + "\"; " + FIELDS + " limit " + limit + ";";          
         return fetchGames(query);
     }
 
@@ -130,6 +134,7 @@ public class IGDBService {
         String name = n.hasNonNull("name") ? n.get("name").asString() : null;
         String summary = n.hasNonNull("summary") ? n.get("summary").asString() : null;
         Double rating = n.hasNonNull("rating") ? n.get("rating").asDouble() : null;
+        int numRatings = n.path("rating_count").asInt(0);
 
         String releaseDate = null;
         if (n.hasNonNull("first_release_date")) {
@@ -164,6 +169,6 @@ public class IGDBService {
                         + ".webp"
                 : null;
 
-        return new Game(id, name, summary, releaseDate, rating, null, genres, artworks, platforms, cover);
+        return new Game(id, name, summary, releaseDate, rating, numRatings, null, genres, artworks, platforms, cover);
     }
 }
